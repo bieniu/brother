@@ -2,7 +2,7 @@ import asyncio
 
 from brother import Brother
 
-HOST = 'brother'
+HOST = "brother"
 
 
 async def main():

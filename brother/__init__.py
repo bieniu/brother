@@ -3,19 +3,9 @@ Python wrapper for getting data from Brother laser and inkjet printers via snmp
 """
 import logging
 
-from pyasn1.type.univ import OctetString
 import pysnmp.hlapi.asyncio as hlapi
+from pyasn1.type.univ import OctetString
 from pysnmp.hlapi.asyncore.cmdgen import lcd
-from pysnmp.hlapi.asyncio import (
-    CommunityData,
-    ContextData,
-    ObjectIdentity,
-    ObjectType,
-    SnmpEngine,
-    UdpTransportTarget,
-    UsmUserData,
-    getCmd,
-)
 
 OIDS = {
     "counters": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
@@ -28,7 +18,15 @@ OIDS = {
     "status": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
 }
 
+HEX_OIDS = [
+    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
+    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
+    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
+    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.20.0",
+]
+
 _LOGGER = logging.getLogger(__name__)
+
 
 class Brother:
     """Main class to perform snmp requests to printer."""
@@ -41,23 +39,25 @@ class Brother:
 
         oids_list = []
         for value in OIDS.values():
-            oids_list.append(ObjectType(ObjectIdentity(value)))
+            oids_list.append(hlapi.ObjectType(hlapi.ObjectIdentity(value)))
 
         self.oids = tuple(oids_list)
 
-        self.SnmpEngine = SnmpEngine()
+        self.SnmpEngine = hlapi.SnmpEngine()
 
         self.request_args = [
             self.SnmpEngine,
-            CommunityData("public", mpModel=1),
-            UdpTransportTarget((host, 161)),
-            ContextData(),
+            hlapi.CommunityData("public", mpModel=1),
+            hlapi.UdpTransportTarget((host, 161)),
+            hlapi.ContextData(),
         ]
 
     async def update(self):
         """Update data from printer."""
-        temp_data = {}
-        errindication, errstatus, errindex, restable = await getCmd(*self.request_args, *self.oids)
+        data = {}
+        errindication, errstatus, errindex, restable = await hlapi.getCmd(
+            *self.request_args, *self.oids
+        )
 
         if errindication:
             print(f"SNMP error: {errindication}")
@@ -66,19 +66,41 @@ class Brother:
         else:
             lcd.unconfigure(self.SnmpEngine, None)
             for resrow in restable:
-                if isinstance(resrow[-1], OctetString):
+                if str(resrow[0]) in HEX_OIDS:
                     temp = resrow[-1].asOctets()
-                    temp = ''.join(['%.2x' % x for x in temp])[0:-2]
-                    temp = [temp[ind:ind+14] for ind in range(0, len(temp), 14)]
-                    temp_data[str(resrow[0])] = temp
+                    temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                    temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
+                    data[str(resrow[0])] = temp
                 else:
-                    temp_data[str(resrow[0])] = str(resrow[-1])
+                    data[str(resrow[0])] = str(resrow[-1])
 
-        self.data = temp_data
-
+        self.data = data
 
     @property
     def available(self):
         """Return True is data is available."""
         return bool(self.data)
 
+    # @property
+    # def model(self):
+    #     """Return printer's model."""
+    #     if self.available:
+    #         return self.data["model"]
+
+    # @property
+    # def serial(self):
+    #     """Return printer's serial no."""
+    #     if self.available:
+    #         return self.data["serial"]
+
+    # @property
+    # def firmvare(self):
+    #     """Return printer's firmvare version."""
+    #     if self.available:
+    #         return self.data["firmvare"]
+
+    # @property
+    # def status(self):
+    #     """Return printer's status."""
+    #     if self.available:
+    #         return self.data["status"]
