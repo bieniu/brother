@@ -54,7 +54,7 @@ class Brother:
 
     async def update(self):
         """Update data from printer."""
-        data = {}
+        raw_data = {}
         errindication, errstatus, errindex, restable = await hlapi.getCmd(
             *self.request_args, *self.oids
         )
@@ -70,11 +70,11 @@ class Brother:
                     temp = resrow[-1].asOctets()
                     temp = "".join(["%.2x" % x for x in temp])[0:-2]
                     temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
-                    data[str(resrow[0])] = temp
+                    raw_data[str(resrow[0])] = temp
                 else:
-                    data[str(resrow[0])] = str(resrow[-1])
+                    raw_data[str(resrow[0])] = str(resrow[-1])
 
-        self.data = data
+        self.data = raw_data
 
     @property
     def available(self):
