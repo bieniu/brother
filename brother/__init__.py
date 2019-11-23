@@ -58,19 +58,13 @@ class Brother:
 
         data = {}
 
+        # for item in OID_TEXT:
+        #   data[item] = raw_data[OIDS[item]][8:]
+
         data["model"] = raw_data[OIDS["model"]][8:]
         data["serial"] = raw_data[OIDS["serial"]]
         data["status"] = raw_data[OIDS["status"]].strip().lower()
         data["firmware"] = raw_data[OIDS["firmware"]]
-        # for key, value in raw_data.items():
-        #     if key == '1.3.6.1.4.1.2435.2.4.3.2435.5.13.3.0':
-        #         data["model"] = value[8:]
-        #     if key == '1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0':
-        #         data["serial"] = value
-        #     if key == '1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0':
-        #         data["status"] = value.strip().lower()
-        #     if key == '1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0':
-        #         data["firmware"] = value
 
         self.data = data
 
