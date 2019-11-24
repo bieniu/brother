@@ -7,18 +7,72 @@ import pysnmp.hlapi.asyncio as hlapi
 from pyasn1.type.univ import OctetString
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 
+ATTR_COUNTERS = "counters"
+ATTR_FIRMWARE = "firmware"
+ATTR_MAINTENANCE = "maintenance"
+ATTR_MODEL = "model"
+ATTR_NEXTCARE = "nextcare"
+ATTR_SERIAL = "serial"
+ATTR_STATUS = "status"
+
 OIDS = {
-    "counters": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
-    "firmware": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
-    "maintenance": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
-    "model": "1.3.6.1.4.1.2435.2.4.3.2435.5.13.3.0",
-    "nextcare": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
-    "replace": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.20.0",
-    "serial": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
-    "status": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
+    ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
+    ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
+    ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
+    ATTR_MODEL: "1.3.6.1.4.1.2435.2.4.3.2435.5.13.3.0",
+    ATTR_NEXTCARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
+    ATTR_SERIAL: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
+    ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
 }
 
-OIDS_HEX = [OIDS["counters"], OIDS["maintenance"], OIDS["nextcare"], OIDS["replace"]]
+VALUES_COUNTERS = {
+    "00": "printer count",
+    "01": "b/w count",
+    "02": "color count",
+    "12": "black count",
+    "13": "cyan count",
+    "14": "magenta count",
+    "15": "yellow count",
+    "16": "image count",
+}
+
+VALUES_MAINTENANCE = {
+    "11": "drum count",
+    "31": "toner status",
+    "41": "drum remaining life",
+    "63": "drum status",
+    "69": "belt unit remaining life",
+    "6a": "fuser remaining life",
+    "6b": "laser remaining life",
+    "6c": "pf kit mp remaining life",
+    "6d": "pf kit 1 remaining life",
+    "6f": "toner/ink remaining life",
+    "81": "black toner/ink",
+    "82": "cyan toner/ink",
+    "83": "magenta toner/ink",
+    "84": "yellow toner/ink",
+}
+
+VALUES_NEXTCARE = {
+    "73": "laser unit remaining pages",
+    "77": "pf kit 1 remaining pages",
+    "82": "drum remaining pages",
+    "86": "pf kit mp remaining pages",
+    "88": "belt unit remaining pages",
+    "89": "fuser unit remaining pages",
+}
+
+PERCENT_VALUES = [
+    "drum remaining life",
+    "belt unit remaining life",
+    "fuser remaining life",
+    "laser remaining life",
+    "pf kit mp remaining life",
+    "pf kit 1 remaining life",
+    "toner/ink remaining life",
+]
+
+OIDS_HEX = [OIDS[ATTR_COUNTERS], OIDS[ATTR_MAINTENANCE], OIDS[ATTR_NEXTCARE]]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,19 +83,16 @@ class Brother:
     def __init__(self, host):
         """Initialize."""
         self.data = {}
+        self.available = False
         self.host = host
         _LOGGER.debug("Using host: %s", host)
 
-        oids_list = []
-        for value in OIDS.values():
-            oids_list.append(hlapi.ObjectType(hlapi.ObjectIdentity(value)))
+        self._oids = tuple(self._iterate_oids(OIDS.values()))
 
-        self.oids = tuple(oids_list)
-
-        self.SnmpEngine = hlapi.SnmpEngine()
+        self.snmp_engine = hlapi.SnmpEngine()
 
         self.request_args = [
-            self.SnmpEngine,
+            self.snmp_engine,
             hlapi.CommunityData("public", mpModel=1),
             hlapi.UdpTransportTarget((host, 161)),
             hlapi.ContextData(),
@@ -53,110 +104,34 @@ class Brother:
 
         data = {}
 
-        data["model"] = raw_data[OIDS["model"]][8:]
-        data["serial"] = raw_data[OIDS["serial"]]
-        data["status"] = raw_data[OIDS["status"]].strip().lower()
-        data["firmware"] = raw_data[OIDS["firmware"]]
+        data[ATTR_MODEL] = raw_data[OIDS[ATTR_MODEL]][8:]
+        data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
+        data[ATTR_STATUS] = (
+            raw_data[OIDS[ATTR_STATUS]].strip().lower()
+        )  # sprawdzić znaki diakrytyczne
+        data[ATTR_FIRMWARE] = raw_data[OIDS[ATTR_FIRMWARE]]
 
-        for word in raw_data[OIDS["maintenance"]]:
-            if word[:2] == "11":
-                data["drum counter"] = int(word[-8:], 16)
-            if word[:2] == "63":
-                data["drum status"] = int(word[-8:], 16)
-            if word[:2] == "41":
-                data["drum remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "31":
-                data["toner status"] = int(word[-8:], 16)
-            if word[:2] == "69":
-                data["belt unit remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "6a":
-                data["fuser remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "6b":
-                data["laser remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "6c":
-                data["pf kit mp remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "6d":
-                data["pf kit 1 remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "6f":
-                data["toner remaining life"] = round(int(word[-8:], 16) / 100)
-            if word[:2] == "81":
-                data["black toner"] = int(word[-8:], 16)
-            if word[:2] == "82":
-                data["cyan toner"] = int(word[-8:], 16)
-            if word[:2] == "83":
-                data["magenta toner"] = int(word[-8:], 16)
-            if word[:2] == "84":
-                data["yellow toner"] = int(word[-8:], 16)
-
-        for word in raw_data[OIDS["nextcare"]]:
-            if word[:2] == "82":
-                data["drum remaining pages"] = int(word[-8:], 16)
-            if word[:2] == "88":
-                data["belt unit remaining pages"] = int(word[-8:], 16)
-            if word[:2] == "89":
-                data["fuser unit remaining pages"] = int(word[-8:], 16)
-            if word[:2] == "73":
-                data["laser unit remaining pages"] = int(word[-8:], 16)
-            if word[:2] == "86":
-                data["pf kit mp remaining pages"] = int(word[-8:], 16)
-            if word[:2] == "77":
-                data["pf kit 1 remaining pages"] = int(word[-8:], 16)
-
-        for word in raw_data[OIDS["counters"]]:
-            if word[:2] == "00":
-                data["printer counter"] = int(word[-8:], 16)
-            if word[:2] == "01":
-                data["b/w page counter"] = int(word[-8:], 16)
-            if word[:2] == "02":
-                data["color page counter"] = int(word[-8:], 16)
-            if word[:2] == "12":
-                data["black counter"] = int(word[-8:], 16)
-            if word[:2] == "13":
-                data["cyan counter"] = int(word[-8:], 16)
-            if word[:2] == "14":
-                data["magenta counter"] = int(word[-8:], 16)
-            if word[:2] == "15":
-                data["yellow counter"] = int(word[-8:], 16)
-            if word[:2] == "16":
-                data["image counter"] = int(word[-8:], 16)
+        data.update(
+            dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+        )
+        data.update(
+            dict(
+                self._iterate_data(raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_MAINTENANCE)
+            )
+        )
+        data.update(
+            dict(self._iterate_data(raw_data[OIDS[ATTR_NEXTCARE]], VALUES_NEXTCARE))
+        )
 
         self.data = data
-
-    @property
-    def available(self):
-        """Return True is data is available."""
-        return bool(self.data)
-
-    @property
-    def model(self):
-        """Return printer's model."""
-        if self.available:
-            return self.data["model"]
-
-    @property
-    def serial(self):
-        """Return printer's serial no."""
-        if self.available:
-            return self.data["serial"]
-
-    @property
-    def firmware(self):
-        """Return printer's firmware version."""
-        if self.available:
-            return self.data["firmware"]
-
-    @property
-    def status(self):
-        """Return printer's status."""
-        if self.available:
-            return self.data["status"]
+        self.available = bool(self.data)
 
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
 
         errindication, errstatus, errindex, restable = await hlapi.getCmd(
-            *self.request_args, *self.oids
+            *self.request_args, *self._oids
         )
 
         if errindication:
@@ -164,7 +139,6 @@ class Brother:
         elif errstatus:
             print(f"SNMP error: {errstatus}, {errindex}")
         else:
-            lcd.unconfigure(self.SnmpEngine, None)
             for resrow in restable:
                 if str(resrow[0]) in OIDS_HEX:
                     temp = resrow[-1].asOctets()
@@ -174,3 +148,19 @@ class Brother:
                 else:
                     raw_data[str(resrow[0])] = str(resrow[-1])
         return raw_data
+
+    @classmethod
+    def _iterate_oids(cls, oids):
+        """Iterate OIDS to retreive from printer."""
+        for oid in oids:
+            yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
+
+    @classmethod
+    def _iterate_data(cls, iterable, values_map):
+        """Iterate data from hex words."""
+        for item in iterable:
+            if item[:2] in values_map:
+                if values_map[item[:2]] in PERCENT_VALUES:
+                    yield (values_map[item[:2]], round(int(item[-8:], 16) / 100))
+                else:
+                    yield (values_map[item[:2]], int(item[-8:], 16))
