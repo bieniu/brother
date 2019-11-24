@@ -18,12 +18,7 @@ OIDS = {
     "status": "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
 }
 
-HEX_OIDS = [
-    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
-    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
-    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
-    "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.20.0",
-]
+OIDS_HEX = [OIDS["counters"], OIDS["maintenance"], OIDS["nextcare"], OIDS["replace"]]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,13 +53,72 @@ class Brother:
 
         data = {}
 
-        # for item in OID_TEXT:
-        #   data[item] = raw_data[OIDS[item]][8:]
-
         data["model"] = raw_data[OIDS["model"]][8:]
         data["serial"] = raw_data[OIDS["serial"]]
         data["status"] = raw_data[OIDS["status"]].strip().lower()
         data["firmware"] = raw_data[OIDS["firmware"]]
+
+        for word in raw_data[OIDS["maintenance"]]:
+            if word[:2] == "11":
+                data["drum counter"] = int(word[-8:], 16)
+            if word[:2] == "63":
+                data["drum status"] = int(word[-8:], 16)
+            if word[:2] == "41":
+                data["drum remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "31":
+                data["toner status"] = int(word[-8:], 16)
+            if word[:2] == "69":
+                data["belt unit remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "6a":
+                data["fuser remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "6b":
+                data["laser remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "6c":
+                data["pf kit mp remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "6d":
+                data["pf kit 1 remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "6f":
+                data["toner remaining life"] = round(int(word[-8:], 16) / 100)
+            if word[:2] == "81":
+                data["black toner"] = int(word[-8:], 16)
+            if word[:2] == "82":
+                data["cyan toner"] = int(word[-8:], 16)
+            if word[:2] == "83":
+                data["magenta toner"] = int(word[-8:], 16)
+            if word[:2] == "84":
+                data["yellow toner"] = int(word[-8:], 16)
+
+        for word in raw_data[OIDS["nextcare"]]:
+            if word[:2] == "82":
+                data["drum remaining pages"] = int(word[-8:], 16)
+            if word[:2] == "88":
+                data["belt unit remaining pages"] = int(word[-8:], 16)
+            if word[:2] == "89":
+                data["fuser unit remaining pages"] = int(word[-8:], 16)
+            if word[:2] == "73":
+                data["laser unit remaining pages"] = int(word[-8:], 16)
+            if word[:2] == "86":
+                data["pf kit mp remaining pages"] = int(word[-8:], 16)
+            if word[:2] == "77":
+                data["pf kit 1 remaining pages"] = int(word[-8:], 16)
+
+        for word in raw_data[OIDS["counters"]]:
+            if word[:2] == "00":
+                data["printer counter"] = int(word[-8:], 16)
+            if word[:2] == "01":
+                data["b/w page counter"] = int(word[-8:], 16)
+            if word[:2] == "02":
+                data["color page counter"] = int(word[-8:], 16)
+            if word[:2] == "12":
+                data["black counter"] = int(word[-8:], 16)
+            if word[:2] == "13":
+                data["cyan counter"] = int(word[-8:], 16)
+            if word[:2] == "14":
+                data["magenta counter"] = int(word[-8:], 16)
+            if word[:2] == "15":
+                data["yellow counter"] = int(word[-8:], 16)
+            if word[:2] == "16":
+                data["image counter"] = int(word[-8:], 16)
 
         self.data = data
 
@@ -73,29 +127,29 @@ class Brother:
         """Return True is data is available."""
         return bool(self.data)
 
-    # @property
-    # def model(self):
-    #     """Return printer's model."""
-    #     if self.available:
-    #         return self.data["model"]
+    @property
+    def model(self):
+        """Return printer's model."""
+        if self.available:
+            return self.data["model"]
 
-    # @property
-    # def serial(self):
-    #     """Return printer's serial no."""
-    #     if self.available:
-    #         return self.data["serial"]
+    @property
+    def serial(self):
+        """Return printer's serial no."""
+        if self.available:
+            return self.data["serial"]
 
-    # @property
-    # def firmware(self):
-    #     """Return printer's firmware version."""
-    #     if self.available:
-    #         return self.data["firmware"]
+    @property
+    def firmware(self):
+        """Return printer's firmware version."""
+        if self.available:
+            return self.data["firmware"]
 
-    # @property
-    # def status(self):
-    #     """Return printer's status."""
-    #     if self.available:
-    #         return self.data["status"]
+    @property
+    def status(self):
+        """Return printer's status."""
+        if self.available:
+            return self.data["status"]
 
     async def _get_data(self):
         """Retreive data from printer."""
@@ -112,7 +166,7 @@ class Brother:
         else:
             lcd.unconfigure(self.SnmpEngine, None)
             for resrow in restable:
-                if str(resrow[0]) in HEX_OIDS:
+                if str(resrow[0]) in OIDS_HEX:
                     temp = resrow[-1].asOctets()
                     temp = "".join(["%.2x" % x for x in temp])[0:-2]
                     temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
