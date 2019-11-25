@@ -2,14 +2,14 @@
 Python wrapper for getting data from Brother laser and inkjet printers via snmp
 
 ## How to use package
-```
+```py
 import asyncio
 
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 
 from brother import Brother
 
-HOST = "brother"
+HOST = "192.172.10.99" # printer IP address/hostname
 
 
 async def main():
