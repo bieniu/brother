@@ -1,7 +1,6 @@
 """
 Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
-the method of parsing data according to this:
-https://github.com/saper-2/BRN-Printer-sCounters-Info
+the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
 import logging
 
