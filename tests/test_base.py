@@ -1,14 +1,14 @@
 """Tests for brother package."""
 import json
 
+import pytest
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 
+from asynctest import patch
 from brother import Brother
 
-import pytest
-from asynctest import patch
-
 HOST = "10.10.10.10"
+
 
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
@@ -21,4 +21,10 @@ async def test_hl_l2340dw_model():
         await brother.update()
         lcd.unconfigure(brother.snmp_engine, None)
 
+        assert brother.available == True
         assert brother.model == "HL-L2340DW"
+        assert brother.firmware == "1.17"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "oczekiwanie"
+        assert brother.data["black toner"] == 80
+        assert brother.data["printer count"] == 986
