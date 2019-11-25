@@ -25,7 +25,6 @@ jobs:
       run: |
         pip install isort
         isort brother/*.py --check-only
-    - name: Lint with flake8
     - name: Check with Black Code Formatter
       run: |
         pip install black
