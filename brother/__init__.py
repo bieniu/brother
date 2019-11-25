@@ -174,6 +174,7 @@ class Brother:
                     raw_data[str(resrow[0])] = temp
                 else:
                     raw_data[str(resrow[0])] = str(resrow[-1])
+        print(raw_data)
         return raw_data
 
     @classmethod
