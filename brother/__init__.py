@@ -5,8 +5,7 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 import logging
 
 import pysnmp.hlapi.asyncio as hlapi
-from pyasn1.type.univ import OctetString
-from pysnmp.hlapi.asyncore.cmdgen import lcd
+from pysnmp.error import PySnmpError
 
 ATTR_COUNTERS = "counters"
 ATTR_FIRMWARE = "firmware"
@@ -16,20 +15,34 @@ ATTR_NEXTCARE = "nextcare"
 ATTR_SERIAL = "serial"
 ATTR_STATUS = "status"
 
-VAL_BELT_REMAIN = "belt unit remaining life"
-VAL_BLACK_TONER = "black toner"
-VAL_CYAN_TONER = "cyan toner"
-VAL_DRUM_COUNT = "drum count"
-VAL_DRUM_REMAIN = "drum remaining life"
-VAL_DRUM_STATUS = "drum status"
-VAL_FUSER_REMAIN = "fuser remaining life"
-VAL_LASER_REMAIN = "laser remaining life"
-VAL_MAGENTA_TONER = "magenta toner"
-VAL_PF_1_REMAIN = "pf kit 1 remaining life"
-VAR_PF_MP_REMAIN = "pf kit mp remaining life"
-VAL_TONER_REMAIN = "toner remaining life"
-VAL_TONER_STATUS = "toner status"
-VAL_YELLOW_TONER = "yellow toner"
+VAL_BW_COUNT = "b/w_count"
+VAL_BELT_REMAIN = "belt_unit_remaining_life"
+VAL_BELT_REMAIN_PAGES = "belt_unit_remaining_pages"
+VAL_BLACK_COUNT = "black_count"
+VAL_BLACK_TONER = "black_toner"
+VAL_COLOR_COUNT = "color_count"
+VAL_CYAN_COUNT = "cyan_count"
+VAL_CYAN_TONER = "cyan_toner"
+VAL_DRUM_COUNT = "drum_count"
+VAL_DRUM_REMAIN = "drum_remaining_life"
+VAL_DRUM_REMAIN_PAGES = "drum_remaining_pages"
+VAL_DRUM_STATUS = "drum_status"
+VAL_FUSER_REMAIN = "fuser_remaining_life"
+VAL_FUSER_REMAIN_PAGES = "fuser_unit_remaining_pages"
+VAL_IMAGE_COUNT = "image_count"
+VAL_LASER_REMAIN = "laser_remaining_life"
+VAL_LASER_REMAIN_PAGES = "laser_unit_remaining_pages"
+VAL_MAGENTA_COUNT = "magenta_count"
+VAL_MAGENTA_TONER = "magenta_toner"
+VAL_PF_1_REMAIN = "pf_kit_1_remaining_life"
+VAL_PF_1_REMAIN_PAGES = "pf_kit_1_remaining_pages"
+VAL_PF_MP_REMAIN = "pf_kit_mp_remaining_life"
+VAL_PF_MP_REMAIN_PAGES = "pf_kit_mp_remaining_pages"
+VAL_PRINTER_COUNT = "printer_count"
+VAL_TONER_REMAIN = "toner_remaining_life"
+VAL_TONER_STATUS = "toner_status"
+VAL_YELLOW_COUNT = "yellow_count"
+VAL_YELLOW_TONER = "yellow_toner"
 
 OIDS = {
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
@@ -42,14 +55,14 @@ OIDS = {
 }
 
 VALUES_COUNTERS = {
-    "00": "printer count",
-    "01": "b/w count",
-    "02": "color count",
-    "12": "black count",
-    "13": "cyan count",
-    "14": "magenta count",
-    "15": "yellow count",
-    "16": "image count",
+    "00": VAL_PRINTER_COUNT,
+    "01": VAL_BW_COUNT,
+    "02": VAL_COLOR_COUNT,
+    "12": VAL_BLACK_COUNT,
+    "13": VAL_CYAN_COUNT,
+    "14": VAL_MAGENTA_COUNT,
+    "15": VAL_YELLOW_COUNT,
+    "16": VAL_IMAGE_COUNT,
 }
 
 VALUES_MAINTENANCE = {
@@ -60,7 +73,7 @@ VALUES_MAINTENANCE = {
     "69": VAL_BELT_REMAIN,
     "6a": VAL_FUSER_REMAIN,
     "6b": VAL_LASER_REMAIN,
-    "6c": VAR_PF_MP_REMAIN,
+    "6c": VAL_PF_MP_REMAIN,
     "6d": VAL_PF_1_REMAIN,
     "6f": VAL_TONER_REMAIN,
     "81": VAL_BLACK_TONER,
@@ -70,12 +83,12 @@ VALUES_MAINTENANCE = {
 }
 
 VALUES_NEXTCARE = {
-    "73": "laser unit remaining pages",
-    "77": "pf kit 1 remaining pages",
-    "82": "drum remaining pages",
-    "86": "pf kit mp remaining pages",
-    "88": "belt unit remaining pages",
-    "89": "fuser unit remaining pages",
+    "73": VAL_LASER_REMAIN_PAGES,
+    "77": VAL_PF_1_REMAIN_PAGES,
+    "82": VAL_DRUM_REMAIN_PAGES,
+    "86": VAL_PF_MP_REMAIN_PAGES,
+    "88": VAL_BELT_REMAIN_PAGES,
+    "89": VAL_FUSER_REMAIN_PAGES,
 }
 
 PERCENT_VALUES = [
@@ -84,7 +97,7 @@ PERCENT_VALUES = [
     VAL_FUSER_REMAIN,
     VAL_LASER_REMAIN,
     VAL_PF_1_REMAIN,
-    VAR_PF_MP_REMAIN,
+    VAL_PF_MP_REMAIN,
     VAL_TONER_REMAIN,
 ]
 
@@ -96,7 +109,7 @@ _LOGGER = logging.getLogger(__name__)
 class Brother:
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host):
+    def __init__(self, host, port=161):
         """Initialize."""
         self.data = {}
 
@@ -109,21 +122,26 @@ class Brother:
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
         self.snmp_engine = hlapi.SnmpEngine()
-
-        self.request_args = [
-            self.snmp_engine,
-            hlapi.CommunityData("public", mpModel=1),
-            hlapi.UdpTransportTarget((host, 161)),
-            hlapi.ContextData(),
-        ]
+        try:
+            self.request_args = [
+                self.snmp_engine,
+                hlapi.CommunityData("public", mpModel=1),
+                hlapi.UdpTransportTarget((host, port)),
+                hlapi.ContextData(),
+            ]
+        except PySnmpError as error:
+            _LOGGER.error("Error: %s", error)
 
     async def update(self):
         """Update data from printer."""
         raw_data = await self._get_data()
 
+        if not raw_data:
+            return
+
         data = {}
 
-        self.model = raw_data[OIDS[ATTR_MODEL]][8:]
+        self.model = raw_data[OIDS[ATTR_MODEL]][8:].replace(" series", "")
         self.serial = raw_data[OIDS[ATTR_SERIAL]]
         self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
 
@@ -156,15 +174,18 @@ class Brother:
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
-
-        errindication, errstatus, errindex, restable = await hlapi.getCmd(
-            *self.request_args, *self._oids
-        )
+        try:
+            errindication, errstatus, errindex, restable = await hlapi.getCmd(
+                *self.request_args, *self._oids
+            )
+        except AttributeError:
+            _LOGGER.error("Initialize error.")
+            return
 
         if errindication:
-            print(f"SNMP error: {errindication}")
+            _LOGGER.error("SNMP error: %s", errindication)
         elif errstatus:
-            print(f"SNMP error: {errstatus}, {errindex}")
+            _LOGGER.error("SNMP error: %s, %s", errstatus, errindex)
         else:
             for resrow in restable:
                 if str(resrow[0]) in OIDS_HEX:
@@ -174,7 +195,6 @@ class Brother:
                     raw_data[str(resrow[0])] = temp
                 else:
                     raw_data[str(resrow[0])] = str(resrow[-1])
-        print(raw_data)
         return raw_data
 
     @classmethod
