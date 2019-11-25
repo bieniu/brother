@@ -1,11 +1,13 @@
 """
-Python wrapper for getting data from Brother laser and inkjet printers via snmp
+Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
+the method of parsing data according to this:
+https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
 import logging
 
 import pysnmp.hlapi.asyncio as hlapi
-from pyasn1.type.univ import OctetString
 from pysnmp.hlapi.asyncore.cmdgen import lcd
+from pyasn1.type.univ import OctetString
 
 ATTR_COUNTERS = "counters"
 ATTR_FIRMWARE = "firmware"
@@ -14,6 +16,21 @@ ATTR_MODEL = "model"
 ATTR_NEXTCARE = "nextcare"
 ATTR_SERIAL = "serial"
 ATTR_STATUS = "status"
+
+VAL_BELT_REMAIN = "belt unit remaining life"
+VAL_BLACK_TONER = "black toner"
+VAL_CYAN_TONER = "cyan toner"
+VAL_DRUM_COUNT = "drum count"
+VAL_DRUM_REMAIN = "drum remaining life"
+VAL_DRUM_STATUS = "drum status"
+VAL_FUSER_REMAIN = "fuser remaining life"
+VAL_LASER_REMAIN = "laser remaining life"
+VAL_MAGENTA_TONER = "magenta toner"
+VAL_PF_1_REMAIN = "pf kit 1 remaining life"
+VAR_PF_MP_REMAIN = "pf kit mp remaining life"
+VAL_TONER_REMAIN = "toner remaining life"
+VAL_TONER_STATUS = "toner status"
+VAL_YELLOW_TONER = "yellow toner"
 
 OIDS = {
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
@@ -37,20 +54,20 @@ VALUES_COUNTERS = {
 }
 
 VALUES_MAINTENANCE = {
-    "11": "drum count",
-    "31": "toner status",
-    "41": "drum remaining life",
-    "63": "drum status",
-    "69": "belt unit remaining life",
-    "6a": "fuser remaining life",
-    "6b": "laser remaining life",
-    "6c": "pf kit mp remaining life",
-    "6d": "pf kit 1 remaining life",
-    "6f": "toner/ink remaining life",
-    "81": "black toner/ink",
-    "82": "cyan toner/ink",
-    "83": "magenta toner/ink",
-    "84": "yellow toner/ink",
+    "11": VAL_DRUM_COUNT,
+    "31": VAL_TONER_STATUS,
+    "41": VAL_DRUM_REMAIN,
+    "63": VAL_DRUM_STATUS,
+    "69": VAL_BELT_REMAIN,
+    "6a": VAL_FUSER_REMAIN,
+    "6b": VAL_LASER_REMAIN,
+    "6c": VAR_PF_MP_REMAIN,
+    "6d": VAL_PF_1_REMAIN,
+    "6f": VAL_TONER_REMAIN,
+    "81": VAL_BLACK_TONER,
+    "82": VAL_CYAN_TONER,
+    "83": VAL_MAGENTA_TONER,
+    "84": VAL_YELLOW_TONER,
 }
 
 VALUES_NEXTCARE = {
@@ -63,13 +80,13 @@ VALUES_NEXTCARE = {
 }
 
 PERCENT_VALUES = [
-    "drum remaining life",
-    "belt unit remaining life",
-    "fuser remaining life",
-    "laser remaining life",
-    "pf kit mp remaining life",
-    "pf kit 1 remaining life",
-    "toner/ink remaining life",
+    VAL_BELT_REMAIN,
+    VAL_DRUM_REMAIN,
+    VAL_FUSER_REMAIN,
+    VAL_LASER_REMAIN,
+    VAL_PF_1_REMAIN,
+    VAR_PF_MP_REMAIN,
+    VAL_TONER_REMAIN,
 ]
 
 OIDS_HEX = [OIDS[ATTR_COUNTERS], OIDS[ATTR_MAINTENANCE], OIDS[ATTR_NEXTCARE]]
@@ -83,8 +100,11 @@ class Brother:
     def __init__(self, host):
         """Initialize."""
         self.data = {}
-        self.available = False
-        self.host = host
+
+        self.firmware = None
+        self.model = None
+        self.serial = None
+
         _LOGGER.debug("Using host: %s", host)
 
         self._oids = tuple(self._iterate_oids(OIDS.values()))
@@ -104,13 +124,17 @@ class Brother:
 
         data = {}
 
-        data[ATTR_MODEL] = raw_data[OIDS[ATTR_MODEL]][8:]
-        data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
-        data[ATTR_STATUS] = (
-            raw_data[OIDS[ATTR_STATUS]].strip().lower()
-        )  # sprawdzić znaki diakrytyczne
-        data[ATTR_FIRMWARE] = raw_data[OIDS[ATTR_FIRMWARE]]
+        self.model = raw_data[OIDS[ATTR_MODEL]][8:]
+        self.serial = raw_data[OIDS[ATTR_SERIAL]]
+        self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
 
+        data[ATTR_STATUS] = (
+            raw_data[OIDS[ATTR_STATUS]]
+            .strip()
+            .encode("latin1")
+            .decode("iso_8859_2")
+            .lower()
+        )
         data.update(
             dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
         )
@@ -124,7 +148,11 @@ class Brother:
         )
 
         self.data = data
-        self.available = bool(self.data)
+
+    @property
+    def available(self):
+        """Return True is data is available."""
+        return bool(self.data)
 
     async def _get_data(self):
         """Retreive data from printer."""
