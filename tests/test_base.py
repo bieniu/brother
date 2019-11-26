@@ -7,7 +7,7 @@ import pytest
 from asynctest import patch
 from brother import Brother, SnmpError, UnsupportedModel
 
-INVALID_HOST = "10.10.10.10"
+INVALID_HOST = "localhost"
 
 
 @pytest.mark.asyncio
