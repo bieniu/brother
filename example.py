@@ -1,17 +1,17 @@
 import asyncio
 
-from pysnmp.hlapi.asyncore.cmdgen import lcd
-
-from brother import Brother
+from brother import Brother, SnmpError, UnsupportedModel
 
 HOST = "brother"
 
 
 async def main():
-    brother = Brother(HOST)
-    await brother.update()
-
-    lcd.unconfigure(brother.snmp_engine, None)
+    try:
+        brother = Brother(HOST)
+        await brother.update()
+    except (SnmpError, UnsupportedModel) as error:
+        print(f"{error}")
+        return
 
     if brother.available:
         print(f"Data available: {brother.available}")
