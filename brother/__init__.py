@@ -6,6 +6,7 @@ import logging
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
+from pysnmp.hlapi.asyncore.cmdgen import lcd
 
 ATTR_COUNTERS = "counters"
 ATTR_FIRMWARE = "firmware"
@@ -119,22 +120,26 @@ class Brother:
 
         _LOGGER.debug("Using host: %s", host)
 
+    async def update(self):
+        """Update data from printer."""
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
-        self.snmp_engine = hlapi.SnmpEngine()
+        snmp_engine = hlapi.SnmpEngine()
+        
         try:
             self.request_args = [
-                self.snmp_engine,
+                snmp_engine,
                 hlapi.CommunityData("public", mpModel=1),
                 hlapi.UdpTransportTarget((host, port)),
                 hlapi.ContextData(),
             ]
         except PySnmpError as error:
             _LOGGER.error("Error: %s", error)
+            return
 
-    async def update(self):
-        """Update data from printer."""
         raw_data = await self._get_data()
+        
+        lcd.unconfigure(snmp_engine, None)
 
         if not raw_data:
             return
@@ -174,13 +179,10 @@ class Brother:
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
-        try:
-            errindication, errstatus, errindex, restable = await hlapi.getCmd(
-                *self.request_args, *self._oids
-            )
-        except AttributeError:
-            _LOGGER.error("Initialize error.")
-            return
+        
+        errindication, errstatus, errindex, restable = await hlapi.getCmd(
+            *self.request_args, *self._oids
+        )
 
         if errindication:
             _LOGGER.error("SNMP error: %s", errindication)
