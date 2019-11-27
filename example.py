@@ -2,12 +2,12 @@ import asyncio
 
 from brother import Brother, SnmpError, UnsupportedModel
 
-HOST = "brother"
+HOST = "brother1"
 
 
 async def main():
+    brother = Brother(HOST)
     try:
-        brother = Brother(HOST)
         await brother.update()
     except (SnmpError, UnsupportedModel) as error:
         print(f"{error}")

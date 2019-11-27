@@ -11,8 +11,8 @@ HOST = "192.172.10.12" # printer IP address/hostname
 
 
 async def main():
+    brother = Brother(HOST)
     try:
-        brother = Brother(HOST)
         await brother.update()
     except (SnmpError, UnsupportedModel) as error:
         print(f"{error}")
