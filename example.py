@@ -2,7 +2,7 @@ import asyncio
 
 from brother import Brother, SnmpError, UnsupportedModel
 
-HOST = "brother1"
+HOST = "brother"
 
 
 async def main():
