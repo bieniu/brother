@@ -21,9 +21,12 @@ VAL_BELT_REMAIN = "belt_unit_remaining_life"
 VAL_BELT_REMAIN_PAGES = "belt_unit_remaining_pages"
 VAL_BLACK_COUNT = "black_count"
 VAL_BLACK_TONER = "black_toner"
+VAL_BLACK_TONER_REMAIN = "black_toner_remaining"
+VAL_BLACK_TONER_STATUS = "black_toner_status"
 VAL_COLOR_COUNT = "color_count"
 VAL_CYAN_COUNT = "cyan_count"
 VAL_CYAN_TONER = "cyan_toner"
+VAL_CYAN_TONER_REMAIN = "cyan_toner_remaining"
 VAL_DRUM_COUNT = "drum_count"
 VAL_DRUM_REMAIN = "drum_remaining_life"
 VAL_DRUM_REMAIN_PAGES = "drum_remaining_pages"
@@ -35,15 +38,15 @@ VAL_LASER_REMAIN = "laser_remaining_life"
 VAL_LASER_REMAIN_PAGES = "laser_unit_remaining_pages"
 VAL_MAGENTA_COUNT = "magenta_count"
 VAL_MAGENTA_TONER = "magenta_toner"
+VAL_MAGENTA_TONER_REMAIN = "magenta_toner_remaining"
 VAL_PF_1_REMAIN = "pf_kit_1_remaining_life"
 VAL_PF_1_REMAIN_PAGES = "pf_kit_1_remaining_pages"
 VAL_PF_MP_REMAIN = "pf_kit_mp_remaining_life"
 VAL_PF_MP_REMAIN_PAGES = "pf_kit_mp_remaining_pages"
 VAL_PRINTER_COUNT = "printer_count"
-VAL_TONER_REMAIN = "toner_remaining_life"
-VAL_TONER_STATUS = "toner_status"
 VAL_YELLOW_COUNT = "yellow_count"
 VAL_YELLOW_TONER = "yellow_toner"
+VAL_YELLOW_TONER_REMAIN = "yellow_toner_remaining"
 
 OIDS = {
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
@@ -68,7 +71,7 @@ VALUES_COUNTERS = {
 
 VALUES_MAINTENANCE = {
     "11": VAL_DRUM_COUNT,
-    "31": VAL_TONER_STATUS,
+    "31": VAL_BLACK_TONER_STATUS,
     "41": VAL_DRUM_REMAIN,
     "63": VAL_DRUM_STATUS,
     "69": VAL_BELT_REMAIN,
@@ -76,7 +79,10 @@ VALUES_MAINTENANCE = {
     "6b": VAL_LASER_REMAIN,
     "6c": VAL_PF_MP_REMAIN,
     "6d": VAL_PF_1_REMAIN,
-    "6f": VAL_TONER_REMAIN,
+    "6f": VAL_BLACK_TONER_REMAIN,
+    "72": VAL_YELLOW_TONER_REMAIN,
+    "70": VAL_CYAN_TONER_REMAIN,
+    "72": VAL_YELLOW_TONER_REMAIN,
     "81": VAL_BLACK_TONER,
     "82": VAL_CYAN_TONER,
     "83": VAL_MAGENTA_TONER,
