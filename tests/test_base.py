@@ -19,7 +19,7 @@ async def test_hl_l2340dw_model():
     with patch("brother.Brother._get_data", return_value=data):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
         assert brother.available == True
         assert brother.model == "HL-L2340DW"
@@ -39,7 +39,7 @@ async def test_dcp_l3550cdw_model():
     with patch("brother.Brother._get_data", return_value=data):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
         assert brother.available == True
         assert brother.model == "DCP-L3550CDW"
@@ -62,7 +62,7 @@ async def test_dcp_l2520dw_model():
     with patch("brother.Brother._get_data", return_value=data):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
         assert brother.available == True
         assert brother.model == "DCP-L2520DW"
@@ -84,7 +84,7 @@ async def test_invalid_data():
     ):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
 
 @pytest.mark.asyncio
@@ -96,7 +96,7 @@ async def test_incomplete_data():
     with patch("brother.Brother._get_data", return_value=data):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
         assert brother.available == True
 
@@ -106,7 +106,7 @@ async def test_empty_data():
     """Test with empty data from printer."""
     with patch("brother.Brother._get_data", return_value=None):
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()
 
         assert brother.available == False
         assert brother.model == None
@@ -120,4 +120,4 @@ async def test_invalid_host():
     with pytest.raises(SnmpError):
 
         brother = Brother(INVALID_HOST)
-        await brother.update()
+        await brother.async_update()

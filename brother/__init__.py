@@ -41,9 +41,13 @@ class Brother:
         data = {}
 
         try:
-            self.model = raw_data[OIDS[ATTR_MODEL]][8:].replace(" series", "")
+            self.model = (
+                raw_data[OIDS[ATTR_MODEL]]
+                .replace(" series", "")
+                .replace("Brother ", "")
+            )
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
-        except TypeError:
+        except (TypeError, AttributeError):
             raise UnsupportedModel(
                 "It seems that this printer model is not supported. Sorry."
             )
