@@ -97,8 +97,7 @@ class Brother:
                 *request_args, *self._oids
             )
         except PySnmpError as error:
-            _LOGGER.error("Error: %s", error)
-            return
+            raise SnmpError(f"SNMP error: {error}")
         lcd.unconfigure(snmp_engine, None)
         if errindication:
             raise SnmpError(f"SNMP error: {errindication}")
