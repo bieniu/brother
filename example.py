@@ -8,7 +8,7 @@ HOST = "brother"
 async def main():
     brother = Brother(HOST)
     try:
-        await brother.update()
+        await brother.async_update()
     except (SnmpError, UnsupportedModel) as error:
         print(f"{error}")
         return

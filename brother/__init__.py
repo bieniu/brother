@@ -133,7 +133,7 @@ class Brother:
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def update(self):
+    async def async_update(self):
         """Update data from printer."""
 
         raw_data = await self._get_data()
