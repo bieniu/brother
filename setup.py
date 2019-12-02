@@ -7,7 +7,8 @@ setup(
     version="0.0.2",
     author="Maciej Bieniek",
     author_email="maciej.bieniek@gmail.com",
-    description="Python wrapper for getting data from Brother laser and inkjet printers via SNMP.",
+    description="Python wrapper for getting data from Brother laser and inkjet \
+        printers via SNMP.",
     include_package_data=True,
     url="https://github.com/bieniu/brother",
     license="Apache 2",
