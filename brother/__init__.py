@@ -13,7 +13,7 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
-class Brother: # pylint:disable=too-many-instance-attributes
+class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
     def __init__(self, host, port=161, kind="laser"):
