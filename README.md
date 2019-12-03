@@ -7,11 +7,14 @@ import asyncio
 
 from brother import Brother, SnmpError, UnsupportedModel
 
-HOST = "192.172.10.12" # printer IP address/hostname
+# printer IP address/hostname
+HOST = "192.172.10.12"
 
 
 async def main():
-    brother = Brother(HOST)
+    # argument kind: laser - for laser printer
+    #                ink   - for inkjet printer
+    brother = Brother(HOST, kind="laser")
     try:
         await brother.update()
     except (SnmpError, UnsupportedModel) as error:
