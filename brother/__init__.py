@@ -125,13 +125,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
-            raise SnmpError(f"SNMP error: {error}")
+            raise SnmpError(error)
         if errindication:
             self.data = {}
-            raise SnmpError(f"SNMP error: {errindication}")
+            raise SnmpError(errindication)
         if errstatus:
             self.data = {}
-            raise SnmpError(f"SNMP error: {errstatus}, {errindex}")
+            raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
                 temp = resrow[-1].asOctets()
