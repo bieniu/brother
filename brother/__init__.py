@@ -42,7 +42,9 @@ class Brother:
         _LOGGER.debug(f"RAW data: {raw_data}")
 
         if not raw_data:
+            _LOGGER.debug(f"library not raw data")
             self.data = {}
+            _LOGGER.debug(f"library self.available {self.available}")
             return
 
         data = {}
