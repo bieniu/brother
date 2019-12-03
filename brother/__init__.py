@@ -13,16 +13,16 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
-class Brother:
+class Brother: # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
     def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
-        if not kind in KINDS:
+        if kind not in KINDS:
             _LOGGER.warning('Wrong kind argument. "laser" was used.')
-            self.kind = "laser"
+            self._kind = "laser"
         else:
-            self.kind = kind
+            self._kind = kind
         self.data = {}
 
         self.firmware = None
@@ -37,15 +37,13 @@ class Brother:
 
     async def async_update(self):
         """Update data from printer."""
-
         raw_data = await self._get_data()
-        _LOGGER.debug(f"RAW data: {raw_data}")
 
         if not raw_data:
-            _LOGGER.debug(f"library not raw data")
             self.data = {}
-            _LOGGER.debug(f"library self.available {self.available}")
             return
+
+        _LOGGER.debug("RAW data: %s", raw_data)
 
         data = {}
 
@@ -71,7 +69,7 @@ class Brother:
             )
         except (TypeError, AttributeError):
             _LOGGER.warning("Incomplete data from printer.")
-        if self.kind == "laser":
+        if self._kind == "laser":
             data.update(
                 dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
             )
@@ -89,7 +87,7 @@ class Brother:
                     )
                 )
             )
-        if self.kind == "ink":
+        if self._kind == "ink":
             data.update(
                 dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
             )
@@ -101,7 +99,7 @@ class Brother:
                 )
             )
 
-        _LOGGER.debug(f"Data: {data}")
+        _LOGGER.debug("Data: %s", data)
         self.data = data
 
     @property
@@ -124,12 +122,15 @@ class Brother:
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
+            lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
+            self.data = {}
             raise SnmpError(f"SNMP error: {error}")
-        lcd.unconfigure(snmp_engine, None)
         if errindication:
+            self.data = {}
             raise SnmpError(f"SNMP error: {errindication}")
         if errstatus:
+            self.data = {}
             raise SnmpError(f"SNMP error: {errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
