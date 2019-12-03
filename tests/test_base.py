@@ -12,13 +12,13 @@ INVALID_HOST = "localhost"
 
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
-    """Test with valid data from HL-L2340DW printer."""
+    """Test with valid data from HL-L2340DW printer with invalid kind."""
     with open("tests/data/hl-l2340dw.json") as file:
         data = json.load(file)
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(INVALID_HOST, kind="foo")
         await brother.async_update()
 
         assert brother.available == True
@@ -54,22 +54,22 @@ async def test_dcp_l3550cdw_model():
 
 
 @pytest.mark.asyncio
-async def test_dcp_l2520dw_model():
-    """Test with valid data from DCP-L2520DW printer."""
-    with open("tests/data/dcp-l2520dw.json") as file:
+async def test_dcp_j132w_model():
+    """Test with valid data from DCP-J132W printer."""
+    with open("tests/data/dcp-j132w.json") as file:
         data = json.load(file)
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(INVALID_HOST, kind="ink")
         await brother.async_update()
 
         assert brother.available == True
-        assert brother.model == "DCP-L2520DW"
+        assert brother.model == "DCP-J132W"
         assert brother.firmware == "Q1906110144"
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "tryb uśpienia"
-        assert brother.data["black_toner"] == 80
+        assert brother.data["black_ink"] == 80
         assert brother.data["printer_counter"] == 879
 
 

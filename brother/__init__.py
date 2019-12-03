@@ -16,8 +16,13 @@ _LOGGER = logging.getLogger(__name__)
 class Brother:
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161):
+    def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
+        if not kind in KINDS:
+            _LOGGER.warning('Wrong kind argument. "laser" was used.')
+            self.kind = "laser"
+        else:
+            self.kind = kind
         self.data = {}
 
         self.firmware = None
@@ -63,17 +68,35 @@ class Brother:
             )
         except (TypeError, AttributeError):
             _LOGGER.warning("Incomplete data from printer.")
-        data.update(
-            dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-        )
-        data.update(
-            dict(
-                self._iterate_data(raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_MAINTENANCE)
+        if self.kind == "laser":
+            data.update(
+                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
             )
-        )
-        data.update(
-            dict(self._iterate_data(raw_data[OIDS[ATTR_NEXTCARE]], VALUES_NEXTCARE))
-        )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                    )
+                )
+            )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                    )
+                )
+            )
+        if self.kind == "ink":
+            data.update(
+                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+            )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                    )
+                )
+            )
 
         _LOGGER.debug(f"Data: {data}")
         self.data = data

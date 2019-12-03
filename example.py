@@ -6,7 +6,7 @@ HOST = "brother"
 
 
 async def main():
-    brother = Brother(HOST)
+    brother = Brother(HOST, kind="laser")
     try:
         await brother.async_update()
     except (SnmpError, UnsupportedModel) as error:
