@@ -34,6 +34,7 @@ class Brother:
         """Update data from printer."""
 
         raw_data = await self._get_data()
+        _LOGGER.debug(f"RAW data: {raw_data}")
 
         if not raw_data:
             return
@@ -74,6 +75,7 @@ class Brother:
             dict(self._iterate_data(raw_data[OIDS[ATTR_NEXTCARE]], VALUES_NEXTCARE))
         )
 
+        _LOGGER.debug(f"Data: {data}")
         self.data = data
 
     @property
