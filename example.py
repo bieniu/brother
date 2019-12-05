@@ -3,7 +3,7 @@ import asyncio
 from brother import Brother, SnmpError, UnsupportedModel
 
 # printer IP address/hostname
-HOST = "brother1"
+HOST = "brother"
 
 
 async def main():

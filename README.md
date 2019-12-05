@@ -22,7 +22,7 @@ async def main():
     brother = Brother(HOST, kind="laser")
     try:
         await brother.update()
-    except (SnmpError, UnsupportedModel) as error:
+    except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
         return
 

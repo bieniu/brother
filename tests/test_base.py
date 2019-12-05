@@ -7,7 +7,8 @@ import pytest
 from asynctest import patch
 from brother import Brother, SnmpError, UnsupportedModel
 
-INVALID_HOST = "localhost"
+HOST = "localhost"
+INVALID_HOST = "foo.local"
 
 
 @pytest.mark.asyncio
@@ -18,7 +19,7 @@ async def test_hl_l2340dw_model():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST, kind="foo")
+        brother = Brother(HOST, kind="foo")
         await brother.async_update()
 
         assert brother.available == True
@@ -61,7 +62,7 @@ async def test_dcp_j132w_model():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST, kind="ink")
+        brother = Brother(HOST, kind="ink")
         await brother.async_update()
 
         assert brother.available == True
@@ -83,7 +84,7 @@ async def test_invalid_data():
         UnsupportedModel
     ):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
 
@@ -95,7 +96,7 @@ async def test_incomplete_data():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
         assert brother.available == True
@@ -105,7 +106,7 @@ async def test_incomplete_data():
 async def test_empty_data():
     """Test with empty data from printer."""
     with patch("brother.Brother._get_data", return_value=None):
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
         assert brother.available == False
@@ -117,7 +118,15 @@ async def test_empty_data():
 @pytest.mark.asyncio
 async def test_invalid_host():
     """Test with invalid host."""
-    with pytest.raises(SnmpError):
+    with pytest.raises(ConnectionError):
 
         brother = Brother(INVALID_HOST)
+        await brother.async_update()
+
+@pytest.mark.asyncio
+async def test_snmp_error():
+    """Test with raise SnmpError."""
+    with pytest.raises(SnmpError):
+
+        brother = Brother(HOST)
         await brother.async_update()
