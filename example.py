@@ -3,7 +3,7 @@ import asyncio
 from brother import Brother, SnmpError, UnsupportedModel
 
 # printer IP address/hostname
-HOST = "brother"
+HOST = "brother1"
 
 
 async def main():
@@ -12,7 +12,7 @@ async def main():
     brother = Brother(HOST, kind="laser")
     try:
         await brother.async_update()
-    except (SnmpError, UnsupportedModel) as error:
+    except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
         return
 
