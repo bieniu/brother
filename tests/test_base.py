@@ -1,11 +1,10 @@
 """Tests for brother package."""
 import json
 
-from pysnmp.hlapi.asyncore.cmdgen import lcd
-
-import pytest
 from asynctest import patch
 from brother import Brother, SnmpError, UnsupportedModel
+from pysnmp.hlapi.asyncore.cmdgen import lcd
+import pytest
 
 INVALID_HOST = "localhost"
 
