@@ -4,8 +4,8 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 """
 import logging
 
-import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
+import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 
 from .const import *
