@@ -13,11 +13,16 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
-class Brother:
+class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161):
+    def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
+        if kind not in KINDS:
+            _LOGGER.warning('Wrong kind argument. "laser" was used.')
+            self._kind = "laser"
+        else:
+            self._kind = kind
         self.data = {}
 
         self.firmware = None
@@ -32,11 +37,13 @@ class Brother:
 
     async def async_update(self):
         """Update data from printer."""
-
         raw_data = await self._get_data()
 
         if not raw_data:
+            self.data = {}
             return
+
+        _LOGGER.debug("RAW data: %s", raw_data)
 
         data = {}
 
@@ -62,18 +69,37 @@ class Brother:
             )
         except (TypeError, AttributeError):
             _LOGGER.warning("Incomplete data from printer.")
-        data.update(
-            dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-        )
-        data.update(
-            dict(
-                self._iterate_data(raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_MAINTENANCE)
+        if self._kind == "laser":
+            data.update(
+                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
             )
-        )
-        data.update(
-            dict(self._iterate_data(raw_data[OIDS[ATTR_NEXTCARE]], VALUES_NEXTCARE))
-        )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                    )
+                )
+            )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                    )
+                )
+            )
+        if self._kind == "ink":
+            data.update(
+                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+            )
+            data.update(
+                dict(
+                    self._iterate_data(
+                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                    )
+                )
+            )
 
+        _LOGGER.debug("Data: %s", data)
         self.data = data
 
     @property
@@ -96,13 +122,16 @@ class Brother:
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
+            lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
-            raise SnmpError(f"SNMP error: {error}")
-        lcd.unconfigure(snmp_engine, None)
+            self.data = {}
+            raise ConnectionError(error)
         if errindication:
-            raise SnmpError(f"SNMP error: {errindication}")
+            self.data = {}
+            raise SnmpError(errindication)
         if errstatus:
-            raise SnmpError(f"SNMP error: {errstatus}, {errindex}")
+            self.data = {}
+            raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
                 temp = resrow[-1].asOctets()

@@ -6,18 +6,19 @@ from brother import Brother, SnmpError, UnsupportedModel
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 import pytest
 
-INVALID_HOST = "localhost"
+HOST = "localhost"
+INVALID_HOST = "foo.local"
 
 
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
-    """Test with valid data from HL-L2340DW printer."""
+    """Test with valid data from HL-L2340DW printer with invalid kind."""
     with open("tests/data/hl-l2340dw.json") as file:
         data = json.load(file)
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST, kind="foo")
         await brother.async_update()
 
         assert brother.available == True
@@ -53,22 +54,22 @@ async def test_dcp_l3550cdw_model():
 
 
 @pytest.mark.asyncio
-async def test_dcp_l2520dw_model():
-    """Test with valid data from DCP-L2520DW printer."""
-    with open("tests/data/dcp-l2520dw.json") as file:
+async def test_dcp_j132w_model():
+    """Test with valid data from DCP-J132W printer."""
+    with open("tests/data/dcp-j132w.json") as file:
         data = json.load(file)
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST, kind="ink")
         await brother.async_update()
 
         assert brother.available == True
-        assert brother.model == "DCP-L2520DW"
+        assert brother.model == "DCP-J132W"
         assert brother.firmware == "Q1906110144"
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "tryb uśpienia"
-        assert brother.data["black_toner"] == 80
+        assert brother.data["black_ink"] == 80
         assert brother.data["printer_counter"] == 879
 
 
@@ -82,7 +83,7 @@ async def test_invalid_data():
         UnsupportedModel
     ):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
 
@@ -94,7 +95,7 @@ async def test_incomplete_data():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
         assert brother.available == True
@@ -104,7 +105,7 @@ async def test_incomplete_data():
 async def test_empty_data():
     """Test with empty data from printer."""
     with patch("brother.Brother._get_data", return_value=None):
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
         assert brother.available == False
@@ -116,7 +117,15 @@ async def test_empty_data():
 @pytest.mark.asyncio
 async def test_invalid_host():
     """Test with invalid host."""
-    with pytest.raises(SnmpError):
+    with pytest.raises(ConnectionError):
 
         brother = Brother(INVALID_HOST)
+        await brother.async_update()
+
+@pytest.mark.asyncio
+async def test_snmp_error():
+    """Test with raise SnmpError."""
+    with pytest.raises(SnmpError):
+
+        brother = Brother(HOST)
         await brother.async_update()
