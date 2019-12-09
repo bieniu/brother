@@ -135,7 +135,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctet gives binary data b'\x00\x01\x04\x00\x00\x03\xf6\xff'
+                # asOctet gives bytes data b'\x00\x01\x04\x00\x00\x03\xf6\xff'
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives 000104000003f6
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
