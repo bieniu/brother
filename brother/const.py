@@ -41,7 +41,7 @@ VAL_PF_1_REMAIN = "pf_kit_1_remaining_life"
 VAL_PF_1_REMAIN_PAGES = "pf_kit_1_remaining_pages"
 VAL_PF_MP_REMAIN = "pf_kit_mp_remaining_life"
 VAL_PF_MP_REMAIN_PAGES = "pf_kit_mp_remaining_pages"
-VAL_PRINTER_COUNT = "printer_counter"
+VAL_PAGE_COUNT = "page_counter"
 VAL_YELLOW_COUNT = "yellow_counter"
 VAL_YELLOW_INK = "yellow_ink"
 VAL_YELLOW_INK_REMAIN = "yellow_ink_remaining"
@@ -61,7 +61,7 @@ OIDS = {
 }
 
 VALUES_COUNTERS = {
-    "00": VAL_PRINTER_COUNT,
+    "00": VAL_PAGE_COUNT,
     "01": VAL_BW_COUNT,
     "02": VAL_COLOR_COUNT,
     "12": VAL_BLACK_COUNT,

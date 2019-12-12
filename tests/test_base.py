@@ -27,7 +27,7 @@ async def test_hl_l2340dw_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "oczekiwanie"
         assert brother.data["black_toner"] == 80
-        assert brother.data["printer_counter"] == 986
+        assert brother.data["page_counter"] == 986
 
 
 @pytest.mark.asyncio
@@ -50,7 +50,7 @@ async def test_dcp_l3550cdw_model():
         assert brother.data["yellow_toner"] == 10
         assert brother.data["magenta_toner"] == 10
         assert brother.data["cyan_toner"] == 10
-        assert brother.data["printer_counter"] == 1611
+        assert brother.data["page_counter"] == 1611
 
 
 @pytest.mark.asyncio
@@ -70,7 +70,7 @@ async def test_dcp_j132w_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "tryb uśpienia"
         assert brother.data["black_ink"] == 80
-        assert brother.data["printer_counter"] == 879
+        assert brother.data["page_counter"] == 879
 
 
 @pytest.mark.asyncio
