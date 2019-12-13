@@ -74,6 +74,26 @@ async def test_dcp_j132w_model():
 
 
 @pytest.mark.asyncio
+async def test_mfc_j680dw_model():
+    """Test with valid data from MFC-J680DW printer."""
+    with open("tests/data/mfc-j680dw.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="ink")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "MFC-J680DW"
+        assert brother.firmware == "U1804191714VER.J"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "ready"
+        assert brother.data["black_ink"] == 47
+        assert brother.data["color_counter"] == 491
+
+
+@pytest.mark.asyncio
 async def test_invalid_data():
     """Test with invalid data from printer."""
     with open("tests/data/invalid.json") as file:
