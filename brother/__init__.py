@@ -116,7 +116,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             request_args = [
                 snmp_engine,
                 hlapi.CommunityData("public", mpModel=0),
-                hlapi.UdpTransportTarget((self._host, self._port)),
+                hlapi.UdpTransportTarget((self._host, self._port), timeout=5),
                 hlapi.ContextData(),
             ]
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
