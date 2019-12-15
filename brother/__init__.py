@@ -115,7 +115,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         try:
             request_args = [
                 snmp_engine,
-                hlapi.CommunityData("public", mpModel=1),
+                hlapi.CommunityData("public", mpModel=0),
                 hlapi.UdpTransportTarget((self._host, self._port)),
                 hlapi.ContextData(),
             ]
