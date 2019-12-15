@@ -27,7 +27,7 @@ async def test_hl_l2340dw_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "oczekiwanie"
         assert brother.data["black_toner"] == 80
-        assert brother.data["printer_counter"] == 986
+        assert brother.data["page_counter"] == 986
 
 
 @pytest.mark.asyncio
@@ -50,7 +50,7 @@ async def test_dcp_l3550cdw_model():
         assert brother.data["yellow_toner"] == 10
         assert brother.data["magenta_toner"] == 10
         assert brother.data["cyan_toner"] == 10
-        assert brother.data["printer_counter"] == 1611
+        assert brother.data["page_counter"] == 1611
 
 
 @pytest.mark.asyncio
@@ -70,7 +70,27 @@ async def test_dcp_j132w_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "tryb uśpienia"
         assert brother.data["black_ink"] == 80
-        assert brother.data["printer_counter"] == 879
+        assert brother.data["page_counter"] == 879
+
+
+@pytest.mark.asyncio
+async def test_mfc_j680dw_model():
+    """Test with valid data from MFC-J680DW printer."""
+    with open("tests/data/mfc-j680dw.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="ink")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "MFC-J680DW"
+        assert brother.firmware == "U1804191714VER.J"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "ready"
+        assert brother.data["black_ink"] == 47
+        assert brother.data["color_counter"] == 491
 
 
 @pytest.mark.asyncio
@@ -121,6 +141,7 @@ async def test_invalid_host():
 
         brother = Brother(INVALID_HOST)
         await brother.async_update()
+
 
 @pytest.mark.asyncio
 async def test_snmp_error():

@@ -115,13 +115,16 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         try:
             request_args = [
                 snmp_engine,
-                hlapi.CommunityData("public", mpModel=1),
-                hlapi.UdpTransportTarget((self._host, self._port)),
+                hlapi.CommunityData("public", mpModel=0),
+                hlapi.UdpTransportTarget(
+                    (self._host, self._port), timeout=2, retries=10
+                ),
                 hlapi.ContextData(),
             ]
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
+            # unconfigure SNMP engine
             lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
@@ -134,9 +137,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
+                # asOctet gives bytes data b'\x00\x01\x04\x00\x00\x03\xf6\xff'
                 temp = resrow[-1].asOctets()
+                # convert to string without checksum FF at the end, gives 000104000003f6
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                # split to 14 digits words in list, gives ['000104000003f6']
                 temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
+                # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
@@ -152,6 +159,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def _iterate_data(cls, iterable, values_map):
         """Iterate data from hex words."""
         for item in iterable:
+            # first byte means kind of sensor, last 4 bytes means value
             if item[:2] in values_map:
                 if values_map[item[:2]] in PERCENT_VALUES:
                     yield (values_map[item[:2]], round(int(item[-8:], 16) / 100))
