@@ -68,7 +68,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 .lower()
             )
             data[ATTR_PAGE_COUNT] = raw_data[OIDS[ATTR_PAGE_COUNT]]
-        except (TypeError, AttributeError):
+        except (KeyError, TypeError, AttributeError):
             _LOGGER.debug("Incomplete data from printer.")
         if self._kind == "laser":
             data.update(
