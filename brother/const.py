@@ -7,6 +7,7 @@ ATTR_NEXTCARE = "nextcare"
 ATTR_PAGE_COUNT = "page_counter"
 ATTR_SERIAL = "serial"
 ATTR_STATUS = "status"
+ATTR_UPTIME = "uptime"
 
 VAL_BW_COUNT = "b/w_counter"
 VAL_BELT_REMAIN = "belt_unit_remaining_life"
@@ -57,9 +58,10 @@ OIDS = {
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
     ATTR_MODEL: "1.3.6.1.4.1.2435.2.4.3.2435.5.13.3.0",
     ATTR_NEXTCARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
+    ATTR_PAGE_COUNT: "1.3.6.1.2.1.43.10.2.1.4.1.1",
     ATTR_SERIAL: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
     ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
-    ATTR_PAGE_COUNT: "1.3.6.1.2.1.43.10.2.1.4.1.1",
+    ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
 }
 
 VALUES_COUNTERS = {
