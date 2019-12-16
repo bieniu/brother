@@ -4,6 +4,7 @@ ATTR_FIRMWARE = "firmware"
 ATTR_MAINTENANCE = "maintenance"
 ATTR_MODEL = "model"
 ATTR_NEXTCARE = "nextcare"
+ATTR_PAGE_COUNT = "page_counter"
 ATTR_SERIAL = "serial"
 ATTR_STATUS = "status"
 
@@ -58,6 +59,7 @@ OIDS = {
     ATTR_NEXTCARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
     ATTR_SERIAL: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
     ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
+    ATTR_PAGE_COUNT: "1.3.6.1.2.1.43.10.2.1.4.1.1",
 }
 
 VALUES_COUNTERS = {
