@@ -65,7 +65,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 "encoding"
             ]
             # chardet detects Polish as ISO-8859-1 but Polish should use ISO-8859-2
-            print(code_page)
             if code_page == "ISO-8859-1":
                 data[ATTR_STATUS] = (
                     raw_data[OIDS[ATTR_STATUS]]
