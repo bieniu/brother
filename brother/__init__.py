@@ -2,9 +2,9 @@
 Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
 the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
-import chardet
 import logging
 
+import chardet
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
