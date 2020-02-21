@@ -74,6 +74,26 @@ async def test_dcp_j132w_model():
 
 
 @pytest.mark.asyncio
+async def test_dcp_l2540dw_model():
+    """Test with valid data from DCP-L2540DN printer with status in Russian."""
+    with open("tests/data/dcp-l2540dn.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="laser")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "DCP-L2540DN"
+        assert brother.firmware == "R1906110243"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "спящий режим"
+        assert brother.data["black_toner_remaining"] == 55
+        assert brother.data["page_counter"] == 333
+
+
+@pytest.mark.asyncio
 async def test_mfc_j680dw_model():
     """Test with valid data from MFC-J680DW printer."""
     with open("tests/data/mfc-j680dw.json") as file:
