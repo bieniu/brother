@@ -19,6 +19,9 @@ VAL_BLACK_INK_STATUS = "black_ink_status"
 VAL_BLACK_TONER = "black_toner"
 VAL_BLACK_TONER_REMAIN = "black_toner_remaining"
 VAL_BLACK_TONER_STATUS = "black_toner_status"
+VAL_CYAN_TONER_STATUS = "cyan_toner_status"
+VAL_MAGENTA_TONER_STATUS = "magenta_toner_status"
+VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
 VAL_COLOR_COUNT = "color_counter"
 VAL_CYAN_COUNT = "cyan_counter"
 VAL_CYAN_INK = "cyan_ink"
@@ -80,6 +83,9 @@ VALUES_COUNTERS = {
 VALUES_LASER_MAINTENANCE = {
     "11": VAL_DRUM_COUNT,
     "31": VAL_BLACK_TONER_STATUS,
+    "32": VAL_CYAN_TONER_STATUS,
+    "33": VAL_MAGENTA_TONER_STATUS,
+    "34": VAL_YELLOW_TONER_STATUS,
     "41": VAL_DRUM_REMAIN,
     "63": VAL_DRUM_STATUS,
     "69": VAL_BELT_REMAIN,
