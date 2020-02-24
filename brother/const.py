@@ -29,6 +29,7 @@ VAL_DRUM_COUNT = "drum_counter"
 VAL_DRUM_REMAIN = "drum_remaining_life"
 VAL_DRUM_REMAIN_PAGES = "drum_remaining_pages"
 VAL_DRUM_STATUS = "drum_status"
+VAL_DUPLEX_COUNT = "duplex_unit_pages_counter"
 VAL_FUSER_REMAIN = "fuser_remaining_life"
 VAL_FUSER_REMAIN_PAGES = "fuser_unit_remaining_pages"
 VAL_IMAGE_COUNT = "image_counter"
@@ -68,6 +69,7 @@ VALUES_COUNTERS = {
     "00": VAL_PAGE_COUNT,
     "01": VAL_BW_COUNT,
     "02": VAL_COLOR_COUNT,
+    "06": VAL_DUPLEX_COUNT,
     "12": VAL_BLACK_COUNT,
     "13": VAL_CYAN_COUNT,
     "14": VAL_MAGENTA_COUNT,
