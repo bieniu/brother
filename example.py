@@ -1,4 +1,5 @@
 import asyncio
+from sys import argv
 
 from brother import Brother, SnmpError, UnsupportedModel
 
@@ -9,7 +10,10 @@ HOST = "brother"
 async def main():
     # argument kind: laser - for laser printer
     #                ink   - for inkjet printer
-    brother = Brother(HOST, kind="laser")
+    
+    host = argv[1] if len(argv) > 1 else HOST
+    
+    brother = Brother(host, kind="laser")
     try:
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
