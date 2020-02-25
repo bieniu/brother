@@ -8,11 +8,10 @@ HOST = "brother"
 
 
 async def main():
-    # argument kind: laser - for laser printer
-    #                ink   - for inkjet printer
-    
     host = argv[1] if len(argv) > 1 else HOST
     
+    # argument kind: laser - for laser printer
+    #                ink   - for inkjet printer
     brother = Brother(host, kind="laser")
     try:
         await brother.async_update()
