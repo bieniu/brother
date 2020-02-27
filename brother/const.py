@@ -9,25 +9,29 @@ ATTR_SERIAL = "serial"
 ATTR_STATUS = "status"
 ATTR_UPTIME = "uptime"
 
-VAL_BW_COUNT = "b/w_counter"
 VAL_BELT_REMAIN = "belt_unit_remaining_life"
 VAL_BELT_REMAIN_PAGES = "belt_unit_remaining_pages"
 VAL_BLACK_COUNT = "black_counter"
+VAL_BLACK_DRUM_COUNT = "black_drum_counter"
+VAL_BLACK_DRUM_REMAIN = "black_remaining_life"
+VAL_BLACK_DRUM_REMAIN_PAGES = "black_drum_remaining_pages"
 VAL_BLACK_INK = "black_ink"
 VAL_BLACK_INK_REMAIN = "black_ink_remaining"
 VAL_BLACK_INK_STATUS = "black_ink_status"
 VAL_BLACK_TONER = "black_toner"
 VAL_BLACK_TONER_REMAIN = "black_toner_remaining"
 VAL_BLACK_TONER_STATUS = "black_toner_status"
-VAL_CYAN_TONER_STATUS = "cyan_toner_status"
-VAL_MAGENTA_TONER_STATUS = "magenta_toner_status"
-VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
+VAL_BW_COUNT = "b/w_counter"
 VAL_COLOR_COUNT = "color_counter"
 VAL_CYAN_COUNT = "cyan_counter"
+VAL_CYAN_DRUM_COUNT = "cyan_drum_counter"
+VAL_CYAN_DRUM_REMAIN = "cyan_remaining_life"
+VAL_CYAN_DRUM_REMAIN_PAGES = "cyan_drum_remaining_pages"
 VAL_CYAN_INK = "cyan_ink"
 VAL_CYAN_INK_REMAIN = "cyan_ink_remaining"
 VAL_CYAN_TONER = "cyan_toner"
 VAL_CYAN_TONER_REMAIN = "cyan_toner_remaining"
+VAL_CYAN_TONER_STATUS = "cyan_toner_status"
 VAL_DRUM_COUNT = "drum_counter"
 VAL_DRUM_REMAIN = "drum_remaining_life"
 VAL_DRUM_REMAIN_PAGES = "drum_remaining_pages"
@@ -39,20 +43,28 @@ VAL_IMAGE_COUNT = "image_counter"
 VAL_LASER_REMAIN = "laser_remaining_life"
 VAL_LASER_REMAIN_PAGES = "laser_unit_remaining_pages"
 VAL_MAGENTA_COUNT = "magenta_counter"
+VAL_MAGENTA_DRUM_COUNT = "magenta_drum_counter"
+VAL_MAGENTA_DRUM_REMAIN = "magenta_remaining_life"
+VAL_MAGENTA_DRUM_REMAIN_PAGES = "magenta_drum_remaining_pages"
 VAL_MAGENTA_INK = "magenta_ink"
 VAL_MAGENTA_INK_REMAIN = "magenta_ink_remaining"
 VAL_MAGENTA_TONER = "magenta_toner"
 VAL_MAGENTA_TONER_REMAIN = "magenta_toner_remaining"
+VAL_MAGENTA_TONER_STATUS = "magenta_toner_status"
+VAL_PAGE_COUNT = "page_counter"
 VAL_PF_1_REMAIN = "pf_kit_1_remaining_life"
 VAL_PF_1_REMAIN_PAGES = "pf_kit_1_remaining_pages"
 VAL_PF_MP_REMAIN = "pf_kit_mp_remaining_life"
 VAL_PF_MP_REMAIN_PAGES = "pf_kit_mp_remaining_pages"
-VAL_PAGE_COUNT = "page_counter"
 VAL_YELLOW_COUNT = "yellow_counter"
+VAL_YELLOW_DRUM_COUNT = "yellow_drum_counter"
+VAL_YELLOW_DRUM_REMAIN = "yellow_remaining_life"
+VAL_YELLOW_DRUM_REMAIN_PAGES = "yellow_drum_remaining_pages"
 VAL_YELLOW_INK = "yellow_ink"
 VAL_YELLOW_INK_REMAIN = "yellow_ink_remaining"
 VAL_YELLOW_TONER = "yellow_toner"
 VAL_YELLOW_TONER_REMAIN = "yellow_toner_remaining"
+VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
 
 KINDS = ["ink", "laser"]
 
@@ -97,6 +109,14 @@ VALUES_LASER_MAINTENANCE = {
     "70": VAL_CYAN_TONER_REMAIN,
     "71": VAL_MAGENTA_TONER_REMAIN,
     "72": VAL_YELLOW_TONER_REMAIN,
+    "73": VAL_CYAN_DRUM_COUNT,
+    "74": VAL_MAGENTA_DRUM_COUNT,
+    "75": VAL_YELLOW_DRUM_COUNT,
+    "7e": VAL_BLACK_DRUM_COUNT,
+    "79": VAL_CYAN_DRUM_REMAIN,
+    "7a": VAL_MAGENTA_DRUM_REMAIN,
+    "7b": VAL_YELLOW_DRUM_REMAIN,
+    "80": VAL_BLACK_DRUM_REMAIN,
     "81": VAL_BLACK_TONER,
     "82": VAL_CYAN_TONER,
     "83": VAL_MAGENTA_TONER,
@@ -122,21 +142,29 @@ VALUES_LASER_NEXTCARE = {
     "86": VAL_PF_MP_REMAIN_PAGES,
     "88": VAL_BELT_REMAIN_PAGES,
     "89": VAL_FUSER_REMAIN_PAGES,
+    "A4": VAL_BLACK_DRUM_REMAIN_PAGES,
+    "A5": VAL_CYAN_DRUM_REMAIN_PAGES,
+    "A6": VAL_MAGENTA_DRUM_REMAIN_PAGES,
+    "A7": VAL_YELLOW_DRUM_REMAIN_PAGES,
 }
 
 PERCENT_VALUES = [
     VAL_BELT_REMAIN,
+    VAL_BLACK_DRUM_REMAIN,
+    VAL_BLACK_INK_REMAIN,
+    VAL_BLACK_TONER_REMAIN,
+    VAL_CYAN_DRUM_REMAIN,
+    VAL_CYAN_INK_REMAIN,
+    VAL_CYAN_TONER_REMAIN,
     VAL_DRUM_REMAIN,
     VAL_FUSER_REMAIN,
     VAL_LASER_REMAIN,
-    VAL_PF_1_REMAIN,
-    VAL_PF_MP_REMAIN,
-    VAL_BLACK_INK_REMAIN,
-    VAL_BLACK_TONER_REMAIN,
-    VAL_CYAN_INK_REMAIN,
-    VAL_CYAN_TONER_REMAIN,
+    VAL_MAGENTA_DRUM_REMAIN,
     VAL_MAGENTA_INK_REMAIN,
     VAL_MAGENTA_TONER_REMAIN,
+    VAL_PF_1_REMAIN,
+    VAL_PF_MP_REMAIN,
+    VAL_YELLOW_DRUM_REMAIN,
     VAL_YELLOW_INK_REMAIN,
     VAL_YELLOW_TONER_REMAIN,
 ]
