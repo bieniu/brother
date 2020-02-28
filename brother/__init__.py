@@ -8,10 +8,13 @@ import chardet
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
+import re
 
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
+
+REGEX_MODEL_PATTERN = re.compile(r"MODEL=\"(?P<model>[\w\-]+)( series)?\"")
 
 
 class Brother:  # pylint:disable=too-many-instance-attributes
@@ -49,11 +52,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         data = {}
 
         try:
-            self.model = (
-                raw_data[OIDS[ATTR_MODEL]]
-                .replace(" series", "")
-                .replace("Brother ", "")
-            )
+            self.model = re.search(
+                REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
+            ).group("model")
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError):
             raise UnsupportedModel(
