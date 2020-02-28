@@ -114,6 +114,27 @@ async def test_mfc_j680dw_model():
 
 
 @pytest.mark.asyncio
+async def test_dcp_9020cdw_model():
+    """Test with valid data from DCP-9020CDW printer."""
+    with open("tests/data/dcp-9020cdw.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="laser")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "DCP-9020CDW"
+        assert brother.firmware == "ZA1811191217"
+        assert brother.serial == "E71833C4J372261"
+        assert brother.data["status"] == "dvale"
+        assert brother.data["cyan_drum_remaining_life"] == 68
+        assert brother.data["cyan_drum_counter"] == 4939
+        assert brother.data["cyan_drum_remaining_pages"] == 10061
+
+
+@pytest.mark.asyncio
 async def test_invalid_data():
     """Test with invalid data from printer."""
     with open("tests/data/invalid.json") as file:

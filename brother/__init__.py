@@ -3,6 +3,7 @@ Python wrapper for getting data from Brother laser and inkjet printers via SNMP.
 the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
 import logging
+import re
 
 import chardet
 from pysnmp.error import PySnmpError
@@ -13,6 +14,8 @@ from .const import *
 
 _LOGGER = logging.getLogger(__name__)
 
+REGEX_MODEL_PATTERN = re.compile(r"MODEL=\"(?P<model>[\w\-]+)( series)?\"")
+
 
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
@@ -20,7 +23,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
         if kind not in KINDS:
-            _LOGGER.warning('Wrong kind argument. "laser" was used.')
+            _LOGGER.warning("Wrong kind argument. 'laser' was used.")
             self._kind = "laser"
         else:
             self._kind = kind
@@ -49,11 +52,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         data = {}
 
         try:
-            self.model = (
-                raw_data[OIDS[ATTR_MODEL]]
-                .replace(" series", "")
-                .replace("Brother ", "")
-            )
+            self.model = re.search(
+                REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
+            ).group("model")
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError):
             raise UnsupportedModel(
