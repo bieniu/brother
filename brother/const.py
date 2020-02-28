@@ -13,7 +13,7 @@ VAL_BELT_REMAIN = "belt_unit_remaining_life"
 VAL_BELT_REMAIN_PAGES = "belt_unit_remaining_pages"
 VAL_BLACK_COUNT = "black_counter"
 VAL_BLACK_DRUM_COUNT = "black_drum_counter"
-VAL_BLACK_DRUM_REMAIN = "black_remaining_life"
+VAL_BLACK_DRUM_REMAIN = "black_drum_remaining_life"
 VAL_BLACK_DRUM_REMAIN_PAGES = "black_drum_remaining_pages"
 VAL_BLACK_INK = "black_ink"
 VAL_BLACK_INK_REMAIN = "black_ink_remaining"
@@ -25,7 +25,7 @@ VAL_BW_COUNT = "b/w_counter"
 VAL_COLOR_COUNT = "color_counter"
 VAL_CYAN_COUNT = "cyan_counter"
 VAL_CYAN_DRUM_COUNT = "cyan_drum_counter"
-VAL_CYAN_DRUM_REMAIN = "cyan_remaining_life"
+VAL_CYAN_DRUM_REMAIN = "cyan_drum_remaining_life"
 VAL_CYAN_DRUM_REMAIN_PAGES = "cyan_drum_remaining_pages"
 VAL_CYAN_INK = "cyan_ink"
 VAL_CYAN_INK_REMAIN = "cyan_ink_remaining"
@@ -44,7 +44,7 @@ VAL_LASER_REMAIN = "laser_remaining_life"
 VAL_LASER_REMAIN_PAGES = "laser_unit_remaining_pages"
 VAL_MAGENTA_COUNT = "magenta_counter"
 VAL_MAGENTA_DRUM_COUNT = "magenta_drum_counter"
-VAL_MAGENTA_DRUM_REMAIN = "magenta_remaining_life"
+VAL_MAGENTA_DRUM_REMAIN = "magenta_drum_remaining_life"
 VAL_MAGENTA_DRUM_REMAIN_PAGES = "magenta_drum_remaining_pages"
 VAL_MAGENTA_INK = "magenta_ink"
 VAL_MAGENTA_INK_REMAIN = "magenta_ink_remaining"
@@ -58,7 +58,7 @@ VAL_PF_MP_REMAIN = "pf_kit_mp_remaining_life"
 VAL_PF_MP_REMAIN_PAGES = "pf_kit_mp_remaining_pages"
 VAL_YELLOW_COUNT = "yellow_counter"
 VAL_YELLOW_DRUM_COUNT = "yellow_drum_counter"
-VAL_YELLOW_DRUM_REMAIN = "yellow_remaining_life"
+VAL_YELLOW_DRUM_REMAIN = "yellow_drum_remaining_life"
 VAL_YELLOW_DRUM_REMAIN_PAGES = "yellow_drum_remaining_pages"
 VAL_YELLOW_INK = "yellow_ink"
 VAL_YELLOW_INK_REMAIN = "yellow_ink_remaining"
@@ -142,10 +142,10 @@ VALUES_LASER_NEXTCARE = {
     "86": VAL_PF_MP_REMAIN_PAGES,
     "88": VAL_BELT_REMAIN_PAGES,
     "89": VAL_FUSER_REMAIN_PAGES,
-    "A4": VAL_BLACK_DRUM_REMAIN_PAGES,
-    "A5": VAL_CYAN_DRUM_REMAIN_PAGES,
-    "A6": VAL_MAGENTA_DRUM_REMAIN_PAGES,
-    "A7": VAL_YELLOW_DRUM_REMAIN_PAGES,
+    "a4": VAL_BLACK_DRUM_REMAIN_PAGES,
+    "a5": VAL_CYAN_DRUM_REMAIN_PAGES,
+    "a6": VAL_MAGENTA_DRUM_REMAIN_PAGES,
+    "a7": VAL_YELLOW_DRUM_REMAIN_PAGES,
 }
 
 PERCENT_VALUES = [

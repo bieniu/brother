@@ -45,7 +45,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             return
 
         _LOGGER.debug("RAW data: %s", raw_data)
-        print(f"RAW data: {raw_data}")  # remove this !!!
 
         data = {}
 
