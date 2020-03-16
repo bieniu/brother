@@ -55,13 +55,16 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             self.model = re.search(
                 REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
             ).group("model")
+            data[ATTR_MODEL] = self.model
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
+            data[ATTR_SERIAL] = self.serial
         except (TypeError, AttributeError):
             raise UnsupportedModel(
                 "It seems that this printer model is not supported. Sorry."
             )
         try:
             self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
+            data[ATTR_FIRMWARE] = self.firmware
             code_page = chardet.detect(raw_data[OIDS[ATTR_STATUS]].encode("latin1"))[
                 "encoding"
             ]

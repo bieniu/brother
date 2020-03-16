@@ -38,7 +38,7 @@ async def test_dcp_l3550cdw_model():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(INVALID_HOST)
+        brother = Brother(HOST)
         await brother.async_update()
 
         assert brother.available == True
