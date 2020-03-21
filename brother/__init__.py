@@ -82,10 +82,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     .decode(code_page)
                     .lower()
                 )
-            data[ATTR_PAGE_COUNT] = raw_data[OIDS[ATTR_PAGE_COUNT]]
-            data[ATTR_UPTIME] = round(int(raw_data[OIDS[ATTR_UPTIME]]) / 8640000)
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer.")
+        if raw_data.get(OIDS[ATTR_PAGE_COUNT]):
+            data[ATTR_PAGE_COUNT] = raw_data.get(OIDS[ATTR_PAGE_COUNT])
+        try:
+            data[ATTR_UPTIME] = round(int(raw_data.get(OIDS[ATTR_UPTIME])) / 8640000)
+        except TypeError:
+            pass
         if self._kind == "laser":
             data.update(
                 dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))

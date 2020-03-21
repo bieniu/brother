@@ -28,6 +28,7 @@ async def test_hl_l2340dw_model():
         assert brother.data["status"] == "oczekiwanie"
         assert brother.data["black_toner"] == 80
         assert brother.data["page_counter"] == 986
+        assert brother.data["uptime"] == 48
 
 
 @pytest.mark.asyncio
