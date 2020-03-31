@@ -14,7 +14,7 @@ setup(
     license="Apache 2",
     packages=["brother"],
     python_requires=">=3.6",
-    install_requires=["pysnmp", "chardet"],
+    install_requires=["pysnmp"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",

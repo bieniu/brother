@@ -5,7 +5,6 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 import logging
 import re
 
-import chardet
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
@@ -65,26 +64,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         try:
             self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
             data[ATTR_FIRMWARE] = self.firmware
-            code_page = chardet.detect(raw_data[OIDS[ATTR_STATUS]].encode("latin1"))[
-                "encoding"
-            ]
-            # chardet detects Polish as ISO-8859-1 but Polish should use ISO-8859-2
-            if code_page == "ISO-8859-1":
-                data[ATTR_STATUS] = (
-                    raw_data[OIDS[ATTR_STATUS]]
-                    .strip()
-                    .encode("latin1")
-                    .decode("iso_8859_2")
-                    .lower()
-                )
-            else:
-                data[ATTR_STATUS] = (
-                    raw_data[OIDS[ATTR_STATUS]]
-                    .strip()
-                    .encode("latin1")
-                    .decode(code_page)
-                    .lower()
-                )
+            charset = CHARSET_MAP[raw_data[OIDS[ATTR_CHARSET]]]
+            data[ATTR_STATUS] = (
+                raw_data[OIDS[ATTR_STATUS]]
+                .strip()
+                .encode("latin1")
+                .decode(charset)
+                .lower()
+            )
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer.")
         if raw_data.get(OIDS[ATTR_PAGE_COUNT]):
