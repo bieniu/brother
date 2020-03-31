@@ -67,12 +67,7 @@ VAL_YELLOW_TONER = "yellow_toner"
 VAL_YELLOW_TONER_REMAIN = "yellow_toner_remaining"
 VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
 
-CHARSET_MAP = {
-    "5": "latin2",
-    "2004": "roman8",
-    "8": "cyrillic",
-    "12": "latin5"
-}
+CHARSET_MAP = {"5": "latin2", "2004": "roman8", "8": "cyrillic", "12": "latin5"}
 
 KINDS = ["ink", "laser"]
 
