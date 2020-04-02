@@ -69,9 +69,29 @@ async def test_dcp_j132w_model():
         assert brother.model == "DCP-J132W"
         assert brother.firmware == "Q1906110144"
         assert brother.serial == "serial_number"
-        assert brother.data["status"] == "tryb uśpienia"
+        assert brother.data["status"] == "ready"
         assert brother.data["black_ink"] == 80
         assert brother.data["page_counter"] == 879
+
+
+@pytest.mark.asyncio
+async def test_mfc_5490cn_model():
+    """Test with valid data from MFC-5490CN printer with no charset data."""
+    with open("tests/data/mfc-5490cn.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="ink")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "MFC-5490CN"
+        assert brother.firmware == "U1005271959VER.E"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "sleep mode"
+        assert brother.data["page_counter"] == 8989
+        assert brother.data["uptime"] == 8
 
 
 @pytest.mark.asyncio
@@ -95,8 +115,32 @@ async def test_dcp_l2540dw_model():
 
 
 @pytest.mark.asyncio
+async def test_dcp_7070dw_model():
+    """Test with valid data from DCP-7070DW printer with status in Dutch."""
+    with open("tests/data/dcp-7070dw.json") as file:
+        data = json.load(file)
+
+    with patch("brother.Brother._get_data", return_value=data):
+
+        brother = Brother(HOST, kind="laser")
+        await brother.async_update()
+
+        assert brother.available == True
+        assert brother.model == "DCP-7070DW"
+        assert brother.firmware == "U1307022128VER.J"
+        assert brother.serial == "serial_number"
+        assert brother.data["status"] == "stap. kopieën:01"
+        assert brother.data["black_toner_remaining"] == 72
+        assert brother.data["page_counter"] == 2652
+        assert brother.data["drum_counter"] == 1603
+        assert brother.data["drum_remaining_life"] == 88
+        assert brother.data["drum_remaining_pages"] == 10397
+        assert brother.data["uptime"] == 346
+
+
+@pytest.mark.asyncio
 async def test_mfc_j680dw_model():
-    """Test with valid data from MFC-J680DW printer."""
+    """Test with valid data from MFC-J680DW printer with status in Turkish."""
     with open("tests/data/mfc-j680dw.json") as file:
         data = json.load(file)
 
@@ -109,7 +153,7 @@ async def test_mfc_j680dw_model():
         assert brother.model == "MFC-J680DW"
         assert brother.firmware == "U1804191714VER.J"
         assert brother.serial == "serial_number"
-        assert brother.data["status"] == "ready"
+        assert brother.data["status"] == "uyku"
         assert brother.data["black_ink"] == 47
         assert brother.data["color_counter"] == 491
 
@@ -129,7 +173,7 @@ async def test_dcp_9020cdw_model():
         assert brother.model == "DCP-9020CDW"
         assert brother.firmware == "ZA1811191217"
         assert brother.serial == "E71833C4J372261"
-        assert brother.data["status"] == "dvale"
+        assert brother.data["status"] == "tryb uśpienia"
         assert brother.data["cyan_drum_remaining_life"] == 68
         assert brother.data["cyan_drum_counter"] == 4939
         assert brother.data["cyan_drum_remaining_pages"] == 10061

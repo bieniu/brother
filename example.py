@@ -23,7 +23,8 @@ async def main():
         print(f"Data available: {brother.available}")
         print(f"Model: {brother.model}")
         print(f"Firmware: {brother.firmware}")
-        print(f"Status: {brother.data['status']}")
+        if brother.data.get("status"):
+            print(f"Status: {brother.data['status']}")
         print(f"Serial no: {brother.serial}")
         print(f"Sensors data: {brother.data}")
 

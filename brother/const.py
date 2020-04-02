@@ -1,4 +1,5 @@
 """Constants for Brother Printer library."""
+ATTR_CHARSET = "charset"
 ATTR_COUNTERS = "counters"
 ATTR_FIRMWARE = "firmware"
 ATTR_MAINTENANCE = "maintenance"
@@ -66,9 +67,12 @@ VAL_YELLOW_TONER = "yellow_toner"
 VAL_YELLOW_TONER_REMAIN = "yellow_toner_remaining"
 VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
 
+CHARSET_MAP = {"5": "latin2", "2004": "roman8", "8": "cyrillic", "12": "latin5"}
+
 KINDS = ["ink", "laser"]
 
 OIDS = {
+    ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",

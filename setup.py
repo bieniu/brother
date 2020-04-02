@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="brother",
-    version="0.1.10",
+    version="0.1.11",
     author="Maciej Bieniek",
     author_email="maciej.bieniek@gmail.com",
     description="Python wrapper for getting data from Brother laser and inkjet \
@@ -14,7 +14,7 @@ setup(
     license="Apache 2",
     packages=["brother"],
     python_requires=">=3.6",
-    install_requires=["pysnmp", "chardet"],
+    install_requires=["pysnmp"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",

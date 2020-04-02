@@ -5,7 +5,6 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 import logging
 import re
 
-import chardet
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
@@ -65,30 +64,22 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         try:
             self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
             data[ATTR_FIRMWARE] = self.firmware
-            code_page = chardet.detect(raw_data[OIDS[ATTR_STATUS]].encode("latin1"))[
-                "encoding"
-            ]
-            # chardet detects Polish as ISO-8859-1 but Polish should use ISO-8859-2
-            if code_page == "ISO-8859-1":
-                data[ATTR_STATUS] = (
-                    raw_data[OIDS[ATTR_STATUS]]
-                    .strip()
-                    .encode("latin1")
-                    .decode("iso_8859_2")
-                    .lower()
-                )
+
+            # If no charset data from the printer use roman8 as default
+            if raw_data.get(OIDS[ATTR_CHARSET]) in CHARSET_MAP:
+                charset = CHARSET_MAP[raw_data[OIDS[ATTR_CHARSET]]]
             else:
-                data[ATTR_STATUS] = (
-                    raw_data[OIDS[ATTR_STATUS]]
-                    .strip()
-                    .encode("latin1")
-                    .decode(code_page)
-                    .lower()
-                )
+                charset = "roman8"
+
+            data[ATTR_STATUS] = (
+                raw_data[OIDS[ATTR_STATUS]]
+                .strip()
+                .encode("latin1")
+                .decode(charset)
+                .lower()
+            )
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer.")
-        if raw_data.get(OIDS[ATTR_PAGE_COUNT]):
-            data[ATTR_PAGE_COUNT] = raw_data.get(OIDS[ATTR_PAGE_COUNT])
         try:
             data[ATTR_UPTIME] = round(int(raw_data.get(OIDS[ATTR_UPTIME])) / 8640000)
         except TypeError:
@@ -122,7 +113,12 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     )
                 )
             )
-
+        # page counter for old printer models
+        try:
+            if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
+                data[ATTR_PAGE_COUNT] = int(raw_data.get(OIDS[ATTR_PAGE_COUNT]))
+        except ValueError:
+            pass
         _LOGGER.debug("Data: %s", data)
         self.data = data
 
