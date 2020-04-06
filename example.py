@@ -1,18 +1,20 @@
 import asyncio
 from sys import argv
+import logging
 
 from brother import Brother, SnmpError, UnsupportedModel
 
 # printer IP address/hostname
+logging.basicConfig(level=logging.DEBUG)
 HOST = "brother"
-
 
 async def main():
     host = argv[1] if len(argv) > 1 else HOST
+    kind = argv[2] if len(argv) > 2 else 'laser'
 
     # argument kind: laser - for laser printer
     #                ink   - for inkjet printer
-    brother = Brother(host, kind="laser")
+    brother = Brother(host, kind=kind)
     try:
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:

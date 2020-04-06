@@ -69,7 +69,7 @@ VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
 
 CHARSET_MAP = {"5": "latin2", "2004": "roman8", "8": "cyrillic", "12": "latin5"}
 
-KINDS = ["ink", "laser"]
+KINDS = ["ink", "laser", "ink_legacy"]
 
 OIDS = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
@@ -137,6 +137,10 @@ VALUES_INK_MAINTENANCE = {
     "82": VAL_CYAN_INK,
     "83": VAL_MAGENTA_INK,
     "84": VAL_YELLOW_INK,
+    "a1": VAL_BLACK_INK,
+    "a2": VAL_CYAN_INK,
+    "a3": VAL_MAGENTA_INK,
+    "a4": VAL_YELLOW_INK,
 }
 
 VALUES_LASER_NEXTCARE = {

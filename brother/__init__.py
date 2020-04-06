@@ -33,6 +33,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self.serial = None
         self._host = host
         self._port = port
+        if kind == 'ink_legacy':
+            self._split = 5
+        else:
+            self._split = 7
 
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
@@ -113,6 +117,17 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     )
                 )
             )
+        if self._kind == "ink_legacy":
+            data.update(
+                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+            )
+            data.update(
+                dict(
+                    self._iterate_data_legacy(
+                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                    )
+                )
+            )
         # page counter for old printer models
         try:
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
@@ -162,7 +177,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # convert to string without checksum FF at the end, gives 000104000003f6
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['000104000003f6']
-                temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
+                temp = [temp[ind : ind + 2 * self._split] for ind in range(0, len(temp), 2 * self._split)]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
@@ -186,6 +201,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 else:
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
+    @classmethod
+    def _iterate_data_legacy(cls, iterable, values_map):
+        """Iterate data from hex words."""
+        for item in iterable:
+            # first byte means kind of sensor, third - value and last one - max value
+            if item[:2] in values_map:
+                yield (values_map[item[:2]], round(100 * int(item[6:8], 16) / int(item[8:10],16)))
 
 class SnmpError(Exception):
     """Raised when SNMP request ended in error."""
