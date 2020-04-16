@@ -19,13 +19,17 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser"):
+    def __init__(self, host, port=161, kind="laser", legacy=False):
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument. 'laser' was used.")
             self._kind = "laser"
         else:
             self._kind = kind
+
+        self._legacy = legacy
+        self._split = 5 if self._legacy else 7
+
         self.data = {}
 
         self.firmware = None
@@ -84,35 +88,53 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             data[ATTR_UPTIME] = round(int(raw_data.get(OIDS[ATTR_UPTIME])) / 8640000)
         except TypeError:
             pass
-        if self._kind == "laser":
-            data.update(
-                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+        if self._legacy:
+            if self._kind == "laser":
+                data.update(
+                    dict(
+                        self._iterate_data_legacy(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                        )
                     )
                 )
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+            if self._kind == "ink":
+                data.update(
+                    dict(
+                        self._iterate_data_legacy(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                        )
                     )
                 )
-            )
-        if self._kind == "ink":
-            data.update(
-                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+        else:
+            if self._kind == "laser":
+                data.update(
+                    dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+                )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                        )
                     )
                 )
-            )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                        )
+                    )
+                )
+            if self._kind == "ink":
+                data.update(
+                    dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+                )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                        )
+                    )
+                )
         # page counter for old printer models
         try:
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
@@ -162,7 +184,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # convert to string without checksum FF at the end, gives 000104000003f6
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['000104000003f6']
-                temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
+                temp = [temp[ind : ind + 2 * self._split] for ind in range(0, len(temp), 2 * self._split)]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
@@ -181,10 +203,22 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
             if item[:2] in values_map:
+                print(item)
                 if values_map[item[:2]] in PERCENT_VALUES:
                     yield (values_map[item[:2]], round(int(item[-8:], 16) / 100))
                 else:
                     yield (values_map[item[:2]], int(item[-8:], 16))
+
+    @classmethod
+    def _iterate_data_legacy(cls, iterable, values_map):
+        """Iterate data from hex words for legacy printers."""
+        for item in iterable:
+            # first byte means kind of sensor, last 4 bytes means value
+            if item[:2] in values_map:
+                if values_map[item[:2]] in PERCENT_VALUES:
+                    yield (values_map[item[:2]], round(int(item[-3:], 16) / 100))
+                else:
+                    yield (values_map[item[:2]], int(item[-3:], 16))
 
 
 class SnmpError(Exception):
