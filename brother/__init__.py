@@ -7,7 +7,6 @@ import re
 
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
-from pysnmp.hlapi.asyncore.cmdgen import lcd
 
 from .const import *
 
