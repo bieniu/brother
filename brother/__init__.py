@@ -7,11 +7,11 @@ import re
 
 from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
+from pysnmp.hlapi.asyncore.cmdgen import lcd
 
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
-_SNMP_ENGINE = hlapi.SnmpEngine()
 
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 
@@ -34,6 +34,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._host = host
         self._port = port
 
+        self._snmp_engine = None
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
         _LOGGER.debug("Using host: %s", host)
@@ -130,10 +131,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
+        
+        if not self._snmp_engine:
+            self._snmp_engine = hlapi.SnmpEngine()
 
         try:
             request_args = [
-                _SNMP_ENGINE,
+                self._snmp_engine,
                 hlapi.CommunityData("public", mpModel=0),
                 hlapi.UdpTransportTarget(
                     (self._host, self._port), timeout=2, retries=10
@@ -143,6 +147,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
+            lcd.unconfigure(self._snmp_engine)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
