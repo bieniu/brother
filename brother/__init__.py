@@ -147,7 +147,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
-            lcd.unconfigure(self._snmp_engine)
+            # unconfigure SNMP engine
+            lcd.unconfigure(self._snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
