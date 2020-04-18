@@ -28,7 +28,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             self._kind = kind
 
         self._legacy = None
-        self._split = None
+        self._split = 7
 
         self.data = {}
 
@@ -192,23 +192,19 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives 630104000000011101040000052c410104000022c4310104000000016f010400001900810104000000468601040000000a
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                print(temp)
-                print(type(temp))
                 if self._legacy == None:
-                    if str(resrow[0]) == OIDS[ATTR_MAINTENANCE] and self._legacy_printer(
-                        temp
-                    ):
+                    if str(resrow[0]) == OIDS[
+                        ATTR_MAINTENANCE
+                    ] and self._legacy_printer(temp):
                         self._legacy = True
                         self._split = 5
                     else:
                         self._legacy = False
-                        self._split = 7
                 # split to 2*7 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
                 temp = [
                     temp[ind : ind + 2 * self._split]
                     for ind in range(0, len(temp), 2 * self._split)
                 ]
-                _LOGGER.error(temp)
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
