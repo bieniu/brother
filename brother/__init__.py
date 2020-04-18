@@ -148,10 +148,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 *request_args, *self._oids
             )
             # unconfigure SNMP engine
-            lcd.unconfigure(self._snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
+        finally:
+            lcd.unconfigure(self._snmp_engine, None)
         if errindication:
             self.data = {}
             raise SnmpError(errindication)
