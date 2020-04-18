@@ -19,7 +19,7 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser", legacy=False):
+    def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument. 'laser' was used.")
@@ -27,8 +27,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         else:
             self._kind = kind
 
-        self._legacy = legacy
-        self._split = 5 if self._legacy else 7
+        self._legacy = None
+        self._split = None
 
         self.data = {}
 
@@ -195,16 +195,38 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives 630104000000011101040000052c410104000022c4310104000000016f010400001900810104000000468601040000000a
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                # split to 14 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
+                print(temp)
+                print(type(temp))
+                if self._legacy == None:
+                    if str(resrow[0]) == OIDS[ATTR_MAINTENANCE] and self._legacy_printer(
+                        temp
+                    ):
+                        self._legacy = True
+                        self._split = 5
+                    else:
+                        self._legacy = False
+                        self._split = 7
+                # split to 2*7 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
                 temp = [
                     temp[ind : ind + 2 * self._split]
                     for ind in range(0, len(temp), 2 * self._split)
                 ]
+                _LOGGER.error(temp)
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
         return raw_data
+
+    @classmethod
+    def _legacy_printer(cls, string):
+        """Return True if printer is legacy."""
+        length = len(string)
+        nums = [x * 10 for x in range(length // 10)][1:]
+        results = [string[i - 2 : i] == "14" for i in nums]
+        if results:
+            return all(item == True for item in results)
+        return False
 
     @classmethod
     def _iterate_oids(cls, oids):

@@ -82,7 +82,7 @@ async def test_mfc_5490cn_model():
 
     with patch("brother.Brother._get_data", return_value=data):
 
-        brother = Brother(HOST, kind="ink", legacy=True)
+        brother = Brother(HOST, kind="ink")
         await brother.async_update()
 
         assert brother.available == True
