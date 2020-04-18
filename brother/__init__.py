@@ -183,12 +183,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctet gives bytes data b'\x00\x01\x04\x00\x00\x03\xf6\xff'
+                # asOctet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives 000104000003f6
+                # convert to string without checksum FF at the end, gives 630104000000011101040000052c410104000022c4310104000000016f010400001900810104000000468601040000000a
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                # split to 14 digits words in list, gives ['000104000003f6']
+                print(temp)
+                # split to 14 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
                 temp = [temp[ind : ind + 2 * self._split] for ind in range(0, len(temp), 2 * self._split)]
+                print(temp)
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
@@ -207,7 +209,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
             if item[:2] in values_map:
-                print(item)
                 if values_map[item[:2]] in PERCENT_VALUES:
                     yield (values_map[item[:2]], round(int(item[-8:], 16) / 100))
                 else:
@@ -217,12 +218,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def _iterate_data_legacy(cls, iterable, values_map):
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
+            print(item)
             # first byte means kind of sensor, last 4 bytes means value
             if item[:2] in values_map:
-                if values_map[item[:2]] in PERCENT_VALUES:
-                    yield (values_map[item[:2]], round(int(item[-3:], 16) / 100))
-                else:
-                    yield (values_map[item[:2]], int(item[-3:], 16))
+                yield (values_map[item[:2]], round(int(item[6:8], 16) / int(item[8:10], 16) * 100))
 
 
 class SnmpError(Exception):
