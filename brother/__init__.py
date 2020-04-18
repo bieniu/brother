@@ -34,6 +34,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._host = host
         self._port = port
 
+        self._snmp_engine = None
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
         _LOGGER.debug("Using host: %s", host)
@@ -130,11 +131,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
-        snmp_engine = hlapi.SnmpEngine()
+
+        if not self._snmp_engine:
+            self._snmp_engine = hlapi.SnmpEngine()
 
         try:
             request_args = [
-                snmp_engine,
+                self._snmp_engine,
                 hlapi.CommunityData("public", mpModel=0),
                 hlapi.UdpTransportTarget(
                     (self._host, self._port), timeout=2, retries=10
@@ -145,7 +148,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 *request_args, *self._oids
             )
             # unconfigure SNMP engine
-            lcd.unconfigure(snmp_engine, None)
+            lcd.unconfigure(self._snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
