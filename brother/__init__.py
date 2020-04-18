@@ -131,7 +131,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
-        
+
         if not self._snmp_engine:
             self._snmp_engine = hlapi.SnmpEngine()
 
