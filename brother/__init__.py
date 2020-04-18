@@ -108,7 +108,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         else:
             if self._kind == "laser":
                 data.update(
-                    dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                        )
+                    )
                 )
                 data.update(
                     dict(
@@ -126,7 +130,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 )
             if self._kind == "ink":
                 data.update(
-                    dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                        )
+                    )
                 )
                 data.update(
                     dict(
@@ -167,10 +175,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 *request_args, *self._oids
             )
             # unconfigure SNMP engine
-            lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
+        finally:
+            lcd.unconfigure(snmp_engine, None)
         if errindication:
             self.data = {}
             raise SnmpError(errindication)
@@ -183,10 +192,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives 630104000000011101040000052c410104000022c4310104000000016f010400001900810104000000468601040000000a
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                print(temp)
                 # split to 14 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
-                temp = [temp[ind : ind + 2 * self._split] for ind in range(0, len(temp), 2 * self._split)]
-                print(temp)
+                temp = [
+                    temp[ind : ind + 2 * self._split]
+                    for ind in range(0, len(temp), 2 * self._split)
+                ]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
@@ -214,10 +224,12 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def _iterate_data_legacy(cls, iterable, values_map):
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
-            print(item)
             # first byte means kind of sensor, last 4 bytes means value
             if item[:2] in values_map:
-                yield (values_map[item[:2]], round(int(item[6:8], 16) / int(item[8:10], 16) * 100))
+                yield (
+                    values_map[item[:2]],
+                    round(int(item[6:8], 16) / int(item[8:10], 16) * 100),
+                )
 
 
 class SnmpError(Exception):
