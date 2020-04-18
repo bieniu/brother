@@ -92,7 +92,10 @@ async def test_mfc_5490cn_model():
         assert brother.data["status"] == "sleep mode"
         assert brother.data["page_counter"] == 8989
         assert brother.data["uptime"] == 8
-        assert brother.data["black_ink"] == 8
+        assert brother.data["black_ink"] == 20
+        assert brother.data["cyan_ink"] == 60
+        assert brother.data["magenta_ink"] == 30
+        assert brother.data["yellow_ink"] == 55
 
 
 # @pytest.mark.asyncio
