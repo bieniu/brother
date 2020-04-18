@@ -12,6 +12,7 @@ from pysnmp.hlapi.asyncore.cmdgen import lcd
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
+_SNMP_ENGINE = hlapi.SnmpEngine()
 
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 
@@ -130,11 +131,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
-        snmp_engine = hlapi.SnmpEngine()
 
         try:
             request_args = [
-                snmp_engine,
+                _SNMP_ENGINE,
                 hlapi.CommunityData("public", mpModel=0),
                 hlapi.UdpTransportTarget(
                     (self._host, self._port), timeout=2, retries=10
@@ -144,8 +144,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
-            # unconfigure SNMP engine
-            lcd.unconfigure(snmp_engine, None)
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
