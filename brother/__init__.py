@@ -27,8 +27,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         else:
             self._kind = kind
 
-        self._legacy = None
-        self._split = 7
+        self._legacy = False
 
         self.data = {}
 
@@ -43,7 +42,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self):
+    async def async_update(self):  # pylint:disable=too-many-branches
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -191,27 +190,37 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
+                # asOctet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
+                # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
+                # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives 630104000000011101040000052c410104000022c4310104000000016f010400001900810104000000468601040000000a
+                # convert to string without checksum FF at the end, gives
+                # '630104000000011101040000052c410104000022c4310104000000016f01040000190
+                #  0810104000000468601040000000a'
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                if self._legacy == None:
-                    if str(resrow[0]) == OIDS[
-                        ATTR_MAINTENANCE
-                    ] and self._legacy_printer(temp):
-                        self._legacy = True
-                        self._split = 5
-                    else:
-                        self._legacy = False
-                # split to 2*7 digits words in list, gives ['63010400000001', '1101040000052c', '410104000022c4', '31010400000001', '6f010400001900', '81010400000046', '8601040000000a']
-                temp = [
-                    temp[ind : ind + 2 * self._split]
-                    for ind in range(0, len(temp), 2 * self._split)
-                ]
+                # split to 14 digits words in list, gives ['63010400000001',
+                # '1101040000052c', '410104000022c4', '31010400000001',
+                # '6f010400001900', '81010400000046', '8601040000000a']
+                temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
+        # for legacy printers
+        for resrow in restable:
+            if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
+                # asOctet gives bytes data
+                temp = resrow[-1].asOctets()
+                if self._legacy_printer(temp):
+                    self._legacy = True
+                    # convert to string without checksum FF at the end, gives
+                    # 'a101020414a201020c14a301020614a401020b14'
+                    temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                    # split to 10 digits words in list, gives ['a101020414',
+                    # 'a201020c14', 'a301020614', 'a401020b14']
+                    temp = [temp[ind : ind + 10] for ind in range(0, len(temp), 10)]
+                    # map sensors names to OIDs
+                    raw_data[str(resrow[0])] = temp
         return raw_data
 
     @classmethod
@@ -221,7 +230,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         nums = [x * 10 for x in range(length // 10)][1:]
         results = [string[i - 2 : i] == "14" for i in nums]
         if results:
-            return all(item == True for item in results)
+            return all(item for item in results)
         return False
 
     @classmethod
