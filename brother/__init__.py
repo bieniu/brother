@@ -211,11 +211,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
                 # asOctet gives bytes data
                 temp = resrow[-1].asOctets()
+                # convert to string without checksum FF at the end, gives
+                # 'a101020414a201020c14a301020614a401020b14'
+                temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 if self._legacy_printer(temp):
                     self._legacy = True
-                    # convert to string without checksum FF at the end, gives
-                    # 'a101020414a201020c14a301020614a401020b14'
-                    temp = "".join(["%.2x" % x for x in temp])[0:-2]
                     # split to 10 digits words in list, gives ['a101020414',
                     # 'a201020c14', 'a301020614', 'a401020b14']
                     temp = [temp[ind : ind + 10] for ind in range(0, len(temp), 10)]
