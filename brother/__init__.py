@@ -221,6 +221,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     temp = [temp[ind : ind + 10] for ind in range(0, len(temp), 10)]
                     # map sensors names to OIDs
                     raw_data[str(resrow[0])] = temp
+                    break
         return raw_data
 
     @classmethod
