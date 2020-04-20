@@ -26,6 +26,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             self._kind = "laser"
         else:
             self._kind = kind
+
+        self._legacy = False
+
         self.data = {}
 
         self.firmware = None
@@ -39,7 +42,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self):
+    async def async_update(self):  # pylint:disable=too-many-branches
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -85,35 +88,61 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             data[ATTR_UPTIME] = round(int(raw_data.get(OIDS[ATTR_UPTIME])) / 8640000)
         except TypeError:
             pass
-        if self._kind == "laser":
-            data.update(
-                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+        if self._legacy:
+            if self._kind == "laser":
+                data.update(
+                    dict(
+                        self._iterate_data_legacy(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                        )
                     )
                 )
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+            if self._kind == "ink":
+                data.update(
+                    dict(
+                        self._iterate_data_legacy(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                        )
                     )
                 )
-            )
-        if self._kind == "ink":
-            data.update(
-                dict(self._iterate_data(raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS))
-            )
-            data.update(
-                dict(
-                    self._iterate_data(
-                        raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+        else:
+            if self._kind == "laser":
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                        )
                     )
                 )
-            )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                        )
+                    )
+                )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                        )
+                    )
+                )
+            if self._kind == "ink":
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                        )
+                    )
+                )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                        )
+                    )
+                )
         # page counter for old printer models
         try:
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
@@ -147,11 +176,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
-            # unconfigure SNMP engine
         except PySnmpError as error:
             self.data = {}
             raise ConnectionError(error)
         finally:
+            # unconfigure SNMP engine
             lcd.unconfigure(self._snmp_engine, None)
         if errindication:
             self.data = {}
@@ -161,17 +190,49 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctet gives bytes data b'\x00\x01\x04\x00\x00\x03\xf6\xff'
+                # asOctet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
+                # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
+                # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives 000104000003f6
+                # convert to string without checksum FF at the end, gives
+                # '630104000000011101040000052c410104000022c4310104000000016f01040000190
+                #  0810104000000468601040000000a'
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
-                # split to 14 digits words in list, gives ['000104000003f6']
+                # split to 14 digits words in list, gives ['63010400000001',
+                # '1101040000052c', '410104000022c4', '31010400000001',
+                # '6f010400001900', '81010400000046', '8601040000000a']
                 temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = temp
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
+        # for legacy printers
+        for resrow in restable:
+            if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
+                # asOctet gives bytes data
+                temp = resrow[-1].asOctets()
+                # convert to string without checksum FF at the end, gives
+                # 'a101020414a201020c14a301020614a401020b14'
+                temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                if self._legacy_printer(temp):
+                    self._legacy = True
+                    # split to 10 digits words in list, gives ['a101020414',
+                    # 'a201020c14', 'a301020614', 'a401020b14']
+                    temp = [temp[ind : ind + 10] for ind in range(0, len(temp), 10)]
+                    # map sensors names to OIDs
+                    raw_data[str(resrow[0])] = temp
+                    break
         return raw_data
+
+    @classmethod
+    def _legacy_printer(cls, string):
+        """Return True if printer is legacy."""
+        length = len(string)
+        nums = [x * 10 for x in range(length // 10)][1:]
+        results = [string[i - 2 : i] == "14" for i in nums]
+        if results:
+            return all(item for item in results)
+        return False
 
     @classmethod
     def _iterate_oids(cls, oids):
@@ -189,6 +250,17 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     yield (values_map[item[:2]], round(int(item[-8:], 16) / 100))
                 else:
                     yield (values_map[item[:2]], int(item[-8:], 16))
+
+    @classmethod
+    def _iterate_data_legacy(cls, iterable, values_map):
+        """Iterate data from hex words for legacy printers."""
+        for item in iterable:
+            # first byte means kind of sensor, last 4 bytes means value
+            if item[:2] in values_map:
+                yield (
+                    values_map[item[:2]],
+                    round(int(item[6:8], 16) / int(item[8:10], 16) * 100),
+                )
 
 
 class SnmpError(Exception):
