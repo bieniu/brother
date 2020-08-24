@@ -28,7 +28,7 @@ async def test_hl_l2340dw_model():
         assert brother.data["status"] == "oczekiwanie"
         assert brother.data["black_toner"] == 80
         assert brother.data["page_counter"] == 986
-        assert brother.data["uptime"] == 48
+        assert brother.data["uptime"] == 4136135.15
 
 
 @pytest.mark.asyncio
@@ -91,7 +91,7 @@ async def test_mfc_5490cn_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "sleep mode"
         assert brother.data["page_counter"] == 8989
-        assert brother.data["uptime"] == 8
+        assert brother.data["uptime"] == 725189.56
 
 
 @pytest.mark.asyncio
@@ -135,7 +135,7 @@ async def test_dcp_7070dw_model():
         assert brother.data["drum_counter"] == 1603
         assert brother.data["drum_remaining_life"] == 88
         assert brother.data["drum_remaining_pages"] == 10397
-        assert brother.data["uptime"] == 346
+        assert brother.data["uptime"] == 29878025.61
 
 
 @pytest.mark.asyncio

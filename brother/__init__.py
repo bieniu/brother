@@ -85,7 +85,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer.")
         try:
-            data[ATTR_UPTIME] = round(int(raw_data.get(OIDS[ATTR_UPTIME])) / 8640000)
+            data[ATTR_UPTIME] = int(raw_data.get(OIDS[ATTR_UPTIME])) / 100
         except TypeError:
             pass
         if self._legacy:
