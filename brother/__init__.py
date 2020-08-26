@@ -9,7 +9,7 @@ from pysnmp.error import PySnmpError
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 
-from .const import *
+from .const import *  # noqa: F405
 
 _LOGGER = logging.getLogger(__name__)
 
