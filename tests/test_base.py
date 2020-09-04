@@ -1,7 +1,7 @@
 """Tests for brother package."""
 import json
 
-from asynctest import patch
+from mock import patch
 from brother import Brother, SnmpError, UnsupportedModel
 from pysnmp.hlapi.asyncore.cmdgen import lcd
 import pytest

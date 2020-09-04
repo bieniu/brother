@@ -22,10 +22,7 @@ setup(
     ],
     setup_requires=("pytest-runner"),
     tests_require=(
-        "asynctest",
         "pytest-cov",
         "pytest-asyncio",
-        "pytest-trio",
-        "pytest-tornasync",
     ),
 )
