@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="brother",
-    version="0.1.15",
+    version="0.1.16",
     author="Maciej Bieniek",
     author_email="maciej.bieniek@gmail.com",
     description="Python wrapper for getting data from Brother laser and inkjet \
