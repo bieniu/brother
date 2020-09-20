@@ -33,6 +33,10 @@ jobs:
       run: |
         pip install flake8
         flake8 brother
+    - name: Lint with pylint
+      run: |
+        pip install pylint
+        pylint brother
     - name: Test with pytest
       run: |
         pip install pytest
