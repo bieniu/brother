@@ -81,10 +81,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             data[ATTR_MODEL] = self.model
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
             data[ATTR_SERIAL] = self.serial
-        except (TypeError, AttributeError):
+        except (TypeError, AttributeError) as err:
             raise UnsupportedModel(
                 "It seems that this printer model is not supported. Sorry."
-            )
+            ) from err
         try:
             self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
             data[ATTR_FIRMWARE] = self.firmware
@@ -196,9 +196,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             errindication, errstatus, errindex, restable = await hlapi.getCmd(
                 *request_args, *self._oids
             )
-        except PySnmpError as error:
+        except PySnmpError as err:
             self.data = {}
-            raise ConnectionError(error)
+            raise ConnectionError(err) from err
         finally:
             # unconfigure SNMP engine
             lcd.unconfigure(self._snmp_engine, None)
