@@ -288,7 +288,7 @@ class SnmpError(Exception):
 
     def __init__(self, status):
         """Initialize."""
-        super(SnmpError, self).__init__(status)
+        super().__init__(status)
         self.status = status
 
 
@@ -297,5 +297,5 @@ class UnsupportedModel(Exception):
 
     def __init__(self, status):
         """Initialize."""
-        super(UnsupportedModel, self).__init__(status)
+        super().__init__(status)
         self.status = status
