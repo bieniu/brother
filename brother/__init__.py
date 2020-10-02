@@ -177,6 +177,11 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         """Return True is data is available."""
         return bool(self.data)
 
+    def shutdown(self):
+        """Unconfigure SNMP engine."""
+        if self._snmp_engine:
+            lcd.unconfigure(self._snmp_engine, None)
+
     async def _get_data(self):
         """Retreive data from printer."""
         raw_data = {}
@@ -199,9 +204,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except PySnmpError as err:
             self.data = {}
             raise ConnectionError(err) from err
-        finally:
-            # unconfigure SNMP engine
-            lcd.unconfigure(self._snmp_engine, None)
         if errindication:
             self.data = {}
             raise SnmpError(errindication)
