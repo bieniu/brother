@@ -29,6 +29,8 @@ async def main():
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
         return
+        
+    brother.shutdown()
 
     if brother.available:
         print(f"Data available: {brother.available}")
