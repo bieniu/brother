@@ -64,7 +64,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self):  # pylint:disable=too-many-branches
+    async def async_update(
+        self,
+    ):  # pylint:disable=too-many-branches,too-many-statements
         """Update data from printer."""
         raw_data = await self._get_data()
 
