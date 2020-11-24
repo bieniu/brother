@@ -112,17 +112,17 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             pass
         else:
             if not self._last_uptime:
-                data[ATTR_UPTIME] = self._last_update = (
+                data[ATTR_UPTIME] = self._last_uptime = (
                     datetime.datetime.utcnow() - datetime.timedelta(seconds=uptime)
                 ).replace(microsecond=0)
             else:
                 new_uptime = (
                     datetime.datetime.utcnow() - datetime.timedelta(seconds=uptime)
                 ).replace(microsecond=0)
-                if abs((new_uptime - self._last_update).total_seconds()) > 5:
-                    data[ATTR_UPTIME] = self._last_update = new_uptime
+                if abs((new_uptime - self._last_uptime).total_seconds()) > 5:
+                    data[ATTR_UPTIME] = self._last_uptime = new_uptime
                 else:
-                    data[ATTR_UPTIME] = self._last_update
+                    data[ATTR_UPTIME] = self._last_uptime
         if self._legacy:
             if self._kind == "laser":
                 data.update(
