@@ -2,6 +2,7 @@
 Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
 the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
+import datetime
 import logging
 import re
 
@@ -56,13 +57,16 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self.serial = None
         self._host = host
         self._port = port
+        self._last_uptime = None
 
         self._snmp_engine = None
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self):  # pylint:disable=too-many-branches
+    async def async_update(
+        self,
+    ):  # pylint:disable=too-many-branches,too-many-statements
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -105,9 +109,22 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer.")
         try:
-            data[ATTR_UPTIME] = int(raw_data.get(OIDS[ATTR_UPTIME])) / 100
+            uptime = int(raw_data.get(OIDS[ATTR_UPTIME])) / 100
         except TypeError:
             pass
+        else:
+            if not self._last_uptime:
+                data[ATTR_UPTIME] = self._last_uptime = (
+                    datetime.datetime.utcnow() - datetime.timedelta(seconds=uptime)
+                ).replace(microsecond=0)
+            else:
+                new_uptime = (
+                    datetime.datetime.utcnow() - datetime.timedelta(seconds=uptime)
+                ).replace(microsecond=0)
+                if abs((new_uptime - self._last_uptime).total_seconds()) > 5:
+                    data[ATTR_UPTIME] = self._last_uptime = new_uptime
+                else:
+                    data[ATTR_UPTIME] = self._last_uptime
         if self._legacy:
             if self._kind == "laser":
                 data.update(
