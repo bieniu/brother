@@ -1,11 +1,10 @@
 """Tests for brother package."""
 import json
 from datetime import datetime
+
 from unittest.mock import Mock, patch
-
-import pytest
-
 from brother import Brother, SnmpError, UnsupportedModel
+import pytest
 
 HOST = "localhost"
 INVALID_HOST = "foo.local"
@@ -14,13 +13,11 @@ TEST_TIME = datetime(2019, 11, 11, 9, 10, 32)
 
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
-    """Test with valid data from HL-L2340DW printer with invalid kind."""
+    """Test with valid data from HL-L2340DW printer with invalid kind."""   
     with open("tests/data/hl-l2340dw.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    with patch("brother.Brother._get_data", return_value=data), patch("brother.datetime", utcnow=Mock(return_value=TEST_TIME)):
 
         brother = Brother(HOST, kind="foo")
         await brother.async_update()
@@ -84,9 +81,7 @@ async def test_mfc_5490cn_model():
     with open("tests/data/mfc-5490cn.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    with patch("brother.Brother._get_data", return_value=data), patch("brother.datetime", utcnow=Mock(return_value=TEST_TIME)):
 
         brother = Brother(HOST, kind="ink")
         await brother.async_update()
@@ -126,9 +121,7 @@ async def test_dcp_7070dw_model():
     with open("tests/data/dcp-7070dw.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    with patch("brother.Brother._get_data", return_value=data), patch("brother.datetime", utcnow=Mock(return_value=TEST_TIME)):
 
         brother = Brother(HOST, kind="laser")
         await brother.async_update()
