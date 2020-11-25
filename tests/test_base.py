@@ -1,12 +1,15 @@
 """Tests for brother package."""
 import json
+from datetime import datetime
+from unittest.mock import Mock, patch
 
-from unittest.mock import patch
-from brother import Brother, SnmpError, UnsupportedModel
 import pytest
+
+from brother import Brother, SnmpError, UnsupportedModel
 
 HOST = "localhost"
 INVALID_HOST = "foo.local"
+TEST_TIME = datetime(2019, 11, 11, 9, 10, 32)
 
 
 @pytest.mark.asyncio
@@ -15,7 +18,9 @@ async def test_hl_l2340dw_model():
     with open("tests/data/hl-l2340dw.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+    ):
 
         brother = Brother(HOST, kind="foo")
         await brother.async_update()
@@ -27,7 +32,7 @@ async def test_hl_l2340dw_model():
         assert brother.data["status"] == "oczekiwanie"
         assert brother.data["black_toner"] == 80
         assert brother.data["page_counter"] == 986
-        assert brother.data["uptime"] == 4136135.15
+        assert brother.data["uptime"].isoformat() == "2019-09-24T12:14:56"
 
 
 @pytest.mark.asyncio
@@ -79,7 +84,9 @@ async def test_mfc_5490cn_model():
     with open("tests/data/mfc-5490cn.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+    ):
 
         brother = Brother(HOST, kind="ink")
         await brother.async_update()
@@ -90,7 +97,7 @@ async def test_mfc_5490cn_model():
         assert brother.serial == "serial_number"
         assert brother.data["status"] == "sleep mode"
         assert brother.data["page_counter"] == 8989
-        assert brother.data["uptime"] == 725189.56
+        assert brother.data["uptime"].isoformat() == "2019-11-02T23:44:02"
 
 
 @pytest.mark.asyncio
@@ -119,7 +126,9 @@ async def test_dcp_7070dw_model():
     with open("tests/data/dcp-7070dw.json") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+    ):
 
         brother = Brother(HOST, kind="laser")
         await brother.async_update()
@@ -134,7 +143,7 @@ async def test_dcp_7070dw_model():
         assert brother.data["drum_counter"] == 1603
         assert brother.data["drum_remaining_life"] == 88
         assert brother.data["drum_remaining_pages"] == 10397
-        assert brother.data["uptime"] == 29878025.61
+        assert brother.data["uptime"].isoformat() == "2018-11-30T13:43:26"
 
 
 @pytest.mark.asyncio
