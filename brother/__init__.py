@@ -25,6 +25,7 @@ from .const import (
     KINDS,
     OIDS,
     OIDS_HEX,
+    OIDS_WITHOUT_COUNTERS,
     PERCENT_VALUES,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
@@ -40,7 +41,7 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser"):
+    def __init__(self, host, port=161, kind="laser", counters=True):
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument. 'laser' was used.")
@@ -60,13 +61,15 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._last_uptime = None
 
         self._snmp_engine = None
-        self._oids = tuple(self._iterate_oids(OIDS.values()))
+        if counters:
+            self._oids = tuple(self._iterate_oids(OIDS.values()))
+        else:
+            self._oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
+        self._counters = counters
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(
-        self,
-    ):  # pylint:disable=too-many-branches,too-many-statements
+    async def async_update(self):  # pylint:disable=too-many-branches,too-many-statements
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -144,13 +147,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 )
         else:
             if self._kind == "laser":
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                if self._counters:
+                    data.update(
+                        dict(
+                            self._iterate_data(
+                                raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                            )
                         )
                     )
-                )
                 data.update(
                     dict(
                         self._iterate_data(
@@ -166,13 +170,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     )
                 )
             if self._kind == "ink":
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                if self._counters:
+                    data.update(
+                        dict(
+                            self._iterate_data(
+                                raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                            )
                         )
                     )
-                )
                 data.update(
                     dict(
                         self._iterate_data(
@@ -229,7 +234,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
+                # octet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
@@ -248,7 +253,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         # for legacy printers
         for resrow in restable:
             if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
-                # asOctet gives bytes data
+                # octet gives bytes data
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
@@ -262,6 +267,36 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     raw_data[str(resrow[0])] = temp
                     break
         return raw_data
+
+    async def has_counters(self):
+        """Return True if printer returns counters."""
+        if not self._snmp_engine:
+            self._snmp_engine = hlapi.SnmpEngine()
+
+        oids = tuple(self._iterate_oids(OIDS.values()))
+        try:
+            request_args = [
+                self._snmp_engine,
+                hlapi.CommunityData("public", mpModel=0),
+                hlapi.UdpTransportTarget(
+                    (self._host, self._port), timeout=2, retries=10
+                ),
+                hlapi.ContextData(),
+            ]
+        except PySnmpError as err:
+            raise ConnectionError(err) from err
+        errindication, errstatus, errindex, restable = await hlapi.getCmd(*request_args, *oids)
+        if errindication:
+            raise SnmpError(errindication)
+        if errstatus:
+            oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
+            errindication, errstatus, errindex, restable = await hlapi.getCmd(*request_args, *oids)
+            if errindication:
+                raise SnmpError(errindication)
+            if errstatus:
+                raise SnmpError(f"{errstatus}, {errindex}")
+            return False
+        return True
 
     @classmethod
     def _legacy_printer(cls, string):

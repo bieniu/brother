@@ -16,6 +16,15 @@ async def main():
     # argument kind: laser - for laser printer
     #                ink   - for inkjet printer
     brother = Brother(host, kind=kind)
+
+    counters = await brother.has_counters()
+
+    print(f"Printer has counters: {counters}")
+
+    if not counters:
+        brother.shutdown()
+        brother = Brother(host, kind=kind, counters=False)
+
     try:
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
