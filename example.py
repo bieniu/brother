@@ -17,7 +17,11 @@ async def main():
     #                ink   - for inkjet printer
     brother = Brother(host, kind=kind)
 
-    counters = await brother.has_counters()
+    try:
+        counters = await brother.has_counters()
+    except (ConnectionError, SnmpError) as error:
+        print(f"{error}")
+        return
 
     print(f"Printer has counters: {counters}")
 
