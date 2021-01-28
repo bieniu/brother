@@ -287,6 +287,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             ]
         except PySnmpError as err:
             raise ConnectionError(err) from err
+        # pylint:disable=unused-variable
         errindication, errstatus, errindex, restable = await hlapi.getCmd(
             *request_args, *oids
         )
