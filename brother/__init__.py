@@ -302,6 +302,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 raise SnmpError(errindication)
             if errstatus:
                 raise SnmpError(f"{errstatus}, {errindex}")
+            self._counters = False
+            self._oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
             return False
         return True
 
