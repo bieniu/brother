@@ -69,7 +69,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self):  # pylint:disable=too-many-branches,too-many-statements
+    async def async_update(
+        self,
+    ):  # pylint:disable=too-many-branches,too-many-statements
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -285,12 +287,16 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             ]
         except PySnmpError as err:
             raise ConnectionError(err) from err
-        errindication, errstatus, errindex, restable = await hlapi.getCmd(*request_args, *oids)
+        errindication, errstatus, errindex, restable = await hlapi.getCmd(
+            *request_args, *oids
+        )
         if errindication:
             raise SnmpError(errindication)
         if errstatus:
             oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
-            errindication, errstatus, errindex, restable = await hlapi.getCmd(*request_args, *oids)
+            errindication, errstatus, errindex, restable = await hlapi.getCmd(
+                *request_args, *oids
+            )
             if errindication:
                 raise SnmpError(errindication)
             if errstatus:
