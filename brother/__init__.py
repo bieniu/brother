@@ -236,7 +236,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # octet gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
+                # asOctets() gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
@@ -255,7 +255,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         # for legacy printers
         for resrow in restable:
             if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
-                # octet gives bytes data
+                # asOctets() gives bytes data
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
