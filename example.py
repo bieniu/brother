@@ -18,7 +18,7 @@ async def main():
     brother = Brother(host, kind=kind)
 
     try:
-        counters = await brother.has_counters()
+        await brother.initialize()
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
@@ -27,7 +27,6 @@ async def main():
     brother.shutdown()
 
     if brother.available:
-        print(f"Printer has counters: {counters}")
         print(f"Data available: {brother.available}")
         print(f"Model: {brother.model}")
         print(f"Firmware: {brother.firmware}")

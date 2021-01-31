@@ -21,7 +21,8 @@ async def test_hl_l2340dw_model():
 
     with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    ), patch("brother.Brother.initialize"):
+        await brother.initialize()
         await brother.async_update()
         assert mock_update.call_count == 1
 
@@ -48,7 +49,10 @@ async def test_dcp_l3550cdw_model():
         data = json.load(file)
     brother = Brother(HOST)
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -72,7 +76,10 @@ async def test_dcp_j132w_model():
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -96,7 +103,8 @@ async def test_mfc_5490cn_model():
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    ), patch("brother.Brother.initialize"):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -117,7 +125,10 @@ async def test_dcp_l2540dw_model():
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -140,7 +151,8 @@ async def test_dcp_7070dw_model():
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    ), patch("brother.Brother.initialize"):
+        await brother.initialize()
         await brother.async_update()
 
     assert brother.available is True
@@ -174,7 +186,10 @@ async def test_mfc_j680dw_model():
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -195,7 +210,10 @@ async def test_dcp_9020cdw_model():
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -215,9 +233,13 @@ async def test_hl_2270dw_model():
     """Test with valid data from HL-2270DW printer."""
     with open("tests/data/hl-2270dw.json") as file:
         data = json.load(file)
-    brother = Brother(HOST, kind="laser", counters=False)
+    brother = Brother(HOST, kind="laser")
+    brother._counters = False  # pylint:disable=protected-access
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -240,7 +262,8 @@ async def test_invalid_data():
 
     with patch("brother.Brother._get_data", return_value=data), pytest.raises(
         UnsupportedModel
-    ):
+    ), patch("brother.Brother.initialize"):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -253,7 +276,10 @@ async def test_incomplete_data():
         data = json.load(file)
     brother = Brother(HOST)
 
-    with patch("brother.Brother._get_data", return_value=data):
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -266,7 +292,10 @@ async def test_empty_data():
     """Test with empty data from printer."""
     brother = Brother(HOST)
 
-    with patch("brother.Brother._get_data", return_value=None):
+    with patch("brother.Brother._get_data", return_value=None), patch(
+        "brother.Brother.initialize"
+    ):
+        await brother.initialize()
         await brother.async_update()
 
     brother.shutdown()
@@ -282,8 +311,13 @@ async def test_invalid_host():
     """Test with invalid host."""
     brother = Brother(INVALID_HOST)
 
-    with pytest.raises(ConnectionError):
-        await brother.async_update()
+    with patch(
+        "brother.Brother.initialize", side_effect=ConnectionError("Connection Error")
+    ):
+        try:
+            await brother.initialize()
+        except ConnectionError as error:
+            assert str(error) == "Connection Error"
 
     brother.shutdown()
 
@@ -293,7 +327,10 @@ async def test_snmp_error():
     """Test with raise SnmpError."""
     brother = Brother(HOST)
 
-    with pytest.raises(SnmpError):
-        await brother.async_update()
+    with patch("brother.Brother.initialize", side_effect=SnmpError("SNMP Error")):
+        try:
+            await brother.initialize()
+        except SnmpError as error:
+            assert str(error.status) == "SNMP Error"
 
     brother.shutdown()

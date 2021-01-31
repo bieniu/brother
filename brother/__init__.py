@@ -41,7 +41,7 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser", counters=True):
+    def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument. 'laser' was used.")
@@ -59,13 +59,9 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._host = host
         self._port = port
         self._last_uptime = None
-
         self._snmp_engine = None
-        if counters:
-            self._oids = tuple(self._iterate_oids(OIDS.values()))
-        else:
-            self._oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
-        self._counters = counters
+        self._counters = True
+        self._oids = tuple(self._iterate_oids(OIDS.values()))
 
         _LOGGER.debug("Using host: %s", host)
 
@@ -211,8 +207,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         raw_data = {}
 
         if not self._snmp_engine:
-            self._snmp_engine = hlapi.SnmpEngine()
-
+            await self.initialize()
+        
         try:
             request_args = [
                 self._snmp_engine,
@@ -270,8 +266,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     break
         return raw_data
 
-    async def has_counters(self):
-        """Return True if printer returns counters."""
+    async def initialize(self):
+        """Init SNMP engine and check if the device sends counters."""
         if not self._snmp_engine:
             self._snmp_engine = hlapi.SnmpEngine()
 
@@ -304,8 +300,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 raise SnmpError(f"{errstatus}, {errindex}")
             self._counters = False
             self._oids = oids
-            return False
-        return True
 
     @classmethod
     def _legacy_printer(cls, string):
