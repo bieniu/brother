@@ -208,7 +208,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         if not self._snmp_engine:
             await self.initialize()
-        
+
         try:
             request_args = [
                 self._snmp_engine,
