@@ -71,9 +71,8 @@ CHARSET_MAP = {"5": "latin2", "2004": "roman8", "8": "cyrillic", "12": "latin5"}
 
 KINDS = ["ink", "laser"]
 
-OIDS = {
+OIDS_WITHOUT_COUNTERS = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
-    ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
     ATTR_MODEL: "1.3.6.1.4.1.2435.2.3.9.1.1.7.0",
@@ -83,6 +82,8 @@ OIDS = {
     ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
     ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
 }
+
+OIDS = {**OIDS_WITHOUT_COUNTERS, ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0"}
 
 VALUES_COUNTERS = {
     "00": VAL_PAGE_COUNT,

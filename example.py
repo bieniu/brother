@@ -16,6 +16,7 @@ async def main():
     # argument kind: laser - for laser printer
     #                ink   - for inkjet printer
     brother = Brother(host, kind=kind)
+
     try:
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
