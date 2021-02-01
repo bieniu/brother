@@ -298,6 +298,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 raise SnmpError(errindication)
             if errstatus:
                 raise SnmpError(f"{errstatus}, {errindex}")
+            _LOGGER.debug("The printer %s doesn't send 'counters'.", self._host)
             self._counters = False
             self._oids = oids
 
