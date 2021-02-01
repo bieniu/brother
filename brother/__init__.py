@@ -207,7 +207,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         raw_data = {}
 
         if not self._snmp_engine:
-            await self.initialize()
+            await self._initialize()
 
         try:
             request_args = [
@@ -266,7 +266,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     break
         return raw_data
 
-    async def initialize(self):
+    async def _initialize(self):
         """Init SNMP engine and check if the device sends counters."""
         if not self._snmp_engine:
             self._snmp_engine = hlapi.SnmpEngine()

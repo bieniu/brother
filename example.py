@@ -18,7 +18,6 @@ async def main():
     brother = Brother(host, kind=kind)
 
     try:
-        await brother.initialize()
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
