@@ -44,7 +44,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def __init__(self, host, port=161, kind="laser"):
         """Initialize."""
         if kind not in KINDS:
-            _LOGGER.warning("Wrong kind argument. 'laser' was used.")
+            _LOGGER.warning("Wrong kind argument. 'laser' was used")
             self._kind = "laser"
         else:
             self._kind = kind
@@ -108,7 +108,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 .lower()
             )
         except (AttributeError, KeyError, TypeError):
-            _LOGGER.debug("Incomplete data from printer.")
+            _LOGGER.debug("Incomplete data from printer")
         try:
             uptime = int(raw_data.get(OIDS[ATTR_UPTIME])) / 100
         except TypeError:
@@ -298,7 +298,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 raise SnmpError(errindication)
             if errstatus:
                 raise SnmpError(f"{errstatus}, {errindex}")
-            _LOGGER.debug("The printer %s doesn't send 'counters'.", self._host)
+            _LOGGER.debug("The printer %s doesn't send 'counters'", self._host)
             self._counters = False
             self._oids = oids
 
