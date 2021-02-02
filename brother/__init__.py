@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
+from pysnmp.hlapi.asyncio.cmdgen import lcd
 
 from .const import (
     ATTR_CHARSET,
@@ -199,7 +200,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def shutdown(self):
         """Unconfigure SNMP engine."""
         if self._snmp_engine:
-            hlapi.cmdgen.lcd.unconfigure(self._snmp_engine, None)
+            lcd.unconfigure(self._snmp_engine, None)
 
     async def _get_data(self):
         """Retreive data from printer."""
