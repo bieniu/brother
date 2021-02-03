@@ -24,19 +24,19 @@ jobs:
     - name: Check with isort
       run: |
         pip install isort
-        isort brother/*.py --check-only
+        isort brother tests --check-only
     - name: Check with Black Code Formatter
       run: |
         pip install black
-        black brother --check
+        black brother tests --check
     - name: Lint with flake8
       run: |
         pip install flake8
-        flake8 brother
+        flake8 brother tests
     - name: Lint with pylint
       run: |
-        pip install pylint
-        pylint brother
+        pip install pylint pytest
+        pylint brother tests
     - name: Test with pytest
       run: |
         pip install pytest
