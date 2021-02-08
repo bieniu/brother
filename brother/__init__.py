@@ -284,15 +284,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             ]
         except PySnmpError as err:
             raise ConnectionError(err) from err
-        # pylint:disable=unused-variable
-        errindication, errstatus, errindex, restable = await hlapi.getCmd(
+        errindication, errstatus, errindex, _ = await hlapi.getCmd(
             *request_args, *oids
         )
         if errindication:
             raise SnmpError(errindication)
         if errstatus:
             oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
-            errindication, errstatus, errindex, restable = await hlapi.getCmd(
+            errindication, errstatus, errindex, _ = await hlapi.getCmd(
                 *request_args, *oids
             )
             if errindication:
