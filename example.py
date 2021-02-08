@@ -2,6 +2,7 @@ import asyncio
 import logging
 from sys import argv
 
+import pysnmp.hlapi.asyncio as hlapi
 from brother import Brother, SnmpError, UnsupportedModel
 
 # printer IP address/hostname
@@ -15,7 +16,9 @@ async def main():
 
     # argument kind: laser - for laser printer
     #                ink   - for inkjet printer
-    brother = Brother(host, kind=kind)
+    snmp_engine = hlapi.SnmpEngine()
+
+    brother = Brother(host, kind=kind, snmp_engine=snmp_engine)
     try:
         await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
