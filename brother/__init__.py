@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
-from pysnmp.hlapi.asyncore.cmdgen import lcd
+from pysnmp.hlapi.asyncio.cmdgen import lcd
 
 from .const import (
     ATTR_CHARSET,
@@ -88,7 +88,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             data[ATTR_SERIAL] = self.serial
         except (TypeError, AttributeError) as err:
             raise UnsupportedModel(
-                "It seems that this printer model is not supported. Sorry."
+                "It seems that this printer model is not supported"
             ) from err
         try:
             self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
