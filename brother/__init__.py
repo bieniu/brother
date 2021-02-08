@@ -44,7 +44,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     def __init__(self, host, port=161, kind="laser", snmp_engine=None):
         """Initialize."""
         if kind not in KINDS:
-            _LOGGER.warning("Wrong kind argument. 'laser' was used")
+            _LOGGER.warning("Wrong kind argument, 'laser' was used")
             self._kind = "laser"
         else:
             self._kind = kind
