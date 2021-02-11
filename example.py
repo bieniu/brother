@@ -9,10 +9,11 @@ HOST = "brother"
 logging.basicConfig(level=logging.DEBUG)
 
 async def main():
-    # argument kind: laser - for laser printer
-    #                ink   - for inkjet printer
     host = argv[1] if len(argv) > 1 else HOST
     kind = argv[2] if len(argv) > 2 else "laser"
+    # argument kind: laser - for laser printer
+    #                ink   - for inkjet printer
+
     external_snmp = False
     if len(argv) > 3 and argv[3] == "use_external_snmp":
         external_snmp = True  
