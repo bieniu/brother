@@ -41,10 +41,10 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser"):
+    def __init__(self, host, port=161, kind="laser", snmp_engine=None):
         """Initialize."""
         if kind not in KINDS:
-            _LOGGER.warning("Wrong kind argument. 'laser' was used")
+            _LOGGER.warning("Wrong kind argument, 'laser' was used")
             self._kind = "laser"
         else:
             self._kind = kind
@@ -59,7 +59,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._host = host
         self._port = port
         self._last_uptime = None
-        self._snmp_engine = None
+        self._snmp_engine = snmp_engine
+        self._need_init = True
         self._counters = True
         self._oids = tuple(self._iterate_oids(OIDS.values()))
 
@@ -207,7 +208,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         raw_data = {}
 
         if not self._snmp_engine:
-            await self._initialize()
+            self._snmp_engine = hlapi.SnmpEngine()
+
+        if self._need_init:
+            await self._init_device()
 
         try:
             request_args = [
@@ -266,11 +270,8 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     break
         return raw_data
 
-    async def _initialize(self):
-        """Init SNMP engine and check if the device sends counters."""
-        if not self._snmp_engine:
-            self._snmp_engine = hlapi.SnmpEngine()
-
+    async def _init_device(self):
+        """Check if the device sends counters."""
         oids = tuple(self._iterate_oids(OIDS.values()))
         try:
             request_args = [
@@ -283,15 +284,12 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             ]
         except PySnmpError as err:
             raise ConnectionError(err) from err
-        # pylint:disable=unused-variable
-        errindication, errstatus, errindex, restable = await hlapi.getCmd(
-            *request_args, *oids
-        )
+        errindication, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *oids)
         if errindication:
             raise SnmpError(errindication)
         if errstatus:
             oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
-            errindication, errstatus, errindex, restable = await hlapi.getCmd(
+            errindication, errstatus, errindex, _ = await hlapi.getCmd(
                 *request_args, *oids
             )
             if errindication:
@@ -301,6 +299,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             _LOGGER.debug("The printer %s doesn't send 'counters'", self._host)
             self._counters = False
             self._oids = oids
+        self._need_init = False
 
     @classmethod
     def _legacy_printer(cls, string):
