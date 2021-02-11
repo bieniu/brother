@@ -1,12 +1,15 @@
 import asyncio
 import logging
 from sys import argv
+
 import pysnmp.hlapi.asyncio as hlapi
+
 from brother import Brother, SnmpError, UnsupportedModel
 
 # printer IP address/hostname
 HOST = "brother"
 logging.basicConfig(level=logging.DEBUG)
+
 
 async def main():
     host = argv[1] if len(argv) > 1 else HOST
@@ -16,7 +19,7 @@ async def main():
 
     external_snmp = False
     if len(argv) > 3 and argv[3] == "use_external_snmp":
-        external_snmp = True  
+        external_snmp = True
 
     if external_snmp:
         print("Using external SNMP engine")
