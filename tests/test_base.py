@@ -21,7 +21,7 @@ async def test_hl_l2340dw_model():
 
     with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ), patch("brother.Brother._initialize"):
+    ), patch("brother.Brother._init_device"):
         await brother.async_update()
         assert mock_update.call_count == 1
 
@@ -49,7 +49,7 @@ async def test_dcp_l3550cdw_model():
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -75,7 +75,7 @@ async def test_dcp_j132w_model():
     brother = Brother(HOST, kind="ink")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -100,7 +100,7 @@ async def test_mfc_5490cn_model():
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ), patch("brother.Brother._initialize"):
+    ), patch("brother.Brother._init_device"):
         await brother.async_update()
 
     brother.shutdown()
@@ -122,7 +122,7 @@ async def test_dcp_l2540dw_model():
     brother = Brother(HOST, kind="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -146,7 +146,7 @@ async def test_dcp_7070dw_model():
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ), patch("brother.Brother._initialize"):
+    ), patch("brother.Brother._init_device"):
         await brother.async_update()
 
     assert brother.available is True
@@ -181,7 +181,7 @@ async def test_mfc_j680dw_model():
     brother = Brother(HOST, kind="ink")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -204,7 +204,7 @@ async def test_dcp_9020cdw_model():
     brother = Brother(HOST, kind="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -229,7 +229,7 @@ async def test_hl_2270dw_model():
     brother._counters = False  # pylint:disable=protected-access
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -253,7 +253,7 @@ async def test_invalid_data():
 
     with patch("brother.Brother._get_data", return_value=data), pytest.raises(
         UnsupportedModel
-    ), patch("brother.Brother._initialize"):
+    ), patch("brother.Brother._init_device"):
         await brother.async_update()
 
     brother.shutdown()
@@ -267,7 +267,7 @@ async def test_incomplete_data():
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -282,7 +282,7 @@ async def test_empty_data():
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=None), patch(
-        "brother.Brother._initialize"
+        "brother.Brother._init_device"
     ):
         await brother.async_update()
 
@@ -300,7 +300,7 @@ async def test_invalid_host():
     brother = Brother(INVALID_HOST)
 
     with patch(
-        "brother.Brother._initialize", side_effect=ConnectionError("Connection Error")
+        "brother.Brother._init_device", side_effect=ConnectionError("Connection Error")
     ):
         try:
             await brother.async_update()
@@ -315,7 +315,7 @@ async def test_snmp_error():
     """Test with raise SnmpError."""
     brother = Brother(HOST)
 
-    with patch("brother.Brother._initialize", side_effect=SnmpError("SNMP Error")):
+    with patch("brother.Brother._init_device", side_effect=SnmpError("SNMP Error")):
         try:
             await brother.async_update()
         except SnmpError as error:
