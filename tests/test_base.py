@@ -245,6 +245,35 @@ async def test_hl_2270dw_model():
 
 
 @pytest.mark.asyncio
+async def test_mfc_t910dw_model():
+    """Test with valid data from MFC-T910DW printer."""
+    with open("tests/data/mfc-t910dw.json") as file:
+        data = json.load(file)
+    brother = Brother(HOST, kind="ink")
+
+    with patch("brother.Brother._get_data", return_value=data), patch(
+        "brother.Brother._init_device"
+    ):
+        await brother.async_update()
+
+    brother.shutdown()
+
+    assert brother.available is True
+    assert brother.model == "MFC-T910DW"
+    assert brother.firmware == "M2009041848"
+    assert brother.serial == "serial_number"
+    assert brother.data["status"] == "oczekiwanie"
+    assert brother.data["page_counter"] == 3384
+    assert brother.data["color_counter"] == 3199
+    assert brother.data["b/w_counter"] == 185
+    assert brother.data["duplex_unit_pages_counter"] == 1445
+    assert brother.data["black_ink_status"] == 1
+    assert brother.data["cyan_ink_status"] == 1
+    assert brother.data["magenta_ink_status"] == 1
+    assert brother.data["yellow_ink_status"] == 1
+
+
+@pytest.mark.asyncio
 async def test_invalid_data():
     """Test with invalid data from printer."""
     with open("tests/data/invalid.json") as file:

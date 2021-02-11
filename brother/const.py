@@ -30,6 +30,7 @@ VAL_CYAN_DRUM_REMAIN = "cyan_drum_remaining_life"
 VAL_CYAN_DRUM_REMAIN_PAGES = "cyan_drum_remaining_pages"
 VAL_CYAN_INK = "cyan_ink"
 VAL_CYAN_INK_REMAIN = "cyan_ink_remaining"
+VAL_CYAN_INK_STATUS = "cyan_ink_status"
 VAL_CYAN_TONER = "cyan_toner"
 VAL_CYAN_TONER_REMAIN = "cyan_toner_remaining"
 VAL_CYAN_TONER_STATUS = "cyan_toner_status"
@@ -49,6 +50,7 @@ VAL_MAGENTA_DRUM_REMAIN = "magenta_drum_remaining_life"
 VAL_MAGENTA_DRUM_REMAIN_PAGES = "magenta_drum_remaining_pages"
 VAL_MAGENTA_INK = "magenta_ink"
 VAL_MAGENTA_INK_REMAIN = "magenta_ink_remaining"
+VAL_MAGENTA_INK_STATUS = "magenta_ink_status"
 VAL_MAGENTA_TONER = "magenta_toner"
 VAL_MAGENTA_TONER_REMAIN = "magenta_toner_remaining"
 VAL_MAGENTA_TONER_STATUS = "magenta_toner_status"
@@ -63,6 +65,7 @@ VAL_YELLOW_DRUM_REMAIN = "yellow_drum_remaining_life"
 VAL_YELLOW_DRUM_REMAIN_PAGES = "yellow_drum_remaining_pages"
 VAL_YELLOW_INK = "yellow_ink"
 VAL_YELLOW_INK_REMAIN = "yellow_ink_remaining"
+VAL_YELLOW_INK_STATUS = "yellow_ink_status"
 VAL_YELLOW_TONER = "yellow_toner"
 VAL_YELLOW_TONER_REMAIN = "yellow_toner_remaining"
 VAL_YELLOW_TONER_STATUS = "yellow_toner_status"
@@ -134,6 +137,9 @@ VALUES_LASER_MAINTENANCE = {
 
 VALUES_INK_MAINTENANCE = {
     "31": VAL_BLACK_INK_STATUS,
+    "32": VAL_CYAN_INK_STATUS,
+    "33": VAL_MAGENTA_INK_STATUS,
+    "34": VAL_YELLOW_INK_STATUS,
     "6f": VAL_BLACK_INK_REMAIN,
     "70": VAL_CYAN_INK_REMAIN,
     "71": VAL_MAGENTA_INK_REMAIN,
