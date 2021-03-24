@@ -10,7 +10,7 @@ setup(
         printers via SNMP.",
     include_package_data=True,
     url="https://github.com/bieniu/brother",
-    license="Apache License 2.0",
+    license="Apache-2.0 License",
     packages=["brother"],
     python_requires=">=3.6",
     install_requires=list(val.strip() for val in open("requirements.txt")),
