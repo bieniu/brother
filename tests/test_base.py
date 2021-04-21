@@ -242,7 +242,6 @@ async def test_hl_2270dw_model():
     assert getattr(brother.data, "status") == "sleep"
     assert getattr(brother.data, "page_counter") == 4191
     assert getattr(brother.data, "drum_remaining_pages") == 7809
-    assert getattr(brother.data, "dupa") is None
 
 
 @pytest.mark.asyncio
