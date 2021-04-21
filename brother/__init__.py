@@ -60,8 +60,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         self._legacy = False
 
-        self.data = {}
-
         self.firmware = None
         self.model = None
         self.serial = None
@@ -82,7 +80,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         raw_data = await self._get_data()
 
         if not raw_data:
-            self.data = {}
             return
 
         _LOGGER.debug("RAW data: %s", raw_data)
@@ -200,7 +197,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except ValueError:
             pass
         _LOGGER.debug("Data: %s", data)
-        self.data = DictToObj(data)
+        return DictToObj(data)
 
     def shutdown(self):
         """Unconfigure SNMP engine."""
@@ -230,13 +227,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 *request_args, *self._oids
             )
         except PySnmpError as err:
-            self.data = {}
             raise ConnectionError(err) from err
         if errindication:
-            self.data = {}
             raise SnmpError(errindication)
         if errstatus:
-            self.data = {}
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:

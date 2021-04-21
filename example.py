@@ -29,20 +29,19 @@ async def main():
         brother = Brother(host, kind=kind)
 
     try:
-        await brother.async_update()
+        data = await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
         return
 
     brother.shutdown()
 
-    if brother.available:
-        print(f"Data available: {brother.available}")
-        print(f"Model: {brother.model}")
-        print(f"Firmware: {brother.firmware}")
-        print(f"Status: {brother.data.status}")
-        print(f"Serial no: {brother.serial}")
-        print(f"Sensors data: {brother.data}")
+    print(f"Model: {brother.model}")
+    print(f"Firmware: {brother.firmware}")
+    if data:
+        print(f"Status: {data.status}")
+        print(f"Serial no: {data.serial}")
+        print(f"Sensors data: {data}")
 
 
 loop = asyncio.get_event_loop()
