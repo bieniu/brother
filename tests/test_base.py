@@ -31,7 +31,6 @@ async def test_hl_l2340dw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "HL-L2340DW"
     assert brother.firmware == "1.17"
     assert brother.serial == "serial_number"
@@ -55,7 +54,6 @@ async def test_dcp_l3550cdw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-L3550CDW"
     assert brother.firmware == "J1906051424"
     assert brother.serial == "serial_number"
@@ -81,7 +79,6 @@ async def test_dcp_j132w_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-J132W"
     assert brother.firmware == "Q1906110144"
     assert brother.serial == "serial_number"
@@ -105,7 +102,6 @@ async def test_mfc_5490cn_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-5490CN"
     assert brother.firmware == "U1005271959VER.E"
     assert brother.serial == "serial_number"
@@ -128,7 +124,6 @@ async def test_dcp_l2540dw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-L2540DN"
     assert brother.firmware == "R1906110243"
     assert brother.serial == "serial_number"
@@ -149,7 +144,6 @@ async def test_dcp_7070dw_model():
     ), patch("brother.Brother._init_device"):
         await brother.async_update()
 
-    assert brother.available is True
     assert brother.model == "DCP-7070DW"
     assert brother.firmware == "U1307022128VER.J"
     assert brother.serial == "serial_number"
@@ -187,7 +181,6 @@ async def test_mfc_j680dw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-J680DW"
     assert brother.firmware == "U1804191714VER.J"
     assert brother.serial == "serial_number"
@@ -210,7 +203,6 @@ async def test_dcp_9020cdw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-9020CDW"
     assert brother.firmware == "ZA1811191217"
     assert brother.serial == "E71833C4J372261"
@@ -235,7 +227,6 @@ async def test_hl_2270dw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "HL-2270DW"
     assert brother.firmware == "1.16"
     assert brother.serial == "serial_number"
@@ -258,7 +249,6 @@ async def test_mfc_t910dw_model():
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-T910DW"
     assert brother.firmware == "M2009041848"
     assert brother.serial == "serial_number"
@@ -306,8 +296,6 @@ async def test_incomplete_data():
 
     brother.shutdown()
 
-    assert brother.available is True
-
 
 @pytest.mark.asyncio
 async def test_empty_data():
@@ -321,7 +309,6 @@ async def test_empty_data():
 
     brother.shutdown()
 
-    assert brother.available is False
     assert brother.model is None
     assert brother.firmware is None
     assert brother.serial is None

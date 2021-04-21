@@ -202,11 +202,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         _LOGGER.debug("Data: %s", data)
         self.data = DictToObj(data)
 
-    @property
-    def available(self):
-        """Return True is data is available."""
-        return bool(self.data)
-
     def shutdown(self):
         """Unconfigure SNMP engine."""
         if self._snmp_engine:
