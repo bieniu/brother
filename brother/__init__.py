@@ -38,6 +38,15 @@ _LOGGER = logging.getLogger(__name__)
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 
 
+class DictToObj(dict):
+    """Dictionary to object class."""
+
+    def __getattr__(self, name: str):
+        if name in self:
+            return self[name]
+        return None
+
+
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
@@ -191,7 +200,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except ValueError:
             pass
         _LOGGER.debug("Data: %s", data)
-        self.data = data
+        self.data = DictToObj(data)
 
     @property
     def available(self):
