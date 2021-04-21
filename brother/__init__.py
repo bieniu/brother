@@ -44,7 +44,7 @@ class DictToObj(dict):
     def __getattr__(self, name: str):
         if name in self:
             return self[name]
-        return None
+        raise AttributeError("No such attribute: " + name)
 
 
 class Brother:  # pylint:disable=too-many-instance-attributes

@@ -35,10 +35,10 @@ async def test_hl_l2340dw_model():
     assert brother.model == "HL-L2340DW"
     assert brother.firmware == "1.17"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "oczekiwanie"
-    assert brother.data["black_toner"] == 80
-    assert brother.data["page_counter"] == 986
-    assert brother.data["uptime"].isoformat() == "2019-09-24T12:14:56"
+    assert getattr(brother.data, "status") == "oczekiwanie"
+    assert getattr(brother.data, "black_toner") == 80
+    assert getattr(brother.data, "page_counter") == 986
+    assert getattr(brother.data, "uptime").isoformat() == "2019-09-24T12:14:56"
 
 
 @pytest.mark.asyncio
@@ -59,12 +59,12 @@ async def test_dcp_l3550cdw_model():
     assert brother.model == "DCP-L3550CDW"
     assert brother.firmware == "J1906051424"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "mało toneru (y)"
-    assert brother.data["black_toner"] == 30
-    assert brother.data["yellow_toner"] == 10
-    assert brother.data["magenta_toner"] == 10
-    assert brother.data["cyan_toner"] == 10
-    assert brother.data["page_counter"] == 1611
+    assert getattr(brother.data, "status") == "mało toneru (y)"
+    assert getattr(brother.data, "black_toner") == 30
+    assert getattr(brother.data, "yellow_toner") == 10
+    assert getattr(brother.data, "magenta_toner") == 10
+    assert getattr(brother.data, "cyan_toner") == 10
+    assert getattr(brother.data, "page_counter") == 1611
 
 
 @pytest.mark.asyncio
@@ -85,9 +85,9 @@ async def test_dcp_j132w_model():
     assert brother.model == "DCP-J132W"
     assert brother.firmware == "Q1906110144"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "ready"
-    assert brother.data["black_ink"] == 80
-    assert brother.data["page_counter"] == 879
+    assert getattr(brother.data, "status") == "ready"
+    assert getattr(brother.data, "black_ink") == 80
+    assert getattr(brother.data, "page_counter") == 879
 
 
 @pytest.mark.asyncio
@@ -109,9 +109,9 @@ async def test_mfc_5490cn_model():
     assert brother.model == "MFC-5490CN"
     assert brother.firmware == "U1005271959VER.E"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "sleep mode"
-    assert brother.data["page_counter"] == 8989
-    assert brother.data["uptime"].isoformat() == "2019-11-02T23:44:02"
+    assert getattr(brother.data, "status") == "sleep mode"
+    assert getattr(brother.data, "page_counter") == 8989
+    assert getattr(brother.data, "uptime").isoformat() == "2019-11-02T23:44:02"
 
 
 @pytest.mark.asyncio
@@ -132,9 +132,9 @@ async def test_dcp_l2540dw_model():
     assert brother.model == "DCP-L2540DN"
     assert brother.firmware == "R1906110243"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "спящий режим"
-    assert brother.data["black_toner_remaining"] == 55
-    assert brother.data["page_counter"] == 333
+    assert getattr(brother.data, "status") == "спящий режим"
+    assert getattr(brother.data, "black_toner_remaining") == 55
+    assert getattr(brother.data, "page_counter") == 333
 
 
 @pytest.mark.asyncio
@@ -153,13 +153,13 @@ async def test_dcp_7070dw_model():
     assert brother.model == "DCP-7070DW"
     assert brother.firmware == "U1307022128VER.J"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "stap. kopieën:01"
-    assert brother.data["black_toner_remaining"] == 72
-    assert brother.data["page_counter"] == 2652
-    assert brother.data["drum_counter"] == 1603
-    assert brother.data["drum_remaining_life"] == 88
-    assert brother.data["drum_remaining_pages"] == 10397
-    assert brother.data["uptime"].isoformat() == "2018-11-30T13:43:26"
+    assert getattr(brother.data, "status") == "stap. kopieën:01"
+    assert getattr(brother.data, "black_toner_remaining") == 72
+    assert getattr(brother.data, "page_counter") == 2652
+    assert getattr(brother.data, "drum_counter") == 1603
+    assert getattr(brother.data, "drum_remaining_life") == 88
+    assert getattr(brother.data, "drum_remaining_pages") == 10397
+    assert getattr(brother.data, "uptime").isoformat() == "2018-11-30T13:43:26"
 
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
@@ -170,7 +170,7 @@ async def test_dcp_7070dw_model():
 
     brother.shutdown()
 
-    assert brother.data["uptime"].isoformat() == "2018-11-30T13:53:26"
+    assert getattr(brother.data, "uptime").isoformat() == "2018-11-30T13:53:26"
 
 
 @pytest.mark.asyncio
@@ -191,9 +191,9 @@ async def test_mfc_j680dw_model():
     assert brother.model == "MFC-J680DW"
     assert brother.firmware == "U1804191714VER.J"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "uyku"
-    assert brother.data["black_ink"] == 47
-    assert brother.data["color_counter"] == 491
+    assert getattr(brother.data, "status") == "uyku"
+    assert getattr(brother.data, "black_ink") == 47
+    assert getattr(brother.data, "color_counter") == 491
 
 
 @pytest.mark.asyncio
@@ -214,10 +214,10 @@ async def test_dcp_9020cdw_model():
     assert brother.model == "DCP-9020CDW"
     assert brother.firmware == "ZA1811191217"
     assert brother.serial == "E71833C4J372261"
-    assert brother.data["status"] == "tryb uśpienia"
-    assert brother.data["cyan_drum_remaining_life"] == 68
-    assert brother.data["cyan_drum_counter"] == 4939
-    assert brother.data["cyan_drum_remaining_pages"] == 10061
+    assert getattr(brother.data, "status") == "tryb uśpienia"
+    assert getattr(brother.data, "cyan_drum_remaining_life") == 68
+    assert getattr(brother.data, "cyan_drum_counter") == 4939
+    assert getattr(brother.data, "cyan_drum_remaining_pages") == 10061
 
 
 @pytest.mark.asyncio
@@ -239,9 +239,10 @@ async def test_hl_2270dw_model():
     assert brother.model == "HL-2270DW"
     assert brother.firmware == "1.16"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "sleep"
-    assert brother.data["page_counter"] == 4191
-    assert brother.data["drum_remaining_pages"] == 7809
+    assert getattr(brother.data, "status") == "sleep"
+    assert getattr(brother.data, "page_counter") == 4191
+    assert getattr(brother.data, "drum_remaining_pages") == 7809
+    assert getattr(brother.data, "dupa") is None
 
 
 @pytest.mark.asyncio
@@ -262,15 +263,15 @@ async def test_mfc_t910dw_model():
     assert brother.model == "MFC-T910DW"
     assert brother.firmware == "M2009041848"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "oczekiwanie"
-    assert brother.data["page_counter"] == 3384
-    assert brother.data["color_counter"] == 3199
-    assert brother.data["b/w_counter"] == 185
-    assert brother.data["duplex_unit_pages_counter"] == 1445
-    assert brother.data["black_ink_status"] == 1
-    assert brother.data["cyan_ink_status"] == 1
-    assert brother.data["magenta_ink_status"] == 1
-    assert brother.data["yellow_ink_status"] == 1
+    assert getattr(brother.data, "status") == "oczekiwanie"
+    assert getattr(brother.data, "page_counter") == 3384
+    assert getattr(brother.data, "color_counter") == 3199
+    assert getattr(brother.data, "b/w_counter") == 185
+    assert getattr(brother.data, "duplex_unit_pages_counter") == 1445
+    assert getattr(brother.data, "black_ink_status") == 1
+    assert getattr(brother.data, "cyan_ink_status") == 1
+    assert getattr(brother.data, "magenta_ink_status") == 1
+    assert getattr(brother.data, "yellow_ink_status") == 1
 
 
 @pytest.mark.asyncio
