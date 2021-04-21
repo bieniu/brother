@@ -271,6 +271,10 @@ async def test_mfc_t910dw_model():
     assert getattr(brother.data, "cyan_ink_status") == 1
     assert getattr(brother.data, "magenta_ink_status") == 1
     assert getattr(brother.data, "yellow_ink_status") == 1
+    try:
+        getattr(brother.data, "foo")
+    except AttributeError as error:
+        assert str(error) == "No such attribute: foo"
 
 
 @pytest.mark.asyncio
