@@ -333,7 +333,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
     @classmethod
-    def _iterate_data_legacy(cls, iterable: Iterable, values_map: dict):
+    def _iterate_data_legacy(cls, iterable: Iterable, values_map: dict) -> Generator:
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
