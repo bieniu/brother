@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="brother",
-    version="0.2.2",
+    version="1.0.0",
     author="Maciej Bieniek",
     description="Python wrapper for getting data from Brother laser and inkjet \
         printers via SNMP.",
