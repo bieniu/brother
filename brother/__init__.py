@@ -5,7 +5,7 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 import logging
 import re
 from datetime import datetime, timedelta
-from typing import Generator, Iterable
+from typing import Any, Generator, Iterable
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
@@ -42,7 +42,7 @@ REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 class DictToObj(dict):
     """Dictionary to object class."""
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name in self:
             return self[name]
         raise AttributeError("No such attribute: " + name)
