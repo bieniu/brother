@@ -305,13 +305,12 @@ async def test_empty_data():
     with patch("brother.Brother._get_data", return_value=None), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        try:
+            await brother.async_update()
+        except SnmpError as error:
+            assert str(error) == "The printer did not return data"
 
     brother.shutdown()
-
-    assert brother.model is None
-    assert brother.firmware is None
-    assert brother.serial is None
 
 
 @pytest.mark.asyncio

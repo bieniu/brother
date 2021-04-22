@@ -24,21 +24,19 @@ jobs:
         pip install -r requirements-test.txt
     - name: Check with isort
       run: |
-        pip install isort
         isort brother tests --check-only
     - name: Check with Black Code Formatter
       run: |
-        pip install black
         black brother tests --check
     - name: Lint with flake8
       run: |
-        pip install flake8
         flake8 brother tests
     - name: Lint with pylint
       run: |
-        pip install pylint
         pylint brother tests
+    - name: Test with mypy
+      run: |
+        mypy brother
     - name: Test with pytest
       run: |
-        pip install pytest
         python setup.py test

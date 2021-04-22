@@ -1,3 +1,9 @@
-pytest-cov
+black
+flake8
+isort
+mypy
+pylint
+pytest
 pytest-asyncio
+pytest-cov
 pytest-error-for-skips
