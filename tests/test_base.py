@@ -15,85 +15,82 @@ TEST_TIME = datetime(2019, 11, 11, 9, 10, 32)
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
     """Test with valid data from HL-L2340DW printer with invalid kind."""
-    with open("tests/data/hl-l2340dw.json") as file:
+    with open("tests/fixtures/hl-l2340dw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="foo")
 
     with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
     ), patch("brother.Brother._init_device"):
-        await brother.async_update()
+        sensors = await brother.async_update()
         assert mock_update.call_count == 1
 
         # second update to test uptime logic
-        await brother.async_update()
+        sensors = await brother.async_update()
         assert mock_update.call_count == 2
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "HL-L2340DW"
     assert brother.firmware == "1.17"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "oczekiwanie"
-    assert brother.data["black_toner"] == 80
-    assert brother.data["page_counter"] == 986
-    assert brother.data["uptime"].isoformat() == "2019-09-24T12:14:56"
+    assert getattr(sensors, "status") == "oczekiwanie"
+    assert getattr(sensors, "black_toner") == 80
+    assert getattr(sensors, "page_counter") == 986
+    assert getattr(sensors, "uptime").isoformat() == "2019-09-24T12:14:56"
 
 
 @pytest.mark.asyncio
 async def test_dcp_l3550cdw_model():
     """Test with valid data from DCP-L3550CDW printer."""
-    with open("tests/data/dcp-l3550cdw.json") as file:
+    with open("tests/fixtures/dcp-l3550cdw.json") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-L3550CDW"
     assert brother.firmware == "J1906051424"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "mało toneru (y)"
-    assert brother.data["black_toner"] == 30
-    assert brother.data["yellow_toner"] == 10
-    assert brother.data["magenta_toner"] == 10
-    assert brother.data["cyan_toner"] == 10
-    assert brother.data["page_counter"] == 1611
+    assert getattr(sensors, "status") == "mało toneru (y)"
+    assert getattr(sensors, "black_toner") == 30
+    assert getattr(sensors, "yellow_toner") == 10
+    assert getattr(sensors, "magenta_toner") == 10
+    assert getattr(sensors, "cyan_toner") == 10
+    assert getattr(sensors, "page_counter") == 1611
 
 
 @pytest.mark.asyncio
 async def test_dcp_j132w_model():
     """Test with valid data from DCP-J132W printer."""
-    with open("tests/data/dcp-j132w.json") as file:
+    with open("tests/fixtures/dcp-j132w.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-J132W"
     assert brother.firmware == "Q1906110144"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "ready"
-    assert brother.data["black_ink"] == 80
-    assert brother.data["page_counter"] == 879
+    assert getattr(sensors, "status") == "ready"
+    assert getattr(sensors, "black_ink") == 80
+    assert getattr(sensors, "page_counter") == 879
 
 
 @pytest.mark.asyncio
 async def test_mfc_5490cn_model():
     """Test with valid data from MFC-5490CN printer with no charset data."""
-    with open("tests/data/mfc-5490cn.json") as file:
+    with open("tests/fixtures/mfc-5490cn.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
     brother._legacy = True  # pylint:disable=protected-access
@@ -101,129 +98,124 @@ async def test_mfc_5490cn_model():
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
     ), patch("brother.Brother._init_device"):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-5490CN"
     assert brother.firmware == "U1005271959VER.E"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "sleep mode"
-    assert brother.data["page_counter"] == 8989
-    assert brother.data["uptime"].isoformat() == "2019-11-02T23:44:02"
+    assert getattr(sensors, "status") == "sleep mode"
+    assert getattr(sensors, "page_counter") == 8989
+    assert getattr(sensors, "uptime").isoformat() == "2019-11-02T23:44:02"
 
 
 @pytest.mark.asyncio
 async def test_dcp_l2540dw_model():
     """Test with valid data from DCP-L2540DN printer with status in Russian."""
-    with open("tests/data/dcp-l2540dn.json") as file:
+    with open("tests/fixtures/dcp-l2540dn.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-L2540DN"
     assert brother.firmware == "R1906110243"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "спящий режим"
-    assert brother.data["black_toner_remaining"] == 55
-    assert brother.data["page_counter"] == 333
+    assert getattr(sensors, "status") == "спящий режим"
+    assert getattr(sensors, "black_toner_remaining") == 55
+    assert getattr(sensors, "page_counter") == 333
 
 
 @pytest.mark.asyncio
 async def test_dcp_7070dw_model():
     """Test with valid data from DCP-7070DW printer with status in Dutch."""
-    with open("tests/data/dcp-7070dw.json") as file:
+    with open("tests/fixtures/dcp-7070dw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
     ), patch("brother.Brother._init_device"):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
-    assert brother.available is True
     assert brother.model == "DCP-7070DW"
     assert brother.firmware == "U1307022128VER.J"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "stap. kopieën:01"
-    assert brother.data["black_toner_remaining"] == 72
-    assert brother.data["page_counter"] == 2652
-    assert brother.data["drum_counter"] == 1603
-    assert brother.data["drum_remaining_life"] == 88
-    assert brother.data["drum_remaining_pages"] == 10397
-    assert brother.data["uptime"].isoformat() == "2018-11-30T13:43:26"
+    assert getattr(sensors, "status") == "stap. kopieën:01"
+    assert getattr(sensors, "black_toner_remaining") == 72
+    assert getattr(sensors, "page_counter") == 2652
+    assert getattr(sensors, "drum_counter") == 1603
+    assert getattr(sensors, "drum_remaining_life") == 88
+    assert getattr(sensors, "drum_remaining_pages") == 10397
+    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:43:26"
 
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.data["uptime"].isoformat() == "2018-11-30T13:53:26"
+    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:53:26"
 
 
 @pytest.mark.asyncio
 async def test_mfc_j680dw_model():
     """Test with valid data from MFC-J680DW printer with status in Turkish."""
-    with open("tests/data/mfc-j680dw.json") as file:
+    with open("tests/fixtures/mfc-j680dw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-J680DW"
     assert brother.firmware == "U1804191714VER.J"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "uyku"
-    assert brother.data["black_ink"] == 47
-    assert brother.data["color_counter"] == 491
+    assert getattr(sensors, "status") == "uyku"
+    assert getattr(sensors, "black_ink") == 47
+    assert getattr(sensors, "color_counter") == 491
 
 
 @pytest.mark.asyncio
 async def test_dcp_9020cdw_model():
     """Test with valid data from DCP-9020CDW printer."""
-    with open("tests/data/dcp-9020cdw.json") as file:
+    with open("tests/fixtures/dcp-9020cdw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "DCP-9020CDW"
     assert brother.firmware == "ZA1811191217"
     assert brother.serial == "E71833C4J372261"
-    assert brother.data["status"] == "tryb uśpienia"
-    assert brother.data["cyan_drum_remaining_life"] == 68
-    assert brother.data["cyan_drum_counter"] == 4939
-    assert brother.data["cyan_drum_remaining_pages"] == 10061
+    assert getattr(sensors, "status") == "tryb uśpienia"
+    assert getattr(sensors, "cyan_drum_remaining_life") == 68
+    assert getattr(sensors, "cyan_drum_counter") == 4939
+    assert getattr(sensors, "cyan_drum_remaining_pages") == 10061
 
 
 @pytest.mark.asyncio
 async def test_hl_2270dw_model():
     """Test with valid data from HL-2270DW printer."""
-    with open("tests/data/hl-2270dw.json") as file:
+    with open("tests/fixtures/hl-2270dw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
     brother._counters = False  # pylint:disable=protected-access
@@ -231,52 +223,54 @@ async def test_hl_2270dw_model():
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "HL-2270DW"
     assert brother.firmware == "1.16"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "sleep"
-    assert brother.data["page_counter"] == 4191
-    assert brother.data["drum_remaining_pages"] == 7809
+    assert getattr(sensors, "status") == "sleep"
+    assert getattr(sensors, "page_counter") == 4191
+    assert getattr(sensors, "drum_remaining_pages") == 7809
 
 
 @pytest.mark.asyncio
 async def test_mfc_t910dw_model():
     """Test with valid data from MFC-T910DW printer."""
-    with open("tests/data/mfc-t910dw.json") as file:
+    with open("tests/fixtures/mfc-t910dw.json") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        sensors = await brother.async_update()
 
     brother.shutdown()
 
-    assert brother.available is True
     assert brother.model == "MFC-T910DW"
     assert brother.firmware == "M2009041848"
     assert brother.serial == "serial_number"
-    assert brother.data["status"] == "oczekiwanie"
-    assert brother.data["page_counter"] == 3384
-    assert brother.data["color_counter"] == 3199
-    assert brother.data["b/w_counter"] == 185
-    assert brother.data["duplex_unit_pages_counter"] == 1445
-    assert brother.data["black_ink_status"] == 1
-    assert brother.data["cyan_ink_status"] == 1
-    assert brother.data["magenta_ink_status"] == 1
-    assert brother.data["yellow_ink_status"] == 1
+    assert getattr(sensors, "status") == "oczekiwanie"
+    assert getattr(sensors, "page_counter") == 3384
+    assert getattr(sensors, "color_counter") == 3199
+    assert getattr(sensors, "b/w_counter") == 185
+    assert getattr(sensors, "duplex_unit_pages_counter") == 1445
+    assert getattr(sensors, "black_ink_status") == 1
+    assert getattr(sensors, "cyan_ink_status") == 1
+    assert getattr(sensors, "magenta_ink_status") == 1
+    assert getattr(sensors, "yellow_ink_status") == 1
+    try:
+        getattr(sensors, "foo")
+    except AttributeError as error:
+        assert str(error) == "No such attribute: foo"
 
 
 @pytest.mark.asyncio
 async def test_invalid_data():
     """Test with invalid data from printer."""
-    with open("tests/data/invalid.json") as file:
+    with open("tests/fixtures/invalid.json") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
@@ -291,7 +285,7 @@ async def test_invalid_data():
 @pytest.mark.asyncio
 async def test_incomplete_data():
     """Test with incomplete data from printer."""
-    with open("tests/data/incomplete.json") as file:
+    with open("tests/fixtures/incomplete.json") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
@@ -302,8 +296,6 @@ async def test_incomplete_data():
 
     brother.shutdown()
 
-    assert brother.available is True
-
 
 @pytest.mark.asyncio
 async def test_empty_data():
@@ -313,14 +305,12 @@ async def test_empty_data():
     with patch("brother.Brother._get_data", return_value=None), patch(
         "brother.Brother._init_device"
     ):
-        await brother.async_update()
+        try:
+            await brother.async_update()
+        except SnmpError as error:
+            assert str(error) == "The printer did not return data"
 
     brother.shutdown()
-
-    assert brother.available is False
-    assert brother.model is None
-    assert brother.firmware is None
-    assert brother.serial is None
 
 
 @pytest.mark.asyncio

@@ -5,6 +5,7 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 import logging
 import re
 from datetime import datetime, timedelta
+from typing import Generator, Iterable
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
@@ -38,10 +39,25 @@ _LOGGER = logging.getLogger(__name__)
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 
 
+class DictToObj(dict):
+    """Dictionary to object class."""
+
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        raise AttributeError("No such attribute: " + name)
+
+
 class Brother:  # pylint:disable=too-many-instance-attributes
     """Main class to perform snmp requests to printer."""
 
-    def __init__(self, host, port=161, kind="laser", snmp_engine=None):
+    def __init__(
+        self,
+        host: str,
+        port: int = 161,
+        kind: str = "laser",
+        snmp_engine: hlapi.SnmpEngine = None,
+    ):
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument, 'laser' was used")
@@ -50,8 +66,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             self._kind = kind
 
         self._legacy = False
-
-        self.data = {}
 
         self.firmware = None
         self.model = None
@@ -66,15 +80,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(
-        self,
-    ):  # pylint:disable=too-many-branches,too-many-statements
+    # pylint:disable=too-many-branches,too-many-statements
+    async def async_update(self):
         """Update data from printer."""
         raw_data = await self._get_data()
 
         if not raw_data:
-            self.data = {}
-            return
+            raise SnmpError("The printer did not return data")
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
@@ -191,19 +203,14 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except ValueError:
             pass
         _LOGGER.debug("Data: %s", data)
-        self.data = data
+        return DictToObj(data)
 
-    @property
-    def available(self):
-        """Return True is data is available."""
-        return bool(self.data)
-
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
         if self._snmp_engine:
             lcd.unconfigure(self._snmp_engine, None)
 
-    async def _get_data(self):
+    async def _get_data(self) -> dict:
         """Retreive data from printer."""
         raw_data = {}
 
@@ -226,13 +233,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 *request_args, *self._oids
             )
         except PySnmpError as err:
-            self.data = {}
             raise ConnectionError(err) from err
         if errindication:
-            self.data = {}
             raise SnmpError(errindication)
         if errstatus:
-            self.data = {}
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
@@ -270,7 +274,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     break
         return raw_data
 
-    async def _init_device(self):
+    async def _init_device(self) -> None:
         """Check if the device sends counters."""
         oids = tuple(self._iterate_oids(OIDS.values()))
         try:
@@ -302,7 +306,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self._need_init = False
 
     @classmethod
-    def _legacy_printer(cls, string):
+    def _legacy_printer(cls, string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]
@@ -312,13 +316,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         return False
 
     @classmethod
-    def _iterate_oids(cls, oids):
+    def _iterate_oids(cls, oids: Iterable) -> Generator:
         """Iterate OIDS to retreive from printer."""
         for oid in oids:
             yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
 
     @classmethod
-    def _iterate_data(cls, iterable, values_map):
+    def _iterate_data(cls, iterable: Iterable, values_map: dict) -> Generator:
         """Iterate data from hex words."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -329,7 +333,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
     @classmethod
-    def _iterate_data_legacy(cls, iterable, values_map):
+    def _iterate_data_legacy(cls, iterable: Iterable, values_map: dict):
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -343,7 +347,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 class SnmpError(Exception):
     """Raised when SNMP request ended in error."""
 
-    def __init__(self, status):
+    def __init__(self, status: str):
         """Initialize."""
         super().__init__(status)
         self.status = status
@@ -352,7 +356,7 @@ class SnmpError(Exception):
 class UnsupportedModel(Exception):
     """Raised when no model, serial no, firmware data."""
 
-    def __init__(self, status):
+    def __init__(self, status: str):
         """Initialize."""
         super().__init__(status)
         self.status = status
