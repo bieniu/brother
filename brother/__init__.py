@@ -2,10 +2,12 @@
 Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
 the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
+from __future__ import annotations
+
 import logging
 import re
 from datetime import datetime, timedelta
-from typing import Any, Generator, Iterable
+from typing import Any, Generator, Iterable, cast
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
@@ -57,7 +59,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         port: int = 161,
         kind: str = "laser",
         snmp_engine: hlapi.SnmpEngine = None,
-    ):
+    ) -> None:
         """Initialize."""
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument, 'laser' was used")
@@ -90,7 +92,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data = {}
+        data: dict[str, Any] = {}
 
         try:
             self.model = re.search(
@@ -210,7 +212,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         if self._snmp_engine:
             lcd.unconfigure(self._snmp_engine, None)
 
-    async def _get_data(self) -> dict:
+    async def _get_data(self) -> dict[str, str]:
         """Retreive data from printer."""
         raw_data = {}
 
@@ -347,7 +349,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 class SnmpError(Exception):
     """Raised when SNMP request ended in error."""
 
-    def __init__(self, status: str):
+    def __init__(self, status: str) -> None:
         """Initialize."""
         super().__init__(status)
         self.status = status
@@ -356,7 +358,7 @@ class SnmpError(Exception):
 class UnsupportedModel(Exception):
     """Raised when no model, serial no, firmware data."""
 
-    def __init__(self, status: str):
+    def __init__(self, status: str) -> None:
         """Initialize."""
         super().__init__(status)
         self.status = status
