@@ -83,7 +83,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         _LOGGER.debug("Using host: %s", host)
 
     # pylint:disable=too-many-branches,too-many-statements
-    async def async_update(self):
+    async def async_update(self) -> DictToObj:
         """Update data from printer."""
         raw_data = await self._get_data()
 
@@ -92,21 +92,21 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data: dict[str, Any] = {}
+        data = DictToObj({})
 
         try:
-            self.model = re.search(
+            self.model = re.search(  # type: ignore
                 REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
             ).group("model")
             data[ATTR_MODEL] = self.model
-            self.serial = raw_data[OIDS[ATTR_SERIAL]]
+            self.serial = raw_data[OIDS[ATTR_SERIAL]]  # type: ignore[assignment]
             data[ATTR_SERIAL] = self.serial
         except (TypeError, AttributeError) as err:
             raise UnsupportedModel(
                 "It seems that this printer model is not supported"
             ) from err
         try:
-            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
+            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]  # type: ignore[assignment]
             data[ATTR_FIRMWARE] = self.firmware
 
             # If no charset data from the printer use roman8 as default
@@ -125,12 +125,12 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except (AttributeError, KeyError, TypeError):
             _LOGGER.debug("Incomplete data from printer")
         try:
-            uptime = int(raw_data.get(OIDS[ATTR_UPTIME])) / 100
+            uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
         except TypeError:
             pass
         else:
             if not self._last_uptime:
-                data[ATTR_UPTIME] = self._last_uptime = (
+                data[ATTR_UPTIME] = self._last_uptime = (  # type: ignore[assignment]
                     datetime.utcnow() - timedelta(seconds=uptime)
                 ).replace(microsecond=0)
             else:
@@ -201,11 +201,13 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         # page counter for old printer models
         try:
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
-                data[ATTR_PAGE_COUNT] = int(raw_data.get(OIDS[ATTR_PAGE_COUNT]))
+                data[ATTR_PAGE_COUNT] = int(
+                    cast(str, raw_data.get(OIDS[ATTR_PAGE_COUNT]))
+                )
         except ValueError:
             pass
         _LOGGER.debug("Data: %s", data)
-        return DictToObj(data)
+        return data
 
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
