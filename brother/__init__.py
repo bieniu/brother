@@ -95,18 +95,18 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         data = DictToObj({})
 
         try:
-            self.model = re.search(  # type: ignore
+            self.model = re.search(  # type: ignore[union-attr]
                 REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
             ).group("model")
             data[ATTR_MODEL] = self.model
-            self.serial = raw_data[OIDS[ATTR_SERIAL]]  # type: ignore[assignment]
+            self.serial = raw_data[OIDS[ATTR_SERIAL]]
             data[ATTR_SERIAL] = self.serial
         except (TypeError, AttributeError) as err:
             raise UnsupportedModel(
                 "It seems that this printer model is not supported"
             ) from err
         try:
-            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]  # type: ignore[assignment]
+            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
             data[ATTR_FIRMWARE] = self.firmware
 
             # If no charset data from the printer use roman8 as default
@@ -214,7 +214,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         if self._snmp_engine:
             lcd.unconfigure(self._snmp_engine, None)
 
-    async def _get_data(self) -> dict[str, str]:
+    async def _get_data(self) -> dict[str, Any]:
         """Retreive data from printer."""
         raw_data = {}
 
