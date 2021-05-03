@@ -1,87 +1,87 @@
 """Constants for Brother Printer library."""
-from typing import Dict, Final, List
+from typing import Dict, List
 
-ATTR_CHARSET: Final = "charset"
-ATTR_COUNTERS: Final = "counters"
-ATTR_FIRMWARE: Final = "firmware"
-ATTR_MAINTENANCE: Final = "maintenance"
-ATTR_MODEL: Final = "model"
-ATTR_NEXTCARE: Final = "nextcare"
-ATTR_PAGE_COUNT: Final = "page_counter"
-ATTR_SERIAL: Final = "serial"
-ATTR_STATUS: Final = "status"
-ATTR_UPTIME: Final = "uptime"
+ATTR_CHARSET: str = "charset"
+ATTR_COUNTERS: str = "counters"
+ATTR_FIRMWARE: str = "firmware"
+ATTR_MAINTENANCE: str = "maintenance"
+ATTR_MODEL: str = "model"
+ATTR_NEXTCARE: str = "nextcare"
+ATTR_PAGE_COUNT: str = "page_counter"
+ATTR_SERIAL: str = "serial"
+ATTR_STATUS: str = "status"
+ATTR_UPTIME: str = "uptime"
 
-VAL_BELT_REMAIN: Final = "belt_unit_remaining_life"
-VAL_BELT_REMAIN_PAGES: Final = "belt_unit_remaining_pages"
-VAL_BLACK_COUNT: Final = "black_counter"
-VAL_BLACK_DRUM_COUNT: Final = "black_drum_counter"
-VAL_BLACK_DRUM_REMAIN: Final = "black_drum_remaining_life"
-VAL_BLACK_DRUM_REMAIN_PAGES: Final = "black_drum_remaining_pages"
-VAL_BLACK_INK: Final = "black_ink"
-VAL_BLACK_INK_REMAIN: Final = "black_ink_remaining"
-VAL_BLACK_INK_STATUS: Final = "black_ink_status"
-VAL_BLACK_TONER: Final = "black_toner"
-VAL_BLACK_TONER_REMAIN: Final = "black_toner_remaining"
-VAL_BLACK_TONER_STATUS: Final = "black_toner_status"
-VAL_BW_COUNT: Final = "b/w_counter"
-VAL_COLOR_COUNT: Final = "color_counter"
-VAL_CYAN_COUNT: Final = "cyan_counter"
-VAL_CYAN_DRUM_COUNT: Final = "cyan_drum_counter"
-VAL_CYAN_DRUM_REMAIN: Final = "cyan_drum_remaining_life"
-VAL_CYAN_DRUM_REMAIN_PAGES: Final = "cyan_drum_remaining_pages"
-VAL_CYAN_INK: Final = "cyan_ink"
-VAL_CYAN_INK_REMAIN: Final = "cyan_ink_remaining"
-VAL_CYAN_INK_STATUS: Final = "cyan_ink_status"
-VAL_CYAN_TONER: Final = "cyan_toner"
-VAL_CYAN_TONER_REMAIN: Final = "cyan_toner_remaining"
-VAL_CYAN_TONER_STATUS: Final = "cyan_toner_status"
-VAL_DRUM_COUNT: Final = "drum_counter"
-VAL_DRUM_REMAIN: Final = "drum_remaining_life"
-VAL_DRUM_REMAIN_PAGES: Final = "drum_remaining_pages"
-VAL_DRUM_STATUS: Final = "drum_status"
-VAL_DUPLEX_COUNT: Final = "duplex_unit_pages_counter"
-VAL_FUSER_REMAIN: Final = "fuser_remaining_life"
-VAL_FUSER_REMAIN_PAGES: Final = "fuser_unit_remaining_pages"
-VAL_IMAGE_COUNT: Final = "image_counter"
-VAL_LASER_REMAIN: Final = "laser_remaining_life"
-VAL_LASER_REMAIN_PAGES: Final = "laser_unit_remaining_pages"
-VAL_MAGENTA_COUNT: Final = "magenta_counter"
-VAL_MAGENTA_DRUM_COUNT: Final = "magenta_drum_counter"
-VAL_MAGENTA_DRUM_REMAIN: Final = "magenta_drum_remaining_life"
-VAL_MAGENTA_DRUM_REMAIN_PAGES: Final = "magenta_drum_remaining_pages"
-VAL_MAGENTA_INK: Final = "magenta_ink"
-VAL_MAGENTA_INK_REMAIN: Final = "magenta_ink_remaining"
-VAL_MAGENTA_INK_STATUS: Final = "magenta_ink_status"
-VAL_MAGENTA_TONER: Final = "magenta_toner"
-VAL_MAGENTA_TONER_REMAIN: Final = "magenta_toner_remaining"
-VAL_MAGENTA_TONER_STATUS: Final = "magenta_toner_status"
-VAL_PAGE_COUNT: Final = "page_counter"
-VAL_PF_1_REMAIN: Final = "pf_kit_1_remaining_life"
-VAL_PF_1_REMAIN_PAGES: Final = "pf_kit_1_remaining_pages"
-VAL_PF_MP_REMAIN: Final = "pf_kit_mp_remaining_life"
-VAL_PF_MP_REMAIN_PAGES: Final = "pf_kit_mp_remaining_pages"
-VAL_YELLOW_COUNT: Final = "yellow_counter"
-VAL_YELLOW_DRUM_COUNT: Final = "yellow_drum_counter"
-VAL_YELLOW_DRUM_REMAIN: Final = "yellow_drum_remaining_life"
-VAL_YELLOW_DRUM_REMAIN_PAGES: Final = "yellow_drum_remaining_pages"
-VAL_YELLOW_INK: Final = "yellow_ink"
-VAL_YELLOW_INK_REMAIN: Final = "yellow_ink_remaining"
-VAL_YELLOW_INK_STATUS: Final = "yellow_ink_status"
-VAL_YELLOW_TONER: Final = "yellow_toner"
-VAL_YELLOW_TONER_REMAIN: Final = "yellow_toner_remaining"
-VAL_YELLOW_TONER_STATUS: Final = "yellow_toner_status"
+VAL_BELT_REMAIN: str = "belt_unit_remaining_life"
+VAL_BELT_REMAIN_PAGES: str = "belt_unit_remaining_pages"
+VAL_BLACK_COUNT: str = "black_counter"
+VAL_BLACK_DRUM_COUNT: str = "black_drum_counter"
+VAL_BLACK_DRUM_REMAIN: str = "black_drum_remaining_life"
+VAL_BLACK_DRUM_REMAIN_PAGES: str = "black_drum_remaining_pages"
+VAL_BLACK_INK: str = "black_ink"
+VAL_BLACK_INK_REMAIN: str = "black_ink_remaining"
+VAL_BLACK_INK_STATUS: str = "black_ink_status"
+VAL_BLACK_TONER: str = "black_toner"
+VAL_BLACK_TONER_REMAIN: str = "black_toner_remaining"
+VAL_BLACK_TONER_STATUS: str = "black_toner_status"
+VAL_BW_COUNT: str = "b/w_counter"
+VAL_COLOR_COUNT: str = "color_counter"
+VAL_CYAN_COUNT: str = "cyan_counter"
+VAL_CYAN_DRUM_COUNT: str = "cyan_drum_counter"
+VAL_CYAN_DRUM_REMAIN: str = "cyan_drum_remaining_life"
+VAL_CYAN_DRUM_REMAIN_PAGES: str = "cyan_drum_remaining_pages"
+VAL_CYAN_INK: str = "cyan_ink"
+VAL_CYAN_INK_REMAIN: str = "cyan_ink_remaining"
+VAL_CYAN_INK_STATUS: str = "cyan_ink_status"
+VAL_CYAN_TONER: str = "cyan_toner"
+VAL_CYAN_TONER_REMAIN: str = "cyan_toner_remaining"
+VAL_CYAN_TONER_STATUS: str = "cyan_toner_status"
+VAL_DRUM_COUNT: str = "drum_counter"
+VAL_DRUM_REMAIN: str = "drum_remaining_life"
+VAL_DRUM_REMAIN_PAGES: str = "drum_remaining_pages"
+VAL_DRUM_STATUS: str = "drum_status"
+VAL_DUPLEX_COUNT: str = "duplex_unit_pages_counter"
+VAL_FUSER_REMAIN: str = "fuser_remaining_life"
+VAL_FUSER_REMAIN_PAGES: str = "fuser_unit_remaining_pages"
+VAL_IMAGE_COUNT: str = "image_counter"
+VAL_LASER_REMAIN: str = "laser_remaining_life"
+VAL_LASER_REMAIN_PAGES: str = "laser_unit_remaining_pages"
+VAL_MAGENTA_COUNT: str = "magenta_counter"
+VAL_MAGENTA_DRUM_COUNT: str = "magenta_drum_counter"
+VAL_MAGENTA_DRUM_REMAIN: str = "magenta_drum_remaining_life"
+VAL_MAGENTA_DRUM_REMAIN_PAGES: str = "magenta_drum_remaining_pages"
+VAL_MAGENTA_INK: str = "magenta_ink"
+VAL_MAGENTA_INK_REMAIN: str = "magenta_ink_remaining"
+VAL_MAGENTA_INK_STATUS: str = "magenta_ink_status"
+VAL_MAGENTA_TONER: str = "magenta_toner"
+VAL_MAGENTA_TONER_REMAIN: str = "magenta_toner_remaining"
+VAL_MAGENTA_TONER_STATUS: str = "magenta_toner_status"
+VAL_PAGE_COUNT: str = "page_counter"
+VAL_PF_1_REMAIN: str = "pf_kit_1_remaining_life"
+VAL_PF_1_REMAIN_PAGES: str = "pf_kit_1_remaining_pages"
+VAL_PF_MP_REMAIN: str = "pf_kit_mp_remaining_life"
+VAL_PF_MP_REMAIN_PAGES: str = "pf_kit_mp_remaining_pages"
+VAL_YELLOW_COUNT: str = "yellow_counter"
+VAL_YELLOW_DRUM_COUNT: str = "yellow_drum_counter"
+VAL_YELLOW_DRUM_REMAIN: str = "yellow_drum_remaining_life"
+VAL_YELLOW_DRUM_REMAIN_PAGES: str = "yellow_drum_remaining_pages"
+VAL_YELLOW_INK: str = "yellow_ink"
+VAL_YELLOW_INK_REMAIN: str = "yellow_ink_remaining"
+VAL_YELLOW_INK_STATUS: str = "yellow_ink_status"
+VAL_YELLOW_TONER: str = "yellow_toner"
+VAL_YELLOW_TONER_REMAIN: str = "yellow_toner_remaining"
+VAL_YELLOW_TONER_STATUS: str = "yellow_toner_status"
 
-CHARSET_MAP: Final[Dict[str, str]] = {
+CHARSET_MAP: Dict[str, str] = {
     "5": "latin2",
     "2004": "roman8",
     "8": "cyrillic",
     "12": "latin5",
 }
 
-KINDS: Final[List[str]] = ["ink", "laser"]
+KINDS: List[str] = ["ink", "laser"]
 
-OIDS_WITHOUT_COUNTERS: Final[Dict[str, str]] = {
+OIDS_WITHOUT_COUNTERS: Dict[str, str] = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
@@ -93,12 +93,12 @@ OIDS_WITHOUT_COUNTERS: Final[Dict[str, str]] = {
     ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
 }
 
-OIDS: Final[Dict[str, str]] = {
+OIDS: Dict[str, str] = {
     **OIDS_WITHOUT_COUNTERS,
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
 }
 
-VALUES_COUNTERS: Final[Dict[str, str]] = {
+VALUES_COUNTERS: Dict[str, str] = {
     "00": VAL_PAGE_COUNT,
     "01": VAL_BW_COUNT,
     "02": VAL_COLOR_COUNT,
@@ -110,7 +110,7 @@ VALUES_COUNTERS: Final[Dict[str, str]] = {
     "16": VAL_IMAGE_COUNT,
 }
 
-VALUES_LASER_MAINTENANCE: Final[Dict[str, str]] = {
+VALUES_LASER_MAINTENANCE: Dict[str, str] = {
     "11": VAL_DRUM_COUNT,
     "31": VAL_BLACK_TONER_STATUS,
     "32": VAL_CYAN_TONER_STATUS,
@@ -145,7 +145,7 @@ VALUES_LASER_MAINTENANCE: Final[Dict[str, str]] = {
     "a4": VAL_YELLOW_TONER_REMAIN,
 }
 
-VALUES_INK_MAINTENANCE: Final[Dict[str, str]] = {
+VALUES_INK_MAINTENANCE: Dict[str, str] = {
     "31": VAL_BLACK_INK_STATUS,
     "32": VAL_CYAN_INK_STATUS,
     "33": VAL_MAGENTA_INK_STATUS,
@@ -164,7 +164,7 @@ VALUES_INK_MAINTENANCE: Final[Dict[str, str]] = {
     "a4": VAL_YELLOW_INK_REMAIN,
 }
 
-VALUES_LASER_NEXTCARE: Final[Dict[str, str]] = {
+VALUES_LASER_NEXTCARE: Dict[str, str] = {
     "73": VAL_LASER_REMAIN_PAGES,
     "77": VAL_PF_1_REMAIN_PAGES,
     "82": VAL_DRUM_REMAIN_PAGES,
@@ -177,7 +177,7 @@ VALUES_LASER_NEXTCARE: Final[Dict[str, str]] = {
     "a7": VAL_YELLOW_DRUM_REMAIN_PAGES,
 }
 
-PERCENT_VALUES: Final[List[str]] = [
+PERCENT_VALUES: List[str] = [
     VAL_BELT_REMAIN,
     VAL_BLACK_DRUM_REMAIN,
     VAL_BLACK_INK_REMAIN,
@@ -198,7 +198,7 @@ PERCENT_VALUES: Final[List[str]] = [
     VAL_YELLOW_TONER_REMAIN,
 ]
 
-OIDS_HEX: Final[List[str]] = [
+OIDS_HEX: List[str] = [
     OIDS[ATTR_COUNTERS],
     OIDS[ATTR_MAINTENANCE],
     OIDS[ATTR_NEXTCARE],
