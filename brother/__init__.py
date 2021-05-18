@@ -4,7 +4,7 @@ the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounter
 """
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Generator, Iterable, cast
 
 import pysnmp.hlapi.asyncio as hlapi
@@ -130,10 +130,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
             if not self._last_uptime:
                 data[ATTR_UPTIME] = self._last_uptime = (  # type: ignore[assignment]
                     datetime.utcnow() - timedelta(seconds=uptime)
-                ).replace(microsecond=0)
+                ).replace(microsecond=0, tzinfo=timezone.utc)
             else:
                 new_uptime = (datetime.utcnow() - timedelta(seconds=uptime)).replace(
-                    microsecond=0
+                    microsecond=0, tzinfo=timezone.utc
                 )
                 if abs((new_uptime - self._last_uptime).total_seconds()) > 5:
                     data[ATTR_UPTIME] = self._last_uptime = new_uptime
