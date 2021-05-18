@@ -37,7 +37,7 @@ async def test_hl_l2340dw_model():
     assert getattr(sensors, "status") == "oczekiwanie"
     assert getattr(sensors, "black_toner") == 80
     assert getattr(sensors, "page_counter") == 986
-    assert getattr(sensors, "uptime").isoformat() == "2019-09-24T12:14:56"
+    assert getattr(sensors, "uptime").isoformat() == "2019-09-24T12:14:56+00:00"
 
 
 @pytest.mark.asyncio
@@ -107,7 +107,7 @@ async def test_mfc_5490cn_model():
     assert brother.serial == "serial_number"
     assert getattr(sensors, "status") == "sleep mode"
     assert getattr(sensors, "page_counter") == 8989
-    assert getattr(sensors, "uptime").isoformat() == "2019-11-02T23:44:02"
+    assert getattr(sensors, "uptime").isoformat() == "2019-11-02T23:44:02+00:00"
 
 
 @pytest.mark.asyncio
@@ -153,7 +153,7 @@ async def test_dcp_7070dw_model():
     assert getattr(sensors, "drum_counter") == 1603
     assert getattr(sensors, "drum_remaining_life") == 88
     assert getattr(sensors, "drum_remaining_pages") == 10397
-    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:43:26"
+    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:43:26+00:00"
 
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
@@ -164,7 +164,7 @@ async def test_dcp_7070dw_model():
 
     brother.shutdown()
 
-    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:53:26"
+    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:53:26+00:00"
 
 
 @pytest.mark.asyncio
