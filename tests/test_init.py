@@ -15,7 +15,7 @@ TEST_TIME = datetime(2019, 11, 11, 9, 10, 32)
 @pytest.mark.asyncio
 async def test_hl_l2340dw_model():
     """Test with valid data from HL-L2340DW printer with invalid kind."""
-    with open("tests/fixtures/hl-l2340dw.json") as file:
+    with open("tests/fixtures/hl-l2340dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="foo")
 
@@ -43,7 +43,7 @@ async def test_hl_l2340dw_model():
 @pytest.mark.asyncio
 async def test_dcp_l3550cdw_model():
     """Test with valid data from DCP-L3550CDW printer."""
-    with open("tests/fixtures/dcp-l3550cdw.json") as file:
+    with open("tests/fixtures/dcp-l3550cdw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
@@ -68,7 +68,7 @@ async def test_dcp_l3550cdw_model():
 @pytest.mark.asyncio
 async def test_dcp_j132w_model():
     """Test with valid data from DCP-J132W printer."""
-    with open("tests/fixtures/dcp-j132w.json") as file:
+    with open("tests/fixtures/dcp-j132w.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
@@ -90,7 +90,7 @@ async def test_dcp_j132w_model():
 @pytest.mark.asyncio
 async def test_mfc_5490cn_model():
     """Test with valid data from MFC-5490CN printer with no charset data."""
-    with open("tests/fixtures/mfc-5490cn.json") as file:
+    with open("tests/fixtures/mfc-5490cn.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
     brother._legacy = True  # pylint:disable=protected-access
@@ -113,7 +113,7 @@ async def test_mfc_5490cn_model():
 @pytest.mark.asyncio
 async def test_dcp_l2540dw_model():
     """Test with valid data from DCP-L2540DN printer with status in Russian."""
-    with open("tests/fixtures/dcp-l2540dn.json") as file:
+    with open("tests/fixtures/dcp-l2540dn.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
@@ -135,7 +135,7 @@ async def test_dcp_l2540dw_model():
 @pytest.mark.asyncio
 async def test_dcp_7070dw_model():
     """Test with valid data from DCP-7070DW printer with status in Dutch."""
-    with open("tests/fixtures/dcp-7070dw.json") as file:
+    with open("tests/fixtures/dcp-7070dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
@@ -170,7 +170,7 @@ async def test_dcp_7070dw_model():
 @pytest.mark.asyncio
 async def test_mfc_j680dw_model():
     """Test with valid data from MFC-J680DW printer with status in Turkish."""
-    with open("tests/fixtures/mfc-j680dw.json") as file:
+    with open("tests/fixtures/mfc-j680dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
@@ -192,7 +192,7 @@ async def test_mfc_j680dw_model():
 @pytest.mark.asyncio
 async def test_dcp_9020cdw_model():
     """Test with valid data from DCP-9020CDW printer."""
-    with open("tests/fixtures/dcp-9020cdw.json") as file:
+    with open("tests/fixtures/dcp-9020cdw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
 
@@ -215,7 +215,7 @@ async def test_dcp_9020cdw_model():
 @pytest.mark.asyncio
 async def test_hl_2270dw_model():
     """Test with valid data from HL-2270DW printer."""
-    with open("tests/fixtures/hl-2270dw.json") as file:
+    with open("tests/fixtures/hl-2270dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="laser")
     brother._counters = False  # pylint:disable=protected-access
@@ -238,7 +238,7 @@ async def test_hl_2270dw_model():
 @pytest.mark.asyncio
 async def test_mfc_t910dw_model():
     """Test with valid data from MFC-T910DW printer."""
-    with open("tests/fixtures/mfc-t910dw.json") as file:
+    with open("tests/fixtures/mfc-t910dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, kind="ink")
 
@@ -270,7 +270,7 @@ async def test_mfc_t910dw_model():
 @pytest.mark.asyncio
 async def test_invalid_data():
     """Test with invalid data from printer."""
-    with open("tests/fixtures/invalid.json") as file:
+    with open("tests/fixtures/invalid.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
@@ -285,7 +285,7 @@ async def test_invalid_data():
 @pytest.mark.asyncio
 async def test_incomplete_data():
     """Test with incomplete data from printer."""
-    with open("tests/fixtures/incomplete.json") as file:
+    with open("tests/fixtures/incomplete.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
 
