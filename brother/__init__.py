@@ -62,7 +62,7 @@ class Brother:
         port: int = 161,
         kind: str = "laser",
         snmp_engine: hlapi.SnmpEngine = None,
-        model: Optional[str] = None,
+        model: str | None = None,
     ) -> None:
         """Initialize."""
         if model:
