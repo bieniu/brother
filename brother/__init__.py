@@ -66,6 +66,7 @@ class Brother:
     ) -> None:
         """Initialize."""
         if model:
+            _LOGGER.debug("model: %s", model)
             for unsupported_model in UNSUPPORTED_MODELS:
                 if unsupported_model in model.lower():
                     raise UnsupportedModel(
