@@ -205,3 +205,5 @@ OIDS_HEX: Final[list[str]] = [
     OIDS[ATTR_MAINTENANCE],
     OIDS[ATTR_NEXTCARE],
 ]
+
+UNSUPPORTED_MODELS: List[str] = ["mfc-8660dn", "mfc-8860dn"]

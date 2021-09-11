@@ -36,6 +36,7 @@ from .const import (
     VALUES_INK_MAINTENANCE,
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
+    UNSUPPORTED_MODELS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,14 +56,22 @@ class DictToObj(dict):
 class Brother:
     """Main class to perform snmp requests to printer."""
 
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         host: str,
         port: int = 161,
         kind: str = "laser",
         snmp_engine: hlapi.SnmpEngine = None,
+        model: Optional[str] = None,
     ) -> None:
         """Initialize."""
+        if model:
+            for unsupported_model in UNSUPPORTED_MODELS:
+                if unsupported_model in model.lower():
+                    raise UnsupportedModel(
+                        "It seems that this printer model is not supported"
+                    )
+
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument, 'laser' was used")
             self._kind = "laser"
