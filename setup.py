@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from setuptools import setup
 
 
@@ -17,12 +16,15 @@ setup(
     url="https://github.com/bieniu/brother",
     license="Apache-2.0 License",
     packages=["brother"],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=list(val.strip() for val in open("requirements.txt")),
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     setup_requires=("pytest-runner"),
     tests_require=list(val.strip() for val in open("requirements-test.txt")),
