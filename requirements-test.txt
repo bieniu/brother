@@ -7,3 +7,4 @@ pytest
 pytest-asyncio
 pytest-cov
 pytest-error-for-skips
+pylint_strict_informational
