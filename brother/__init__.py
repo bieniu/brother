@@ -2,10 +2,13 @@
 Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
 the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
 """
+from __future__ import annotations
+
 import logging
 import re
+from collections.abc import Generator, Iterable
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Generator, Iterable, cast
+from typing import Any, cast
 
 import pysnmp.hlapi.asyncio as hlapi
 from pysnmp.error import PySnmpError
@@ -83,9 +86,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     # pylint:disable=too-many-branches,too-many-statements
     async def async_update(self) -> DictToObj:
         """Update data from printer."""
-        raw_data = await self._get_data()
-
-        if not raw_data:
+        if not (raw_data := await self._get_data()):
             raise SnmpError("The printer did not return data")
 
         _LOGGER.debug("RAW data: %s", raw_data)
@@ -212,7 +213,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         if self._snmp_engine:
             lcd.unconfigure(self._snmp_engine, None)
 
-    async def _get_data(self) -> Dict[str, Any]:
+    async def _get_data(self) -> dict[str, Any]:
         """Retreive data from printer."""
         raw_data = {}
 
@@ -249,6 +250,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
+                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
@@ -265,6 +267,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
+                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 if self._legacy_printer(temp):
                     self._legacy = True
@@ -312,8 +315,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]
-        results = [string[i - 2 : i] == "14" for i in nums]
-        if results:
+        if results := [string[i - 2 : i] == "14" for i in nums]:
             return all(item for item in results)
         return False
 
