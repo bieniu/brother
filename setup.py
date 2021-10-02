@@ -1,8 +1,15 @@
+#!/usr/bin/env python3
+"""Setup file for brother module."""
 from setuptools import setup
 
+with open("README.md", "r", encoding="utf-8") as file:
+    long_description = file.read()
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+with open("requirements.txt", "r", encoding="utf-8") as file:
+    install_requires=list(val.strip() for val in file.readlines())
+
+with open("requirements-test.txt", "r", encoding="utf-8") as file:
+    tests_require=list(val.strip() for val in file.readlines())
 
 setup(
     name="brother",
@@ -17,15 +24,19 @@ setup(
     license="Apache-2.0 License",
     packages=["brother"],
     python_requires=">=3.8",
-    install_requires=list(val.strip() for val in open("requirements.txt")),
+    install_requires=install_requires,
     classifiers=[
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python",
         "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3 :: Only",
+        "Typing :: Typed",
     ],
     setup_requires=("pytest-runner"),
-    tests_require=list(val.strip() for val in open("requirements-test.txt")),
+    tests_require=tests_require,
 )
