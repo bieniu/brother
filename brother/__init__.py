@@ -83,9 +83,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
     # pylint:disable=too-many-branches,too-many-statements
     async def async_update(self) -> DictToObj:
         """Update data from printer."""
-        raw_data = await self._get_data()
-
-        if not raw_data:
+        if not (raw_data := await self._get_data()):
             raise SnmpError("The printer did not return data")
 
         _LOGGER.debug("RAW data: %s", raw_data)
@@ -314,8 +312,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]
-        results = [string[i - 2 : i] == "14" for i in nums]
-        if results:
+        if (results := [string[i - 2:i] == '14' for i in nums]):
             return all(item for item in results)
         return False
 
