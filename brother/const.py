@@ -1,5 +1,5 @@
 """Constants for Brother Printer library."""
-from typing import Dict, List
+from __future__ import annotations
 
 ATTR_CHARSET: str = "charset"
 ATTR_COUNTERS: str = "counters"
@@ -72,16 +72,16 @@ VAL_YELLOW_TONER: str = "yellow_toner"
 VAL_YELLOW_TONER_REMAIN: str = "yellow_toner_remaining"
 VAL_YELLOW_TONER_STATUS: str = "yellow_toner_status"
 
-CHARSET_MAP: Dict[str, str] = {
+CHARSET_MAP: dict[str, str] = {
     "5": "latin2",
     "2004": "roman8",
     "8": "cyrillic",
     "12": "latin5",
 }
 
-KINDS: List[str] = ["ink", "laser"]
+KINDS: list[str] = ["ink", "laser"]
 
-OIDS_WITHOUT_COUNTERS: Dict[str, str] = {
+OIDS_WITHOUT_COUNTERS: dict[str, str] = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
@@ -93,12 +93,12 @@ OIDS_WITHOUT_COUNTERS: Dict[str, str] = {
     ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
 }
 
-OIDS: Dict[str, str] = {
+OIDS: dict[str, str] = {
     **OIDS_WITHOUT_COUNTERS,
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
 }
 
-VALUES_COUNTERS: Dict[str, str] = {
+VALUES_COUNTERS: dict[str, str] = {
     "00": VAL_PAGE_COUNT,
     "01": VAL_BW_COUNT,
     "02": VAL_COLOR_COUNT,
@@ -110,7 +110,7 @@ VALUES_COUNTERS: Dict[str, str] = {
     "16": VAL_IMAGE_COUNT,
 }
 
-VALUES_LASER_MAINTENANCE: Dict[str, str] = {
+VALUES_LASER_MAINTENANCE: dict[str, str] = {
     "11": VAL_DRUM_COUNT,
     "31": VAL_BLACK_TONER_STATUS,
     "32": VAL_CYAN_TONER_STATUS,
@@ -145,7 +145,7 @@ VALUES_LASER_MAINTENANCE: Dict[str, str] = {
     "a4": VAL_YELLOW_TONER_REMAIN,
 }
 
-VALUES_INK_MAINTENANCE: Dict[str, str] = {
+VALUES_INK_MAINTENANCE: dict[str, str] = {
     "31": VAL_BLACK_INK_STATUS,
     "32": VAL_CYAN_INK_STATUS,
     "33": VAL_MAGENTA_INK_STATUS,
@@ -164,7 +164,7 @@ VALUES_INK_MAINTENANCE: Dict[str, str] = {
     "a4": VAL_YELLOW_INK_REMAIN,
 }
 
-VALUES_LASER_NEXTCARE: Dict[str, str] = {
+VALUES_LASER_NEXTCARE: dict[str, str] = {
     "73": VAL_LASER_REMAIN_PAGES,
     "77": VAL_PF_1_REMAIN_PAGES,
     "82": VAL_DRUM_REMAIN_PAGES,
@@ -177,7 +177,7 @@ VALUES_LASER_NEXTCARE: Dict[str, str] = {
     "a7": VAL_YELLOW_DRUM_REMAIN_PAGES,
 }
 
-PERCENT_VALUES: List[str] = [
+PERCENT_VALUES: list[str] = [
     VAL_BELT_REMAIN,
     VAL_BLACK_DRUM_REMAIN,
     VAL_BLACK_INK_REMAIN,
@@ -198,7 +198,7 @@ PERCENT_VALUES: List[str] = [
     VAL_YELLOW_TONER_REMAIN,
 ]
 
-OIDS_HEX: List[str] = [
+OIDS_HEX: list[str] = [
     OIDS[ATTR_COUNTERS],
     OIDS[ATTR_MAINTENANCE],
     OIDS[ATTR_NEXTCARE],
