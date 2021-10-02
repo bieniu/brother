@@ -251,7 +251,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 #  0810104000000468601040000000a'
                 temp = "".join(["%.2x" % x for x in temp])[
                     0:-2
-                ]  # pylint: consider-using-f-string
+                ]  # pylint:disable=consider-using-f-string
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -269,7 +269,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # 'a101020414a201020c14a301020614a401020b14'
                 temp = "".join(["%.2x" % x for x in temp])[
                     0:-2
-                ]  # pylint: consider-using-f-string
+                ]  # pylint:disable=consider-using-f-string
                 if self._legacy_printer(temp):
                     self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',
