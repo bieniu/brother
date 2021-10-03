@@ -1,0 +1,26 @@
+[MASTER]
+load-plugins=pylint.extensions.code_style,pylint.extensions.typing,pylint_strict_informational,pylint.extensions.docparams
+persistent=no
+extension-pkg-whitelist=ciso8601,cv2
+
+[BASIC]
+good-names=id,i,j,k,ex,Run,_,fp,T,ev,ip
+
+[MESSAGES CONTROL]
+disable=
+  too-many-instance-attributes,
+  too-many-branches,
+  too-many-statements,
+  consider-using-f-string
+
+[REPORTS]
+score=no
+
+[TYPECHECK]
+ignored-classes=_CountingAttr
+
+[FORMAT]
+expected-line-ending-format=LF
+
+[EXCEPTIONS]
+overgeneral-exceptions=BaseException,Exception

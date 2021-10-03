@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Generator, Iterable
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
@@ -51,7 +52,7 @@ class DictToObj(dict):
         raise AttributeError("No such attribute: " + name)
 
 
-class Brother:  # pylint:disable=too-many-instance-attributes
+class Brother:
     """Main class to perform snmp requests to printer."""
 
     def __init__(
@@ -75,7 +76,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         self.serial = None
         self._host = host
         self._port = port
-        self._last_uptime = None
+        self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._need_init = True
         self._counters = True
@@ -83,7 +84,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    # pylint:disable=too-many-branches,too-many-statements
     async def async_update(self) -> DictToObj:
         """Update data from printer."""
         if not (raw_data := await self._get_data()):
@@ -128,11 +128,7 @@ class Brother:  # pylint:disable=too-many-instance-attributes
         except TypeError:
             pass
         else:
-            if not self._last_uptime:
-                data[ATTR_UPTIME] = self._last_uptime = (  # type: ignore[assignment]
-                    datetime.utcnow() - timedelta(seconds=uptime)
-                ).replace(microsecond=0, tzinfo=timezone.utc)
-            else:
+            if self._last_uptime:
                 new_uptime = (datetime.utcnow() - timedelta(seconds=uptime)).replace(
                     microsecond=0, tzinfo=timezone.utc
                 )
@@ -140,6 +136,10 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     data[ATTR_UPTIME] = self._last_uptime = new_uptime
                 else:
                     data[ATTR_UPTIME] = self._last_uptime
+            else:
+                data[ATTR_UPTIME] = self._last_uptime = (
+                    datetime.utcnow() - timedelta(seconds=uptime)
+                ).replace(microsecond=0, tzinfo=timezone.utc)
         if self._legacy:
             if self._kind == "laser":
                 data.update(
@@ -198,13 +198,12 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                     )
                 )
         # page counter for old printer models
-        try:
+        with suppress(ValueError):
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
                 data[ATTR_PAGE_COUNT] = int(
                     cast(str, raw_data.get(OIDS[ATTR_PAGE_COUNT]))
                 )
-        except ValueError:
-            pass
+
         _LOGGER.debug("Data: %s", data)
         return data
 
@@ -250,7 +249,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
@@ -267,7 +265,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 if self._legacy_printer(temp):
                     self._legacy = True
