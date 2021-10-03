@@ -51,7 +51,7 @@ class DictToObj(dict):
         raise AttributeError("No such attribute: " + name)
 
 
-class Brother:  # pylint:disable=too-many-instance-attributes
+class Brother:
     """Main class to perform snmp requests to printer."""
 
     def __init__(
@@ -83,7 +83,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
 
         _LOGGER.debug("Using host: %s", host)
 
-    # pylint:disable=too-many-branches,too-many-statements
     async def async_update(self) -> DictToObj:
         """Update data from printer."""
         if not (raw_data := await self._get_data()):
@@ -250,7 +249,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
@@ -267,7 +265,6 @@ class Brother:  # pylint:disable=too-many-instance-attributes
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                # pylint:disable=consider-using-f-string
                 temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 if self._legacy_printer(temp):
                     self._legacy = True
