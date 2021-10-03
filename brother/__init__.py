@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Generator, Iterable
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
@@ -197,13 +198,12 @@ class Brother:
                     )
                 )
         # page counter for old printer models
-        try:
+        with suppress(ValueError):
             if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
                 data[ATTR_PAGE_COUNT] = int(
                     cast(str, raw_data.get(OIDS[ATTR_PAGE_COUNT]))
                 )
-        except ValueError:
-            pass
+
         _LOGGER.debug("Data: %s", data)
         return data
 
