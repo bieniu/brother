@@ -75,7 +75,7 @@ class Brother:
         self.serial = None
         self._host = host
         self._port = port
-        self._last_uptime = None
+        self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._need_init = True
         self._counters = True
@@ -127,11 +127,7 @@ class Brother:
         except TypeError:
             pass
         else:
-            if not self._last_uptime:
-                data[ATTR_UPTIME] = self._last_uptime = (  # type: ignore[assignment]
-                    datetime.utcnow() - timedelta(seconds=uptime)
-                ).replace(microsecond=0, tzinfo=timezone.utc)
-            else:
+            if self._last_uptime:
                 new_uptime = (datetime.utcnow() - timedelta(seconds=uptime)).replace(
                     microsecond=0, tzinfo=timezone.utc
                 )
@@ -139,6 +135,10 @@ class Brother:
                     data[ATTR_UPTIME] = self._last_uptime = new_uptime
                 else:
                     data[ATTR_UPTIME] = self._last_uptime
+            else:
+                data[ATTR_UPTIME] = self._last_uptime = (
+                    datetime.utcnow() - timedelta(seconds=uptime)
+                ).replace(microsecond=0, tzinfo=timezone.utc)
         if self._legacy:
             if self._kind == "laser":
                 data.update(
