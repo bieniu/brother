@@ -32,6 +32,7 @@ from .const import (
     OIDS_HEX,
     OIDS_WITHOUT_COUNTERS,
     PERCENT_VALUES,
+    UNSUPPORTED_MODELS,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
     VALUES_LASER_MAINTENANCE,
@@ -61,8 +62,17 @@ class Brother:
         port: int = 161,
         kind: str = "laser",
         snmp_engine: hlapi.SnmpEngine = None,
+        model: str | None = None,
     ) -> None:
         """Initialize."""
+        if model:
+            _LOGGER.debug("model: %s", model)
+            for unsupported_model in UNSUPPORTED_MODELS:
+                if unsupported_model in model.lower():
+                    raise UnsupportedModel(
+                        "It seems that this printer model is not supported"
+                    )
+
         if kind not in KINDS:
             _LOGGER.warning("Wrong kind argument, 'laser' was used")
             self._kind = "laser"
