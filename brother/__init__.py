@@ -56,7 +56,7 @@ class DictToObj(dict):
 class Brother:
     """Main class to perform snmp requests to printer."""
 
-    def __init__(  # pylint:disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         port: int = 161,
