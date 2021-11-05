@@ -1,7 +1,5 @@
-"""
-Python wrapper for getting data from Brother laser and inkjet printers via SNMP. Uses
-the method of parsing data from: https://github.com/saper-2/BRN-Printer-sCounters-Info
-"""
+"""Python wrapper for getting data from Brother laser and inkjet printers via SNMP."""
+
 from __future__ import annotations
 
 import logging
@@ -48,6 +46,7 @@ class DictToObj(dict):
     """Dictionary to object class."""
 
     def __getattr__(self, name: str) -> Any:
+        """Override __getattr__."""
         if name in self:
             return self[name]
         raise AttributeError("No such attribute: " + name)
@@ -223,7 +222,7 @@ class Brother:
             lcd.unconfigure(self._snmp_engine, None)
 
     async def _get_data(self) -> dict[str, Any]:
-        """Retreive data from printer."""
+        """Retrieve data from printer."""
         raw_data = {}
 
         if not self._snmp_engine:
@@ -328,7 +327,7 @@ class Brother:
 
     @classmethod
     def _iterate_oids(cls, oids: Iterable) -> Generator:
-        """Iterate OIDS to retreive from printer."""
+        """Iterate OIDS to retrieve from printer."""
         for oid in oids:
             yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
 
