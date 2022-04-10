@@ -13,7 +13,7 @@ with open("requirements-test.txt", encoding="utf-8") as file:
 
 setup(
     name="brother",
-    version="1.1.0",
+    version="1.2.0",
     author="Maciej Bieniek",
     description="Python wrapper for getting data from Brother laser and inkjet \
         printers via SNMP.",
