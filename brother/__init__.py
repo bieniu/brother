@@ -258,9 +258,8 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                temp = "".join(["%.2x" % x for x in temp])[
-                    0:-2
-                ]  # pylint: disable=consider-using-f-string
+                # pylint: disable=consider-using-f-string
+                temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -276,9 +275,8 @@ class Brother:
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                temp = "".join(["%.2x" % x for x in temp])[
-                    0:-2
-                ]  # pylint: disable=consider-using-f-string
+                # pylint: disable=consider-using-f-string
+                temp = "".join(["%.2x" % x for x in temp])[0:-2]
                 if self._legacy_printer(temp):
                     self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',
