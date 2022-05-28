@@ -30,6 +30,9 @@ disable=
   too-many-instance-attributes,
   wrong-import-order,
   too-few-public-methods
+  too-many-arguments
+  too-many-branches
+  too-many-statements
 
 # enable useless-suppression temporarily every now and then to clean them up
 enable=

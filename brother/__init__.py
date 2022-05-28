@@ -81,7 +81,7 @@ class Brother:
         self._legacy = False
 
         self.firmware = None
-        self.model = None
+        self.model: str | None = None
         self.serial = None
         self._host = host
         self._port = port
@@ -103,13 +103,13 @@ class Brother:
         data = DictToObj({})
 
         try:
-            self.model = re.search(  # type: ignore[union-attr]
-                REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
-            ).group("model")
+            model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
+            assert model_match is not None
+            self.model = cast(str, model_match.group("model"))
             data[ATTR_MODEL] = self.model
             self.serial = raw_data[OIDS[ATTR_SERIAL]]
             data[ATTR_SERIAL] = self.serial
-        except (TypeError, AttributeError) as err:
+        except (TypeError, AttributeError, AssertionError) as err:
             raise UnsupportedModel(
                 "It seems that this printer model is not supported"
             ) from err
@@ -258,7 +258,9 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                temp = "".join(["%.2x" % x for x in temp])[
+                    0:-2
+                ]  # pylint: disable=consider-using-f-string
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -274,7 +276,9 @@ class Brother:
                 temp = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                temp = "".join(["%.2x" % x for x in temp])[0:-2]
+                temp = "".join(["%.2x" % x for x in temp])[
+                    0:-2
+                ]  # pylint: disable=consider-using-f-string
                 if self._legacy_printer(temp):
                     self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',

@@ -5,9 +5,11 @@
 [![PayPal_Me][paypal-me-shield]][paypal-me]
 
 # brother
+
 Python wrapper for getting data from Brother laser and inkjet printers via snmp
 
 ## How to use package
+
 ```py
 import asyncio
 from sys import argv
@@ -65,6 +67,7 @@ loop = asyncio.new_event_loop()
 loop.run_until_complete(main())
 loop.close()
 ```
+
 [releases]: https://github.com/bieniu/brother/releases
 [releases-shield]: https://img.shields.io/github/release/bieniu/brother.svg?style=popout
 [pypi-releases]: https://pypi.org/project/brother/
