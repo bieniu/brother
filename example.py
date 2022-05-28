@@ -44,6 +44,6 @@ async def main():
         print(f"Sensors data: {data}")
 
 
-loop = asyncio.get_event_loop()
+loop = asyncio.new_event_loop()
 loop.run_until_complete(main())
 loop.close()
