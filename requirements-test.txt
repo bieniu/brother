@@ -10,4 +10,5 @@ pylint==2.13.5
 pytest-asyncio==0.18.3
 pytest-cov==3.0.0
 pytest-error-for-skips==2.0.2
+pytest-timeout==2.1.0
 pytest==7.1.1
