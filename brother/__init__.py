@@ -80,9 +80,9 @@ class Brother:
 
         self._legacy = False
 
-        self.firmware = None
+        self.firmware: str | None = None
         self.model: str | None = None
-        self.serial = None
+        self.serial: str
         self._host = host
         self._port = port
         self._last_uptime: datetime | None = None
