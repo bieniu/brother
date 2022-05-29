@@ -12,8 +12,7 @@ setup(
     name="brother",
     version=VERSION,
     author="Maciej Bieniek",
-    description="Python wrapper for getting data from Brother laser and inkjet \
-        printers via SNMP.",
+    description="Python wrapper for getting data from Brother laser and inkjet printers via SNMP.",
     long_description=README_FILE.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     url="https://github.com/bieniu/brother",
