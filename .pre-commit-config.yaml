@@ -27,13 +27,13 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies:
-          - pycodestyle==2.8.0
-          - pyflakes==2.4.0
-          - flake8-docstrings==1.6.0
-          - pydocstyle==6.1.1
-          - flake8-comprehensions==3.7.0
-          - flake8-noqa==1.2.0
-          - mccabe==0.6.1
+          - pycodestyle
+          - pyflakes
+          - flake8-docstrings
+          - pydocstyle
+          - flake8-comprehensions
+          - flake8-noqa
+          - mccabe
         files: ^(brother|tests)/.+\.py$
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
