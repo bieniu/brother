@@ -3,7 +3,7 @@ coverage==6.3.2
 flake8==4.0.1
 isort==5.10.1
 mypy==0.960
-pre-commit==2.19.0
+pre-commit==2.20.0
 pydocstyle==6.1.1
 pylint_strict_informational==0.1
 pylint==2.13.9
