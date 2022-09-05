@@ -34,10 +34,10 @@ async def test_hl_l2340dw_model():
     assert brother.model == "HL-L2340DW"
     assert brother.firmware == "1.17"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "oczekiwanie"
-    assert getattr(sensors, "black_toner") == 80
-    assert getattr(sensors, "page_counter") == 986
-    assert getattr(sensors, "uptime").isoformat() == "2019-09-24T12:14:56+00:00"
+    assert sensors.status == "oczekiwanie"
+    assert sensors.black_toner == 80
+    assert sensors.page_counter == 986
+    assert sensors.uptime.isoformat() == "2019-09-24T12:14:56+00:00"
 
 
 @pytest.mark.asyncio
@@ -57,12 +57,12 @@ async def test_dcp_l3550cdw_model():
     assert brother.model == "DCP-L3550CDW"
     assert brother.firmware == "J1906051424"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "mało toneru (y)"
-    assert getattr(sensors, "black_toner") == 30
-    assert getattr(sensors, "yellow_toner") == 10
-    assert getattr(sensors, "magenta_toner") == 10
-    assert getattr(sensors, "cyan_toner") == 10
-    assert getattr(sensors, "page_counter") == 1611
+    assert sensors.status == "mało toneru (y)"
+    assert sensors.black_toner == 30
+    assert sensors.yellow_toner == 10
+    assert sensors.magenta_toner == 10
+    assert sensors.cyan_toner == 10
+    assert sensors.page_counter == 1611
 
 
 @pytest.mark.asyncio
@@ -82,9 +82,9 @@ async def test_dcp_j132w_model():
     assert brother.model == "DCP-J132W"
     assert brother.firmware == "Q1906110144"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "ready"
-    assert getattr(sensors, "black_ink") == 80
-    assert getattr(sensors, "page_counter") == 879
+    assert sensors.status == "ready"
+    assert sensors.black_ink == 80
+    assert sensors.page_counter == 879
 
 
 @pytest.mark.asyncio
@@ -105,9 +105,9 @@ async def test_mfc_5490cn_model():
     assert brother.model == "MFC-5490CN"
     assert brother.firmware == "U1005271959VER.E"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "sleep mode"
-    assert getattr(sensors, "page_counter") == 8989
-    assert getattr(sensors, "uptime").isoformat() == "2019-11-02T23:44:02+00:00"
+    assert sensors.status == "sleep mode"
+    assert sensors.page_counter == 8989
+    assert sensors.uptime.isoformat() == "2019-11-02T23:44:02+00:00"
 
 
 @pytest.mark.asyncio
@@ -127,9 +127,9 @@ async def test_dcp_l2540dw_model():
     assert brother.model == "DCP-L2540DN"
     assert brother.firmware == "R1906110243"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "спящий режим"
-    assert getattr(sensors, "black_toner_remaining") == 55
-    assert getattr(sensors, "page_counter") == 333
+    assert sensors.status == "спящий режим"
+    assert sensors.black_toner_remaining == 55
+    assert sensors.page_counter == 333
 
 
 @pytest.mark.asyncio
@@ -147,13 +147,13 @@ async def test_dcp_7070dw_model():
     assert brother.model == "DCP-7070DW"
     assert brother.firmware == "U1307022128VER.J"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "stap. kopieën:01"
-    assert getattr(sensors, "black_toner_remaining") == 72
-    assert getattr(sensors, "page_counter") == 2652
-    assert getattr(sensors, "drum_counter") == 1603
-    assert getattr(sensors, "drum_remaining_life") == 88
-    assert getattr(sensors, "drum_remaining_pages") == 10397
-    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:43:26+00:00"
+    assert sensors.status == "stap. kopieën:01"
+    assert sensors.black_toner_remaining == 72
+    assert sensors.page_counter == 2652
+    assert sensors.drum_counter == 1603
+    assert sensors.drum_remaining_life == 88
+    assert sensors.drum_remaining_pages == 10397
+    assert sensors.uptime.isoformat() == "2018-11-30T13:43:26+00:00"
 
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
@@ -164,7 +164,7 @@ async def test_dcp_7070dw_model():
 
     brother.shutdown()
 
-    assert getattr(sensors, "uptime").isoformat() == "2018-11-30T13:53:26+00:00"
+    assert sensors.uptime.isoformat() == "2018-11-30T13:53:26+00:00"
 
 
 @pytest.mark.asyncio
@@ -184,9 +184,9 @@ async def test_mfc_j680dw_model():
     assert brother.model == "MFC-J680DW"
     assert brother.firmware == "U1804191714VER.J"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "uyku"
-    assert getattr(sensors, "black_ink") == 47
-    assert getattr(sensors, "color_counter") == 491
+    assert sensors.status == "uyku"
+    assert sensors.black_ink == 47
+    assert sensors.color_counter == 491
 
 
 @pytest.mark.asyncio
@@ -206,10 +206,10 @@ async def test_dcp_9020cdw_model():
     assert brother.model == "DCP-9020CDW"
     assert brother.firmware == "ZA1811191217"
     assert brother.serial == "E71833C4J372261"
-    assert getattr(sensors, "status") == "tryb uśpienia"
-    assert getattr(sensors, "cyan_drum_remaining_life") == 68
-    assert getattr(sensors, "cyan_drum_counter") == 4939
-    assert getattr(sensors, "cyan_drum_remaining_pages") == 10061
+    assert sensors.status == "tryb uśpienia"
+    assert sensors.cyan_drum_remaining_life == 68
+    assert sensors.cyan_drum_counter == 4939
+    assert sensors.cyan_drum_remaining_pages == 10061
 
 
 @pytest.mark.asyncio
@@ -230,9 +230,9 @@ async def test_hl_2270dw_model():
     assert brother.model == "HL-2270DW"
     assert brother.firmware == "1.16"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "sleep"
-    assert getattr(sensors, "page_counter") == 4191
-    assert getattr(sensors, "drum_remaining_pages") == 7809
+    assert sensors.status == "sleep"
+    assert sensors.page_counter == 4191
+    assert sensors.drum_remaining_pages == 7809
 
 
 @pytest.mark.asyncio
@@ -252,19 +252,15 @@ async def test_mfc_t910dw_model():
     assert brother.model == "MFC-T910DW"
     assert brother.firmware == "M2009041848"
     assert brother.serial == "serial_number"
-    assert getattr(sensors, "status") == "oczekiwanie"
-    assert getattr(sensors, "page_counter") == 3384
-    assert getattr(sensors, "color_counter") == 3199
-    assert getattr(sensors, "b/w_counter") == 185
-    assert getattr(sensors, "duplex_unit_pages_counter") == 1445
-    assert getattr(sensors, "black_ink_status") == 1
-    assert getattr(sensors, "cyan_ink_status") == 1
-    assert getattr(sensors, "magenta_ink_status") == 1
-    assert getattr(sensors, "yellow_ink_status") == 1
-    try:
-        getattr(sensors, "foo")
-    except AttributeError as error:
-        assert str(error) == "No such attribute: foo"
+    assert sensors.status == "oczekiwanie"
+    assert sensors.page_counter == 3384
+    assert sensors.color_counter == 3199
+    assert sensors.bw_counter == 185
+    assert sensors.duplex_unit_pages_counter == 1445
+    assert sensors.black_ink_status == 1
+    assert sensors.cyan_ink_status == 1
+    assert sensors.magenta_ink_status == 1
+    assert sensors.yellow_ink_status == 1
 
 
 @pytest.mark.asyncio

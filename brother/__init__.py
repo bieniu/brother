@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
 import pysnmp.hlapi.asyncio as hlapi
+from dacite import from_dict
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi.asyncio.cmdgen import lcd
 
@@ -36,20 +37,11 @@ from .const import (
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
 )
+from .model import BrotherSensors
 
 _LOGGER = logging.getLogger(__name__)
 
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
-
-
-class DictToObj(dict):
-    """Dictionary to object class."""
-
-    def __getattr__(self, name: str) -> Any:
-        """Override __getattr__."""
-        if name in self:
-            return self[name]
-        raise AttributeError("No such attribute: " + name)
 
 
 class Brother:
@@ -93,14 +85,14 @@ class Brother:
 
         _LOGGER.debug("Using host: %s", host)
 
-    async def async_update(self) -> DictToObj:
+    async def async_update(self) -> BrotherSensors:
         """Update data from printer."""
         if not (raw_data := await self._get_data()):
             raise SnmpError("The printer did not return data")
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data = DictToObj({})
+        data: dict[str, str | int | datetime] = {}
 
         try:
             model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
@@ -114,8 +106,7 @@ class Brother:
                 "It seems that this printer model is not supported"
             ) from err
         try:
-            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
-            data[ATTR_FIRMWARE] = self.firmware
+            data[ATTR_FIRMWARE] = self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
 
             # If no charset data from the printer use roman8 as default
             if raw_data.get(OIDS[ATTR_CHARSET]) in CHARSET_MAP:
@@ -214,7 +205,7 @@ class Brother:
                 )
 
         _LOGGER.debug("Data: %s", data)
-        return data
+        return from_dict(BrotherSensors, data)
 
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
