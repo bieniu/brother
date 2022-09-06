@@ -81,10 +81,11 @@ CHARSET_MAP: Final[dict[str, str]] = {
     "12": "latin5",
 }
 
-KINDS: Final[list[str]] = ["ink", "laser"]
+PRINTER_TYPES: Final = ("ink", "laser")
 
-OIDS_WITHOUT_COUNTERS: Final[dict[str, str]] = {
+OIDS: Final = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
+    ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
     ATTR_MODEL: "1.3.6.1.4.1.2435.2.3.9.1.1.7.0",
@@ -93,11 +94,6 @@ OIDS_WITHOUT_COUNTERS: Final[dict[str, str]] = {
     ATTR_SERIAL: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
     ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
     ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
-}
-
-OIDS: Final[dict[str, str]] = {
-    **OIDS_WITHOUT_COUNTERS,
-    ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
 }
 
 VALUES_COUNTERS: Final[dict[str, str]] = {
