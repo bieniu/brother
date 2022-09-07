@@ -103,7 +103,6 @@ class Brother:
             self._snmp_engine = hlapi.SnmpEngine()
 
         oids = list(self._iterate_oids(OIDS.values()))
-        print(type(oids[0]))
 
         try:
             request_args = [
@@ -209,21 +208,22 @@ class Brother:
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
                         )
                     )
                 )
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_LASER_MAINTENANCE,
                         )
                     )
                 )
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                            raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
                         )
                     )
                 )
@@ -231,14 +231,15 @@ class Brother:
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
+                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
                         )
                     )
                 )
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_INK_MAINTENANCE,
                         )
                     )
                 )
