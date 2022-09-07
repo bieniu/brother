@@ -39,12 +39,10 @@ async def main():
         snmp_engine = hlapi.SnmpEngine()
     else:
         snmp_engine = None
-
-    brother = await Brother.create(
-        host, printer_type=printer_type, snmp_engine=snmp_engine
-    )
-
     try:
+        brother = await Brother.create(
+            host, printer_type=printer_type, snmp_engine=snmp_engine
+        )
         data = await brother.async_update()
     except (ConnectionError, SnmpError, UnsupportedModel) as error:
         print(f"{error}")
