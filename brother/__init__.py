@@ -337,7 +337,7 @@ class Brother:
             yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
 
     @classmethod
-    def _iterate_data(cls, iterable: Iterable, values_map: dict) -> Generator:
+    def _iterate_data(cls, iterable: Iterable, values_map: dict[str, str]) -> Generator:
         """Iterate data from hex words."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -348,7 +348,9 @@ class Brother:
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
     @classmethod
-    def _iterate_data_legacy(cls, iterable: Iterable, values_map: dict) -> Generator:
+    def _iterate_data_legacy(
+        cls, iterable: Iterable, values_map: dict[str, str]
+    ) -> Generator:
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
