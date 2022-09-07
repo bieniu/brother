@@ -209,7 +209,6 @@ async def test_hl_2270dw_model():
     with open("tests/fixtures/hl-2270dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
-    brother._counters = False  # pylint:disable=protected-access
 
     with patch("brother.Brother._get_data", return_value=data):
         sensors = await brother.async_update()
@@ -248,6 +247,25 @@ async def test_mfc_t910dw_model():
     assert sensors.cyan_ink_status == 1
     assert sensors.magenta_ink_status == 1
     assert sensors.yellow_ink_status == 1
+
+
+@pytest.mark.asyncio
+async def test_hl_5350dn_model():
+    """Test with valid data from HL-5350DN printer."""
+    with open("tests/fixtures/hl-5350dn.json", encoding="utf-8") as file:
+        data = json.load(file)
+    brother = Brother(HOST, printer_type="laser")
+
+    with patch("brother.Brother._get_data", return_value=data):
+        sensors = await brother.async_update()
+
+    brother.shutdown()
+
+    assert brother.model == "HL-5350DN"
+    assert brother.firmware is None
+    assert brother.serial == "serial_number"
+    assert sensors.status == "energiesparen   \rtrommel ersetz."
+    assert sensors.page_counter == 69411
 
 
 @pytest.mark.asyncio
