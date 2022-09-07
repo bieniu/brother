@@ -4,8 +4,9 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
+from pysnmp.smi.rfc1902 import ObjectType
 
-from brother import Brother, SnmpError, UnsupportedModel
+from brother import OIDS, Brother, SnmpError, UnsupportedModel
 
 HOST = "localhost"
 INVALID_HOST = "foo.local"
@@ -17,11 +18,11 @@ async def test_hl_l2340dw_model():
     """Test with valid data from HL-L2340DW printer with invalid printer_type."""
     with open("tests/fixtures/hl-l2340dw.json", encoding="utf-8") as file:
         data = json.load(file)
-    brother = Brother(HOST, printer_type="foo")
 
     with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
         "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
-    ):
+    ), patch("brother.Brother.initialize"):
+        brother = await Brother.create(HOST, printer_type="foo")
         sensors = await brother.async_update()
         assert mock_update.call_count == 1
 
@@ -306,3 +307,21 @@ async def test_snmp_error():
         "brother.Brother.initialize", side_effect=SnmpError("SNMP Error")
     ), pytest.raises(SnmpError):
         await Brother.create(HOST)
+
+
+@pytest.mark.asyncio
+async def test_unsupported_model():
+    """Test with unsupported printer model."""
+    with pytest.raises(UnsupportedModel):
+        Brother(HOST, model="mfc-8660dn")
+
+
+def test_iterate_oids():
+    """Test iterate_oids function."""
+    brother = Brother(HOST)
+    oids = OIDS.values()
+    result = list(brother._iterate_oids(oids))  # pylint:disable=protected-access
+
+    assert len(result) == 10
+    for item in result:
+        assert isinstance(item, ObjectType)

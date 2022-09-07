@@ -191,7 +191,8 @@ class Brother:
                 data.update(
                     dict(
                         self._iterate_data_legacy(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_LASER_MAINTENANCE,
                         )
                     )
                 )
@@ -199,7 +200,8 @@ class Brother:
                 data.update(
                     dict(
                         self._iterate_data_legacy(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_INK_MAINTENANCE,
                         )
                     )
                 )
