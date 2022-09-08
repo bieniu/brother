@@ -153,22 +153,11 @@ class Brother:
 
         self.firmware = data[ATTR_FIRMWARE] = raw_data.get(OIDS[ATTR_FIRMWARE])
 
-        try:
-            # If no charset data from the printer use roman8 as default
-            if raw_data.get(OIDS[ATTR_CHARSET]) in CHARSET_MAP:
-                charset = CHARSET_MAP[raw_data[OIDS[ATTR_CHARSET]]]
-            else:
-                charset = "roman8"
+        charset = CHARSET_MAP.get(raw_data[OIDS[ATTR_CHARSET]], "roman8")
 
-            data[ATTR_STATUS] = (
-                raw_data[OIDS[ATTR_STATUS]]
-                .strip()
-                .encode("latin1")
-                .decode(charset)
-                .lower()
-            )
-        except (AttributeError, KeyError, TypeError):
-            _LOGGER.debug("Incomplete data from printer")
+        if status := raw_data[OIDS[ATTR_STATUS]]:
+            data[ATTR_STATUS] = status.strip().encode("latin1").decode(charset).lower()
+
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
         except TypeError:
