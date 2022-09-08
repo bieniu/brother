@@ -312,8 +312,8 @@ class Brother:
                     break
         return raw_data
 
-    @classmethod
-    def _legacy_printer(cls, string: str) -> bool:
+    @staticmethod
+    def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]
@@ -321,14 +321,14 @@ class Brother:
             return all(item for item in results)
         return False
 
-    @classmethod
-    def _iterate_oids(cls, oids: Iterable) -> Generator:
+    @staticmethod
+    def _iterate_oids(oids: Iterable) -> Generator:
         """Iterate OIDS to retrieve from printer."""
         for oid in oids:
             yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
 
-    @classmethod
-    def _iterate_data(cls, iterable: Iterable, values_map: dict[str, str]) -> Generator:
+    @staticmethod
+    def _iterate_data(iterable: Iterable, values_map: dict[str, str]) -> Generator:
         """Iterate data from hex words."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -338,9 +338,9 @@ class Brother:
                 else:
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
-    @classmethod
+    @staticmethod
     def _iterate_data_legacy(
-        cls, iterable: Iterable, values_map: dict[str, str]
+        iterable: Iterable, values_map: dict[str, str]
     ) -> Generator:
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
