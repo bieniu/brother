@@ -96,7 +96,7 @@ class Brother:
         return instance
 
     async def initialize(self) -> None:
-        """Initialize."""
+        """Initialize snmp_engine and check which OIDs are supported."""
         _LOGGER.debug("Initializing device %s", self._host)
 
         if not self._snmp_engine:
@@ -120,6 +120,7 @@ class Brother:
             _, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *tuple(oids))
 
             if str(errstatus) == "noSuchName":
+                # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
                 if errindex in (5, 8):
                     raise UnsupportedModel(
                         "It seems that this printer model is not supported"
@@ -353,7 +354,7 @@ class Brother:
 
     @staticmethod
     def _cleanse_status(status: str) -> str:
-        """Cleanse status."""
+        """Cleanse and format status."""
         return " ".join(status.split()).strip()
 
 
