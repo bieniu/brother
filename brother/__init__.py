@@ -156,7 +156,9 @@ class Brother:
         charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
 
         if status := raw_data[OIDS[ATTR_STATUS]]:
-            data[ATTR_STATUS] = status.strip().encode("latin1").decode(charset).lower()
+            data[ATTR_STATUS] = (
+                self._cleanse_status(status).encode("latin1").decode(charset).lower()
+            )
 
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
@@ -348,6 +350,11 @@ class Brother:
                     values_map[item[:2]],
                     round(int(item[6:8], 16) / int(item[8:10], 16) * 100),
                 )
+
+    @staticmethod
+    def _cleanse_status(status: str) -> str:
+        """Cleanse status."""
+        return " ".join(status.split()).strip()
 
 
 class SnmpError(Exception):

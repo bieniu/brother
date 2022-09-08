@@ -264,7 +264,7 @@ async def test_hl_5350dn_model():
     assert brother.model == "HL-5350DN"
     assert brother.firmware is None
     assert brother.serial == "serial_number"
-    assert sensors.status == "energiesparen   \rtrommel ersetz."
+    assert sensors.status == "energiesparen trommel ersetz."
     assert sensors.page_counter == 69411
 
 
