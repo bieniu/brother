@@ -153,7 +153,7 @@ class Brother:
 
         self.firmware = data[ATTR_FIRMWARE] = raw_data.get(OIDS[ATTR_FIRMWARE])
 
-        charset = CHARSET_MAP.get(raw_data[OIDS[ATTR_CHARSET]], "roman8")
+        charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
 
         if status := raw_data[OIDS[ATTR_STATUS]]:
             data[ATTR_STATUS] = status.strip().encode("latin1").decode(charset).lower()
