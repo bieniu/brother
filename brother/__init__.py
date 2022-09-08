@@ -13,6 +13,7 @@ import pysnmp.hlapi.asyncio as hlapi
 from dacite import from_dict
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi.asyncio.cmdgen import lcd
+from pysnmp.smi.rfc1902 import ObjectType
 
 from .const import (
     ATTR_CHARSET,
@@ -26,11 +27,10 @@ from .const import (
     ATTR_STATUS,
     ATTR_UPTIME,
     CHARSET_MAP,
-    KINDS,
     OIDS,
     OIDS_HEX,
-    OIDS_WITHOUT_COUNTERS,
     PERCENT_VALUES,
+    PRINTER_TYPES,
     UNSUPPORTED_MODELS,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
@@ -51,24 +51,24 @@ class Brother:
         self,
         host: str,
         port: int = 161,
-        kind: str = "laser",
-        snmp_engine: hlapi.SnmpEngine = None,
+        printer_type: str = "laser",
         model: str | None = None,
+        snmp_engine: hlapi.SnmpEngine = None,
     ) -> None:
         """Initialize."""
         if model:
-            _LOGGER.debug("model: %s", model)
+            _LOGGER.debug("Model: %s", model)
             for unsupported_model in UNSUPPORTED_MODELS:
                 if unsupported_model in model.lower():
                     raise UnsupportedModel(
                         "It seems that this printer model is not supported"
                     )
 
-        if kind not in KINDS:
-            _LOGGER.warning("Wrong kind argument, 'laser' was used")
-            self._kind = "laser"
+        if printer_type not in PRINTER_TYPES:
+            _LOGGER.warning("Wrong printer_type argument, 'laser' was used")
+            self._printer_type = "laser"
         else:
-            self._kind = kind
+            self._printer_type = printer_type
 
         self._legacy = False
 
@@ -79,11 +79,59 @@ class Brother:
         self._port = port
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
-        self._need_init = True
-        self._counters = True
-        self._oids = tuple(self._iterate_oids(OIDS.values()))
+        self._oids: list[ObjectType] = []
 
-        _LOGGER.debug("Using host: %s", host)
+    @classmethod
+    async def create(
+        cls,
+        host: str,
+        port: int = 161,
+        printer_type: str = "laser",
+        model: str | None = None,
+        snmp_engine: hlapi.SnmpEngine = None,
+    ) -> Brother:
+        """Create a new device instance."""
+        instance = cls(host, port, printer_type, model, snmp_engine)
+        await instance.initialize()
+        return instance
+
+    async def initialize(self) -> None:
+        """Initialize snmp_engine and check which OIDs are supported."""
+        _LOGGER.debug("Initializing device %s", self._host)
+
+        if not self._snmp_engine:
+            self._snmp_engine = hlapi.SnmpEngine()
+
+        oids = list(self._iterate_oids(OIDS.values()))
+
+        try:
+            request_args = [
+                self._snmp_engine,
+                hlapi.CommunityData("public", mpModel=0),
+                hlapi.UdpTransportTarget(
+                    (self._host, self._port), timeout=2, retries=10
+                ),
+                hlapi.ContextData(),
+            ]
+        except PySnmpError as err:
+            raise ConnectionError(err) from err
+
+        while True:
+            _, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *tuple(oids))
+
+            if str(errstatus) == "noSuchName":
+                # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
+                if errindex in (5, 8):
+                    raise UnsupportedModel(
+                        "It seems that this printer model is not supported"
+                    )
+
+                oids.pop(errindex - 1)
+                continue
+
+            break
+
+        self._oids = oids
 
     async def async_update(self) -> BrotherSensors:
         """Update data from printer."""
@@ -92,37 +140,27 @@ class Brother:
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data: dict[str, str | int | datetime] = {}
+        data: dict[str, str | int | datetime | None] = {}
 
         try:
             model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
             assert model_match is not None
-            self.model = cast(str, model_match.group("model"))
-            data[ATTR_MODEL] = self.model
-            self.serial = raw_data[OIDS[ATTR_SERIAL]]
-            data[ATTR_SERIAL] = self.serial
+            self.model = data[ATTR_MODEL] = cast(str, model_match.group("model"))
+            self.serial = data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError, AssertionError) as err:
             raise UnsupportedModel(
                 "It seems that this printer model is not supported"
             ) from err
-        try:
-            data[ATTR_FIRMWARE] = self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
 
-            # If no charset data from the printer use roman8 as default
-            if raw_data.get(OIDS[ATTR_CHARSET]) in CHARSET_MAP:
-                charset = CHARSET_MAP[raw_data[OIDS[ATTR_CHARSET]]]
-            else:
-                charset = "roman8"
+        self.firmware = data[ATTR_FIRMWARE] = raw_data.get(OIDS[ATTR_FIRMWARE])
 
+        charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
+
+        if status := raw_data[OIDS[ATTR_STATUS]]:
             data[ATTR_STATUS] = (
-                raw_data[OIDS[ATTR_STATUS]]
-                .strip()
-                .encode("latin1")
-                .decode(charset)
-                .lower()
+                self._cleanse_status(status).encode("latin1").decode(charset).lower()
             )
-        except (AttributeError, KeyError, TypeError):
-            _LOGGER.debug("Incomplete data from printer")
+
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
         except TypeError:
@@ -141,59 +179,61 @@ class Brother:
                     datetime.utcnow() - timedelta(seconds=uptime)
                 ).replace(microsecond=0, tzinfo=timezone.utc)
         if self._legacy:
-            if self._kind == "laser":
+            if self._printer_type == "laser":
                 data.update(
                     dict(
                         self._iterate_data_legacy(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_LASER_MAINTENANCE,
                         )
                     )
                 )
-            if self._kind == "ink":
+            if self._printer_type == "ink":
                 data.update(
                     dict(
                         self._iterate_data_legacy(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_INK_MAINTENANCE,
                         )
                     )
                 )
         else:
-            if self._kind == "laser":
-                if self._counters:
-                    data.update(
-                        dict(
-                            self._iterate_data(
-                                raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
-                            )
-                        )
-                    )
+            if self._printer_type == "laser":
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_LASER_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
                         )
                     )
                 )
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_NEXTCARE]], VALUES_LASER_NEXTCARE
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_LASER_MAINTENANCE,
                         )
                     )
                 )
-            if self._kind == "ink":
-                if self._counters:
-                    data.update(
-                        dict(
-                            self._iterate_data(
-                                raw_data[OIDS[ATTR_COUNTERS]], VALUES_COUNTERS
-                            )
-                        )
-                    )
                 data.update(
                     dict(
                         self._iterate_data(
-                            raw_data[OIDS[ATTR_MAINTENANCE]], VALUES_INK_MAINTENANCE
+                            raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
+                        )
+                    )
+                )
+            if self._printer_type == "ink":
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
+                        )
+                    )
+                )
+                data.update(
+                    dict(
+                        self._iterate_data(
+                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                            VALUES_INK_MAINTENANCE,
                         )
                     )
                 )
@@ -205,7 +245,10 @@ class Brother:
                 )
 
         _LOGGER.debug("Data: %s", data)
-        return from_dict(BrotherSensors, data)
+
+        result: BrotherSensors = from_dict(BrotherSensors, data)
+
+        return result
 
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
@@ -215,12 +258,6 @@ class Brother:
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
         raw_data = {}
-
-        if not self._snmp_engine:
-            self._snmp_engine = hlapi.SnmpEngine()
-
-        if self._need_init:
-            await self._init_device()
 
         try:
             request_args = [
@@ -276,39 +313,8 @@ class Brother:
                     break
         return raw_data
 
-    async def _init_device(self) -> None:
-        """Check if the device sends counters."""
-        oids = tuple(self._iterate_oids(OIDS.values()))
-        try:
-            request_args = [
-                self._snmp_engine,
-                hlapi.CommunityData("public", mpModel=0),
-                hlapi.UdpTransportTarget(
-                    (self._host, self._port), timeout=2, retries=10
-                ),
-                hlapi.ContextData(),
-            ]
-        except PySnmpError as err:
-            raise ConnectionError(err) from err
-        errindication, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *oids)
-        if errindication:
-            raise SnmpError(errindication)
-        if errstatus:
-            oids = tuple(self._iterate_oids(OIDS_WITHOUT_COUNTERS.values()))
-            errindication, errstatus, errindex, _ = await hlapi.getCmd(
-                *request_args, *oids
-            )
-            if errindication:
-                raise SnmpError(errindication)
-            if errstatus:
-                raise SnmpError(f"{errstatus}, {errindex}")
-            _LOGGER.debug("The printer %s doesn't send 'counters'", self._host)
-            self._counters = False
-            self._oids = oids
-        self._need_init = False
-
-    @classmethod
-    def _legacy_printer(cls, string: str) -> bool:
+    @staticmethod
+    def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]
@@ -316,14 +322,14 @@ class Brother:
             return all(item for item in results)
         return False
 
-    @classmethod
-    def _iterate_oids(cls, oids: Iterable) -> Generator:
+    @staticmethod
+    def _iterate_oids(oids: Iterable) -> Generator:
         """Iterate OIDS to retrieve from printer."""
         for oid in oids:
             yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
 
-    @classmethod
-    def _iterate_data(cls, iterable: Iterable, values_map: dict) -> Generator:
+    @staticmethod
+    def _iterate_data(iterable: Iterable, values_map: dict[str, str]) -> Generator:
         """Iterate data from hex words."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -333,8 +339,10 @@ class Brother:
                 else:
                     yield (values_map[item[:2]], int(item[-8:], 16))
 
-    @classmethod
-    def _iterate_data_legacy(cls, iterable: Iterable, values_map: dict) -> Generator:
+    @staticmethod
+    def _iterate_data_legacy(
+        iterable: Iterable, values_map: dict[str, str]
+    ) -> Generator:
         """Iterate data from hex words for legacy printers."""
         for item in iterable:
             # first byte means kind of sensor, last 4 bytes means value
@@ -343,6 +351,11 @@ class Brother:
                     values_map[item[:2]],
                     round(int(item[6:8], 16) / int(item[8:10], 16) * 100),
                 )
+
+    @staticmethod
+    def _cleanse_status(status: str) -> str:
+        """Cleanse and format status."""
+        return " ".join(status.split()).strip()
 
 
 class SnmpError(Exception):
