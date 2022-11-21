@@ -1,2 +1,2 @@
 dacite
-pysnmplib
+pysnmplib>=5.0.20
