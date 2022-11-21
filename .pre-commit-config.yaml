@@ -1,19 +1,29 @@
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.3
+    rev: v3.2.2
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
   - repo: https://github.com/ambv/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
         args:
           - --safe
           - --quiet
         files: ^((brother|tests)/.+)?[^/]+\.py$
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v1.7.7
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-duplicate-keys
+          - --ignore-init-module-imports
+          - --remove-all-unused-imports
+          - --remove-unused-variables
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.1
+    rev: v2.2.2
     hooks:
       - id: codespell
         args:
@@ -55,7 +65,7 @@ repos:
         args:
           - --branch=master
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.27.1
+    rev: v1.28.0
     hooks:
       - id: yamllint
   - repo: https://github.com/prettier/prettier
@@ -64,7 +74,7 @@ repos:
       - id: prettier
         stages: [manual]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.971"
+    rev: "v0.991"
     hooks:
       - id: mypy
         files: ^(brother)/.+\.py$
