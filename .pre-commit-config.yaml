@@ -12,6 +12,16 @@ repos:
           - --safe
           - --quiet
         files: ^((brother|tests)/.+)?[^/]+\.py$
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v1.7.7
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-duplicate-keys
+          - --ignore-init-module-imports
+          - --remove-all-unused-imports
+          - --remove-unused-variables
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.1
     hooks:
