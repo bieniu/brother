@@ -117,7 +117,7 @@ class Brother:
             raise ConnectionError(err) from err
 
         while True:
-            get_result = await hlapi.getCmd(*request_args, *tuple(oids))
+            get_result = await hlapi.getCmd(*request_args, *oids)
             _, errstatus, errindex, _ = await get_result
 
             if str(errstatus) == "noSuchName":
