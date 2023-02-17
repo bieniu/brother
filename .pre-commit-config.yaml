@@ -1,4 +1,10 @@
 repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.247
+    hooks:
+      - id: ruff
+        args:
+          - --fix
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.2.2
     hooks:
@@ -68,8 +74,8 @@ repos:
     rev: v1.28.0
     hooks:
       - id: yamllint
-  - repo: https://github.com/prettier/prettier
-    rev: 2.5.1
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.0-alpha.4
     hooks:
       - id: prettier
         stages: [manual]
