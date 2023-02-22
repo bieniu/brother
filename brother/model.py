@@ -60,7 +60,7 @@ class BrotherSensors:
     pf_kit_mp_remaining_life: int | None = None
     pf_kit_mp_remaining_pages: int | None = None
     status: str | None = None
-    uptime: datetime| None = None
+    uptime: datetime | None = None
     yellow_counter: int | None = None
     yellow_drum_counter: int | None = None
     yellow_drum_remaining_life: int | None = None
