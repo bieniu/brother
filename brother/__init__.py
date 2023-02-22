@@ -37,6 +37,7 @@ from .const import (
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
 )
+from .exceptions import SnmpError, UnsupportedModelError
 from .model import BrotherSensors
 
 _LOGGER = logging.getLogger(__name__)
@@ -360,21 +361,3 @@ class Brother:
     def _cleanse_status(status: str) -> str:
         """Cleanse and format status."""
         return " ".join(status.split()).strip()
-
-
-class SnmpError(Exception):
-    """Raised when SNMP request ended in error."""
-
-    def __init__(self, status: str) -> None:
-        """Initialize."""
-        super().__init__(status)
-        self.status = status
-
-
-class UnsupportedModelError(Exception):
-    """Raised when no model, serial no, firmware data."""
-
-    def __init__(self, status: str) -> None:
-        """Initialize."""
-        super().__init__(status)
-        self.status = status
