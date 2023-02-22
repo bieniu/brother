@@ -1,5 +1,4 @@
 """Python wrapper for getting data from Brother laser and inkjet printers via SNMP."""
-
 from __future__ import annotations
 
 import logging
@@ -7,7 +6,7 @@ import re
 from collections.abc import Generator, Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pysnmp.hlapi.asyncio as hlapi
 from dacite import from_dict
@@ -32,6 +31,7 @@ from .const import (
     PERCENT_VALUES,
     PRINTER_TYPES,
     UNSUPPORTED_MODELS,
+    UPTIME_FLUCTUATION_SECONDS,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
     VALUES_LASER_MAINTENANCE,
@@ -60,7 +60,7 @@ class Brother:
             _LOGGER.debug("Model: %s", model)
             for unsupported_model in UNSUPPORTED_MODELS:
                 if unsupported_model in model.lower():
-                    raise UnsupportedModel(
+                    raise UnsupportedModelError(
                         "It seems that this printer model is not supported"
                     )
 
@@ -123,7 +123,7 @@ class Brother:
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
                 if errindex in (5, 8):
-                    raise UnsupportedModel(
+                    raise UnsupportedModelError(
                         "It seems that this printer model is not supported"
                     )
 
@@ -145,11 +145,12 @@ class Brother:
 
         try:
             model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
-            assert model_match is not None
+            if TYPE_CHECKING:
+                assert model_match is not None  # noqa: S101
             self.model = data[ATTR_MODEL] = cast(str, model_match.group("model"))
             self.serial = data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError, AssertionError) as err:
-            raise UnsupportedModel(
+            raise UnsupportedModelError(
                 "It seems that this printer model is not supported"
             ) from err
 
@@ -168,16 +169,19 @@ class Brother:
             pass
         else:
             if self._last_uptime:
-                new_uptime = (datetime.utcnow() - timedelta(seconds=uptime)).replace(
-                    microsecond=0, tzinfo=timezone.utc
-                )
-                if abs((new_uptime - self._last_uptime).total_seconds()) > 5:
+                new_uptime = (
+                    datetime.now(tz=timezone.utc) - timedelta(seconds=uptime)
+                ).replace(microsecond=0, tzinfo=timezone.utc)
+                if (
+                    abs((new_uptime - self._last_uptime).total_seconds())
+                    > UPTIME_FLUCTUATION_SECONDS
+                ):
                     data[ATTR_UPTIME] = self._last_uptime = new_uptime
                 else:
                     data[ATTR_UPTIME] = self._last_uptime
             else:
                 data[ATTR_UPTIME] = self._last_uptime = (
-                    datetime.utcnow() - timedelta(seconds=uptime)
+                    datetime.now(tz=timezone.utc) - timedelta(seconds=uptime)
                 ).replace(microsecond=0, tzinfo=timezone.utc)
         if self._legacy:
             if self._printer_type == "laser":
@@ -279,7 +283,7 @@ class Brother:
             raise SnmpError(f"{errstatus}, {errindex}")
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
-                # asOctets() gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
+                # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 temp = resrow[-1].asOctets()
@@ -367,7 +371,7 @@ class SnmpError(Exception):
         self.status = status
 
 
-class UnsupportedModel(Exception):
+class UnsupportedModelError(Exception):
     """Raised when no model, serial no, firmware data."""
 
     def __init__(self, status: str) -> None:

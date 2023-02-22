@@ -1,10 +1,11 @@
+"""Example for Brother library."""
 import asyncio
 import logging
 from sys import argv
 
 import pysnmp.hlapi.asyncio as hlapi
 
-from brother import Brother, SnmpError, UnsupportedModel
+from brother import Brother, SnmpError, UnsupportedModelError
 
 # printer IP address/hostname
 HOST = "brother"
@@ -12,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 async def main():
+    """Run main function."""
     host = argv[1] if len(argv) > 1 else HOST
     printer_type = argv[2] if len(argv) > 2 else "laser"
     # argument printer_type: laser - for laser printer
@@ -32,7 +34,7 @@ async def main():
             host, printer_type=printer_type, snmp_engine=snmp_engine
         )
         data = await brother.async_update()
-    except (ConnectionError, SnmpError, UnsupportedModel) as error:
+    except (ConnectionError, SnmpError, UnsupportedModelError) as error:
         print(f"{error}")
         return
 

@@ -1,77 +1,36 @@
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.247
+    rev: v0.0.251
     hooks:
       - id: ruff
         args:
           - --fix
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.2
-    hooks:
-      - id: pyupgrade
-        args: [--py310-plus]
-  - repo: https://github.com/ambv/black
-    rev: 22.10.0
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
     hooks:
       - id: black
         args:
           - --safe
           - --quiet
         files: ^((brother|tests)/.+)?[^/]+\.py$
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v1.7.7
-    hooks:
-      - id: autoflake
-        args:
-          - --in-place
-          - --remove-duplicate-keys
-          - --ignore-init-module-imports
-          - --remove-all-unused-imports
-          - --remove-unused-variables
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.2
     hooks:
       - id: codespell
         args:
-          - --ignore-words-list=hass,alot,datas,dof,dur,ether,farenheit,hist,iff,ines,ist,lightsensor,mut,nd,pres,referer,ser,serie,te,technik,ue,uint,visability,wan,wanna,withing,iam,incomfort,ba
+          - --ignore-words-list=hass,alot,datas,dof,dur,ether,farenheit,hist,iff,ines,ist,lightsensor,mut,nd,pres,referer,ser,serie,te,technik,ue,uint,visability,wan,wanna,withing,iam,incomfort,ba,stap
           - --skip="./.*,*.csv,*.json"
           - --quiet-level=2
         exclude_types: [csv, json]
         exclude: ^tests/fixtures/
-  - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - pycodestyle
-          - pyflakes
-          - flake8-docstrings
-          - pydocstyle
-          - flake8-comprehensions
-          - flake8-noqa
-          - mccabe
-        files: ^(brother|tests)/.+\.py$
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.4
-    hooks:
-      - id: bandit
-        args:
-          - --quiet
-          - --format=custom
-          - --configfile=bandit.yaml
-        files: ^(brother)/.+\.py$
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: "v5.10.1"
-    hooks:
-      - id: isort
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: no-commit-to-branch
         args:
           - --branch=master
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.28.0
+    rev: v1.29.0
     hooks:
       - id: yamllint
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -80,7 +39,7 @@ repos:
       - id: prettier
         stages: [manual]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.991"
+    rev: "v1.0.1"
     hooks:
       - id: mypy
         files: ^(brother)/.+\.py$

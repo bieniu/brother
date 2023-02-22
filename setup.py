@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Setup file for brother module."""
 from pathlib import Path
 
@@ -8,11 +7,17 @@ PROJECT_DIR = Path(__file__).parent.resolve()
 README_FILE = PROJECT_DIR / "README.md"
 VERSION = "2.2.0"
 
+with open("requirements.txt", encoding="utf-8") as file:
+    requirements = file.read().splitlines()
+
 setup(
     name="brother",
     version=VERSION,
     author="Maciej Bieniek",
-    description="Python wrapper for getting data from Brother laser and inkjet printers via SNMP.",
+    description=(
+        "Python wrapper for getting data from Brother laser and inkjet "
+        "printers via SNMP."
+    ),
     long_description=README_FILE.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     url="https://github.com/bieniu/brother",
@@ -22,7 +27,7 @@ setup(
     zip_safe=True,
     platforms="any",
     python_requires=">=3.10",
-    install_requires=list(val.strip() for val in open("requirements.txt")),
+    install_requires=requirements,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
