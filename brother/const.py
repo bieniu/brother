@@ -1,6 +1,4 @@
 """Constants for Brother Printer library."""
-from __future__ import annotations
-
 from typing import Final
 
 ATTR_CHARSET: Final = "charset"
@@ -203,3 +201,5 @@ OIDS_HEX: Final = (
 )
 
 UNSUPPORTED_MODELS: Final = ("mfc-8660dn", "mfc-8860dn")
+
+UPTIME_FLUCTUATION_SECONDS: Final = 5

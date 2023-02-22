@@ -1,16 +1,16 @@
 """Tests for brother package."""
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
 from pysnmp.smi.rfc1902 import ObjectType
 
-from brother import OIDS, Brother, SnmpError, UnsupportedModel
+from brother import OIDS, Brother, SnmpError, UnsupportedModelError
 
 HOST = "localhost"
 INVALID_HOST = "foo.local"
-TEST_TIME = datetime(2019, 11, 11, 9, 10, 32)
+TEST_TIME = datetime(2019, 11, 11, 9, 10, 32, tzinfo=timezone.utc)
 
 
 @pytest.mark.asyncio
@@ -20,7 +20,7 @@ async def test_hl_l2340dw_model():
         data = json.load(file)
 
     with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+        "brother.datetime", now=Mock(return_value=TEST_TIME)
     ), patch("brother.Brother.initialize"):
         brother = await Brother.create(HOST, printer_type="foo")
         sensors = await brother.async_update()
@@ -93,7 +93,7 @@ async def test_mfc_5490cn_model():
     brother._legacy = True  # pylint:disable=protected-access
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+        "brother.datetime", now=Mock(return_value=TEST_TIME)
     ):
         sensors = await brother.async_update()
 
@@ -135,7 +135,7 @@ async def test_dcp_7070dw_model():
     brother = Brother(HOST, printer_type="laser")
 
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+        "brother.datetime", now=Mock(return_value=TEST_TIME)
     ):
         sensors = await brother.async_update()
 
@@ -153,7 +153,7 @@ async def test_dcp_7070dw_model():
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
     with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", utcnow=Mock(return_value=TEST_TIME)
+        "brother.datetime", now=Mock(return_value=TEST_TIME)
     ):
         sensors = await brother.async_update()
 
@@ -276,7 +276,7 @@ async def test_invalid_data():
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=data), pytest.raises(
-        UnsupportedModel
+        UnsupportedModelError
     ):
         await brother.async_update()
 
@@ -330,7 +330,7 @@ async def test_snmp_error():
 @pytest.mark.asyncio
 async def test_unsupported_model():
     """Test with unsupported printer model."""
-    with pytest.raises(UnsupportedModel):
+    with pytest.raises(UnsupportedModelError):
         Brother(HOST, model="mfc-8660dn")
 
 
