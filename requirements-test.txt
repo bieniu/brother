@@ -1,5 +1,5 @@
 black==23.1.0
-coverage==7.1.0
+coverage==7.2.1
 mypy==1.0.1
 pytest-asyncio==0.20.3
 pytest-cov==4.0.0
