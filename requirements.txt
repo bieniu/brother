@@ -1,2 +1,2 @@
 dacite>=1.7.0
-pysnmplib>=5.0.20
+pysnmplib>=5.0.21
