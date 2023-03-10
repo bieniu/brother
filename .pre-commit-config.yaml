@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.253
+    rev: v0.0.254
     hooks:
       - id: ruff
         args:
@@ -14,7 +14,7 @@ repos:
           - --quiet
         files: ^((brother|tests)/.+)?[^/]+\.py$
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.2
+    rev: v2.2.4
     hooks:
       - id: codespell
         args:
@@ -34,12 +34,12 @@ repos:
     hooks:
       - id: yamllint
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.5
+    rev: v3.0.0-alpha.6
     hooks:
       - id: prettier
         stages: [manual]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.0.1"
+    rev: "v1.1.1"
     hooks:
       - id: mypy
         files: ^(brother)/.+\.py$
