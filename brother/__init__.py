@@ -147,7 +147,7 @@ class Brother:
         try:
             model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
             if TYPE_CHECKING:
-                assert model_match is not None  # noqa: S101
+                assert model_match is not None
             self.model = data[ATTR_MODEL] = cast(str, model_match.group("model"))
             self.serial = data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError, AssertionError) as err:
