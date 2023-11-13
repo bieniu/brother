@@ -1,18 +1,11 @@
 repos:
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.5
     hooks:
       - id: ruff
         args:
           - --fix
-  - repo: https://github.com/psf/black
-    rev: 23.11.0
-    hooks:
-      - id: black
-        args:
-          - --safe
-          - --quiet
-        files: ^((brother|tests)/.+)?[^/]+\.py$
+      - id: ruff-format
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
     hooks:
