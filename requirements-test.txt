@@ -1,5 +1,5 @@
 coverage==7.3.2
-mypy==1.7.0
+mypy==1.7.1
 pytest-asyncio==0.21.1
 pytest-cov==4.1.0
 pytest-error-for-skips==2.0.2
