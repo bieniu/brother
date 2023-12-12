@@ -5,7 +5,7 @@ from setuptools import setup
 
 PROJECT_DIR = Path(__file__).parent.resolve()
 README_FILE = PROJECT_DIR / "README.md"
-VERSION = "2.3.0"
+VERSION = "3.0.0"
 
 with open("requirements.txt", encoding="utf-8") as file:
     requirements = file.read().splitlines()
@@ -26,7 +26,7 @@ setup(
     package_data={"brother": ["py.typed"]},
     zip_safe=True,
     platforms="any",
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     install_requires=requirements,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -34,7 +34,6 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
