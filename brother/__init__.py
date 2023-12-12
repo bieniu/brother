@@ -1,12 +1,10 @@
 """Python wrapper for getting data from Brother laser and inkjet printers via SNMP."""
-from __future__ import annotations
-
 import logging
 import re
 from collections.abc import Generator, Iterable
 from contextlib import suppress
-from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, cast
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any, Self, cast
 
 import pysnmp.hlapi.asyncio as hlapi
 from dacite import from_dict
@@ -90,7 +88,7 @@ class Brother:
         printer_type: str = "laser",
         model: str | None = None,
         snmp_engine: hlapi.SnmpEngine = None,
-    ) -> Brother:
+    ) -> Self:
         """Create a new device instance."""
         instance = cls(host, port, printer_type, model, snmp_engine)
         await instance.initialize()
@@ -170,9 +168,9 @@ class Brother:
             pass
         else:
             if self._last_uptime:
-                new_uptime = (
-                    datetime.now(tz=timezone.utc) - timedelta(seconds=uptime)
-                ).replace(microsecond=0, tzinfo=timezone.utc)
+                new_uptime = (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(
+                    microsecond=0, tzinfo=UTC
+                )
                 if (
                     abs((new_uptime - self._last_uptime).total_seconds())
                     > UPTIME_FLUCTUATION_SECONDS
@@ -182,8 +180,8 @@ class Brother:
                     data[ATTR_UPTIME] = self._last_uptime
             else:
                 data[ATTR_UPTIME] = self._last_uptime = (
-                    datetime.now(tz=timezone.utc) - timedelta(seconds=uptime)
-                ).replace(microsecond=0, tzinfo=timezone.utc)
+                    datetime.now(tz=UTC) - timedelta(seconds=uptime)
+                ).replace(microsecond=0, tzinfo=UTC)
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
