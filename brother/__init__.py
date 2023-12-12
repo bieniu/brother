@@ -41,6 +41,8 @@ from .model import BrotherSensors
 _LOGGER = logging.getLogger(__name__)
 
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
+CHUNK_SIZE = 14
+LEGACY_CHUNK_SIZE = 10
 
 
 class Brother:
@@ -261,7 +263,7 @@ class Brother:
 
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
-        raw_data = {}
+        raw_data: dict[str, str | list[str]] = {}
 
         try:
             request_args = [
@@ -285,34 +287,40 @@ class Brother:
                 # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
-                temp = resrow[-1].asOctets()
+                data = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                temp = "".join([f"{x:02x}" for x in temp])[0:-2]
+                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
-                temp = [temp[ind : ind + 14] for ind in range(0, len(temp), 14)]
+                result = [
+                    data_str[ind : ind + CHUNK_SIZE]
+                    for ind in range(0, len(data_str), CHUNK_SIZE)
+                ]
                 # map sensors names to OIDs
-                raw_data[str(resrow[0])] = temp
+                raw_data[str(resrow[0])] = result
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
         # for legacy printers
         for resrow in restable:
             if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
                 # asOctets() gives bytes data
-                temp = resrow[-1].asOctets()
+                data = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                temp = "".join([f"{x:02x}" for x in temp])[0:-2]
-                if self._legacy_printer(temp):
+                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
+                if self._legacy_printer(data_str):
                     self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',
                     # 'a201020c14', 'a301020614', 'a401020b14']
-                    temp = [temp[ind : ind + 10] for ind in range(0, len(temp), 10)]
+                    result = [
+                        data_str[ind : ind + LEGACY_CHUNK_SIZE]
+                        for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
+                    ]
                     # map sensors names to OIDs
-                    raw_data[str(resrow[0])] = temp
+                    raw_data[str(resrow[0])] = result
                     break
         return raw_data
 
