@@ -12,7 +12,7 @@ HOST = "brother"
 logging.basicConfig(level=logging.DEBUG)
 
 
-async def main():
+async def main() -> None:
     """Run main function."""
     host = argv[1] if len(argv) > 1 else HOST
     printer_type = argv[2] if len(argv) > 2 else "laser"
