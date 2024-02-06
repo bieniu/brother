@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.0
+    rev: v0.2.1
     hooks:
       - id: ruff
         args:
@@ -24,7 +24,10 @@ repos:
       - id: trailing-whitespace
       - id: check-yaml
       - id: check-json
+      - id: check-toml
       - id: pretty-format-json
+        args:
+          - --no-sort-keys
       - id: no-commit-to-branch
         args:
           - --branch=master
