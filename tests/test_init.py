@@ -32,6 +32,8 @@ async def test_hl_l2340dw_model() -> None:
 
     brother.shutdown()
 
+    assert brother.host == HOST
+    assert brother.port == 161
     assert brother.model == "HL-L2340DW"
     assert brother.mac == "aa:bb:cc:dd:ee:ff"
     assert brother.firmware == "1.17"

@@ -76,8 +76,8 @@ class Brother:
         self._legacy = False
 
         self._firmware: str | None = None
-        self._model: str
-        self._serial: str
+        self.model: str
+        self.serial: str
         self._mac: str | None = None
         self._host = host
         self._port = port
@@ -91,19 +91,19 @@ class Brother:
         return self._mac
 
     @property
-    def model(self) -> str:
-        """Return model."""
-        return self._model
-
-    @property
-    def serial(self) -> str:
-        """Return serial number."""
-        return self._serial
-
-    @property
     def firmware(self) -> str | None:
         """Return firmware version."""
         return self._firmware
+
+    @property
+    def host(self) -> str:
+        """Return host."""
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """Return port."""
+        return self._port
 
     @classmethod
     async def create(
@@ -173,8 +173,8 @@ class Brother:
             if TYPE_CHECKING:
                 assert model_match is not None
 
-            self._model = model_match.group("model")
-            self._serial = raw_data[OIDS[ATTR_SERIAL]]
+            self.model = model_match.group("model")
+            self.serial = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError) as err:
             raise UnsupportedModelError(
                 "It seems that this printer model is not supported"
