@@ -7,8 +7,6 @@ from datetime import datetime
 class BrotherSensors:
     """Brother Sensors class."""
 
-    model: str
-    serial: str
     belt_unit_remaining_life: int | None = None
     belt_unit_remaining_pages: int | None = None
     black_counter: int | None = None
@@ -38,7 +36,6 @@ class BrotherSensors:
     drum_remaining_pages: int | None = None
     drum_status: int | None = None
     duplex_unit_pages_counter: int | None = None
-    firmware: str | None = None
     fuser_remaining_life: int | None = None
     fuser_unit_remaining_pages: int | None = None
     image_counter: int | None = None
