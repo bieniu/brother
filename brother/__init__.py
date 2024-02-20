@@ -16,6 +16,7 @@ from .const import (
     ATTR_CHARSET,
     ATTR_COUNTERS,
     ATTR_FIRMWARE,
+    ATTR_MAC,
     ATTR_MAINTENANCE,
     ATTR_MODEL,
     ATTR_NEXTCARE,
@@ -57,13 +58,14 @@ class Brother:
         snmp_engine: hlapi.SnmpEngine = None,
     ) -> None:
         """Initialize."""
-        if model:
+        if model and any(
+            unsupported_model in model.lower()
+            for unsupported_model in UNSUPPORTED_MODELS
+        ):
             _LOGGER.debug("Model: %s", model)
-            for unsupported_model in UNSUPPORTED_MODELS:
-                if unsupported_model in model.lower():
-                    raise UnsupportedModelError(
-                        "It seems that this printer model is not supported"
-                    )
+            raise UnsupportedModelError(
+                "It seems that this printer model is not supported"
+            )
 
         if printer_type not in PRINTER_TYPES:
             _LOGGER.warning("Wrong printer_type argument, 'laser' was used")
@@ -76,11 +78,17 @@ class Brother:
         self.firmware: str | None = None
         self.model: str | None = None
         self.serial: str
+        self._mac: str | None = None
         self._host = host
         self._port = port
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
+
+    @property
+    def mac(self) -> str | None:
+        """Return MAC address."""
+        return self._mac
 
     @classmethod
     async def create(
@@ -142,18 +150,25 @@ class Brother:
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data: dict[str, str | int | datetime | None] = {}
+        data: dict[str, Any] = {}
 
         try:
             model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
+
             if TYPE_CHECKING:
                 assert model_match is not None
+
             self.model = data[ATTR_MODEL] = cast(str, model_match.group("model"))
             self.serial = data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
         except (TypeError, AttributeError, AssertionError) as err:
             raise UnsupportedModelError(
                 "It seems that this printer model is not supported"
             ) from err
+
+        data[ATTR_MAC] = raw_data.get(OIDS[ATTR_MAC])
+
+        if not self._mac and data[ATTR_MAC] is not None:
+            self._mac = data[ATTR_MAC]
 
         self.firmware = data[ATTR_FIRMWARE] = raw_data.get(OIDS[ATTR_FIRMWARE])
 
@@ -301,6 +316,9 @@ class Brother:
                 ]
                 # map sensors names to OIDs
                 raw_data[str(resrow[0])] = result
+            elif str(resrow[0]) == OIDS[ATTR_MAC]:
+                data = resrow[-1].asOctets()
+                raw_data[str(resrow[0])] = ":".join([f"{x:02x}" for x in data])
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
         # for legacy printers

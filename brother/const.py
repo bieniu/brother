@@ -4,6 +4,7 @@ from typing import Final
 ATTR_CHARSET: Final = "charset"
 ATTR_COUNTERS: Final = "counters"
 ATTR_FIRMWARE: Final = "firmware"
+ATTR_MAC = "mac"
 ATTR_MAINTENANCE: Final = "maintenance"
 ATTR_MODEL: Final = "model"
 ATTR_NEXTCARE: Final = "nextcare"
@@ -85,6 +86,7 @@ OIDS: Final = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
     ATTR_COUNTERS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.10.0",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
+    ATTR_MAC: "1.3.6.1.2.1.2.2.1.6.1",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
     ATTR_MODEL: "1.3.6.1.4.1.2435.2.3.9.1.1.7.0",
     ATTR_NEXTCARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",
