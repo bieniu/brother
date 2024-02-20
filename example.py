@@ -41,6 +41,7 @@ async def main() -> None:
     brother.shutdown()
 
     print(f"Model: {brother.model}")
+    print(f"MAC address: {brother.mac}")
     print(f"Firmware: {brother.firmware}")
     if data:
         print(f"Status: {data.status}")

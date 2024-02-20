@@ -33,6 +33,7 @@ async def test_hl_l2340dw_model() -> None:
     brother.shutdown()
 
     assert brother.model == "HL-L2340DW"
+    assert brother.mac == "aa:bb:cc:dd:ee:ff"
     assert brother.firmware == "1.17"
     assert brother.serial == "serial_number"
     assert sensors.status == "oczekiwanie"
@@ -340,6 +341,6 @@ def test_iterate_oids() -> None:
     oids = OIDS.values()
     result = list(brother._iterate_oids(oids))  # pylint:disable=protected-access
 
-    assert len(result) == 10
+    assert len(result) == 11
     for item in result:
         assert isinstance(item, ObjectType)
