@@ -78,17 +78,12 @@ class Brother:
         self._firmware: str | None = None
         self.model: str
         self.serial: str
-        self._mac: str | None = None
+        self.mac: str
         self._host = host
         self._port = port
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
-
-    @property
-    def mac(self) -> str | None:
-        """Return MAC address."""
-        return self._mac
 
     @property
     def firmware(self) -> str | None:
@@ -180,7 +175,7 @@ class Brother:
                 "It seems that this printer model is not supported"
             ) from err
 
-        self._mac = raw_data.get(OIDS[ATTR_MAC])
+        self.mac = raw_data[OIDS[ATTR_MAC]]
         self._firmware = raw_data.get(OIDS[ATTR_FIRMWARE])
 
         charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
