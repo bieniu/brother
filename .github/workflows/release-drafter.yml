@@ -22,7 +22,7 @@ jobs:
           version=$(python setup.py --version)
           echo Version from setup.py: $version
           echo "::set-output name=version::$version"
-          
+
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v6.0.0
         with:
