@@ -43,9 +43,9 @@ async def main() -> None:
     print(f"Model: {brother.model}")
     print(f"MAC address: {brother.mac}")
     print(f"Firmware: {brother.firmware}")
+    print(f"Serial no: {brother.serial}")
     if data:
         print(f"Status: {data.status}")
-        print(f"Serial no: {data.serial}")
         print(f"Sensors data: {data}")
 
 

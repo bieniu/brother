@@ -75,10 +75,10 @@ class Brother:
 
         self._legacy = False
 
-        self.firmware: str | None = None
-        self.model: str | None = None
+        self._firmware: str | None = None
+        self.model: str
         self.serial: str
-        self._mac: str | None = None
+        self.mac: str
         self._host = host
         self._port = port
         self._last_uptime: datetime | None = None
@@ -86,9 +86,19 @@ class Brother:
         self._oids: list[ObjectType] = []
 
     @property
-    def mac(self) -> str | None:
-        """Return MAC address."""
-        return self._mac
+    def firmware(self) -> str | None:
+        """Return firmware version."""
+        return self._firmware
+
+    @property
+    def host(self) -> str:
+        """Return host."""
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """Return port."""
+        return self._port
 
     @classmethod
     async def create(
@@ -158,19 +168,15 @@ class Brother:
             if TYPE_CHECKING:
                 assert model_match is not None
 
-            self.model = data[ATTR_MODEL] = cast(str, model_match.group("model"))
-            self.serial = data[ATTR_SERIAL] = raw_data[OIDS[ATTR_SERIAL]]
-        except (TypeError, AttributeError, AssertionError) as err:
+            self.model = model_match.group("model")
+            self.serial = raw_data[OIDS[ATTR_SERIAL]]
+        except (TypeError, AttributeError) as err:
             raise UnsupportedModelError(
                 "It seems that this printer model is not supported"
             ) from err
 
-        data[ATTR_MAC] = raw_data.get(OIDS[ATTR_MAC])
-
-        if not self._mac and data[ATTR_MAC] is not None:
-            self._mac = data[ATTR_MAC]
-
-        self.firmware = data[ATTR_FIRMWARE] = raw_data.get(OIDS[ATTR_FIRMWARE])
+        self.mac = raw_data[OIDS[ATTR_MAC]]
+        self._firmware = raw_data.get(OIDS[ATTR_FIRMWARE])
 
         charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
 
@@ -296,7 +302,8 @@ class Brother:
         if errindication:
             raise SnmpError(errindication)
         if errstatus:
-            raise SnmpError(f"{errstatus}, {errindex}")
+            msg = f"{errstatus}, {errindex}"
+            raise SnmpError(msg)
         for resrow in restable:
             if str(resrow[0]) in OIDS_HEX:
                 # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\

@@ -32,6 +32,8 @@ async def test_hl_l2340dw_model() -> None:
 
     brother.shutdown()
 
+    assert brother.host == HOST
+    assert brother.port == 161
     assert brother.model == "HL-L2340DW"
     assert brother.mac == "aa:bb:cc:dd:ee:ff"
     assert brother.firmware == "1.17"
@@ -91,7 +93,7 @@ async def test_mfc_5490cn_model() -> None:
     with open("tests/fixtures/mfc-5490cn.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="ink")
-    brother._legacy = True  # pylint:disable=protected-access
+    brother._legacy = True
 
     with patch("brother.Brother._get_data", return_value=data), patch(
         "brother.datetime", now=Mock(return_value=TEST_TIME)
@@ -339,7 +341,7 @@ def test_iterate_oids() -> None:
     """Test iterate_oids function."""
     brother = Brother(HOST)
     oids = OIDS.values()
-    result = list(brother._iterate_oids(oids))  # pylint:disable=protected-access
+    result = list(brother._iterate_oids(oids))
 
     assert len(result) == 11
     for item in result:
