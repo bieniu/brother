@@ -1,4 +1,5 @@
 """Python wrapper for getting data from Brother laser and inkjet printers via SNMP."""
+
 import logging
 import re
 from collections.abc import Generator, Iterable
