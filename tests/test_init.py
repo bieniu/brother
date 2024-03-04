@@ -1,4 +1,5 @@
 """Tests for brother package."""
+
 import json
 from datetime import UTC, datetime
 from unittest.mock import Mock, patch
@@ -19,9 +20,11 @@ async def test_hl_l2340dw_model() -> None:
     with open("tests/fixtures/hl-l2340dw.json", encoding="utf-8") as file:
         data = json.load(file)
 
-    with patch("brother.Brother._get_data", return_value=data) as mock_update, patch(
-        "brother.datetime", now=Mock(return_value=TEST_TIME)
-    ), patch("brother.Brother.initialize"):
+    with (
+        patch("brother.Brother._get_data", return_value=data) as mock_update,
+        patch("brother.datetime", now=Mock(return_value=TEST_TIME)),
+        patch("brother.Brother.initialize"),
+    ):
         brother = await Brother.create(HOST, printer_type="foo")
         sensors = await brother.async_update()
         assert mock_update.call_count == 1
@@ -95,8 +98,9 @@ async def test_mfc_5490cn_model() -> None:
     brother = Brother(HOST, printer_type="ink")
     brother._legacy = True
 
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", now=Mock(return_value=TEST_TIME)
+    with (
+        patch("brother.Brother._get_data", return_value=data),
+        patch("brother.datetime", now=Mock(return_value=TEST_TIME)),
     ):
         sensors = await brother.async_update()
 
@@ -137,8 +141,9 @@ async def test_dcp_7070dw_model() -> None:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
 
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", now=Mock(return_value=TEST_TIME)
+    with (
+        patch("brother.Brother._get_data", return_value=data),
+        patch("brother.datetime", now=Mock(return_value=TEST_TIME)),
     ):
         sensors = await brother.async_update()
 
@@ -155,8 +160,9 @@ async def test_dcp_7070dw_model() -> None:
 
     # test uptime logic, uptime increased by 10 minutes
     data["1.3.6.1.2.1.1.3.0"] = "2987742561"
-    with patch("brother.Brother._get_data", return_value=data), patch(
-        "brother.datetime", now=Mock(return_value=TEST_TIME)
+    with (
+        patch("brother.Brother._get_data", return_value=data),
+        patch("brother.datetime", now=Mock(return_value=TEST_TIME)),
     ):
         sensors = await brother.async_update()
 
@@ -278,8 +284,9 @@ async def test_invalid_data() -> None:
         data = json.load(file)
     brother = Brother(HOST)
 
-    with patch("brother.Brother._get_data", return_value=data), pytest.raises(
-        UnsupportedModelError
+    with (
+        patch("brother.Brother._get_data", return_value=data),
+        pytest.raises(UnsupportedModelError),
     ):
         await brother.async_update()
 
@@ -304,8 +311,9 @@ async def test_empty_data() -> None:
     """Test with empty data from printer."""
     brother = Brother(HOST)
 
-    with patch("brother.Brother._get_data", return_value=None), pytest.raises(
-        SnmpError
+    with (
+        patch("brother.Brother._get_data", return_value=None),
+        pytest.raises(SnmpError),
     ):
         await brother.async_update()
 
@@ -315,18 +323,23 @@ async def test_empty_data() -> None:
 @pytest.mark.asyncio()
 async def test_invalid_host() -> None:
     """Test with invalid host."""
-    with patch(
-        "brother.Brother.initialize", side_effect=ConnectionError("Connection Error")
-    ), pytest.raises(ConnectionError):
+    with (
+        patch(
+            "brother.Brother.initialize",
+            side_effect=ConnectionError("Connection Error"),
+        ),
+        pytest.raises(ConnectionError),
+    ):
         await Brother.create(INVALID_HOST)
 
 
 @pytest.mark.asyncio()
 async def test_snmp_error() -> None:
     """Test with raise SnmpError."""
-    with patch(
-        "brother.Brother.initialize", side_effect=SnmpError("SNMP Error")
-    ), pytest.raises(SnmpError):
+    with (
+        patch("brother.Brother.initialize", side_effect=SnmpError("SNMP Error")),
+        pytest.raises(SnmpError),
+    ):
         await Brother.create(HOST)
 
 

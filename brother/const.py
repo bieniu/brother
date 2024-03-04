@@ -1,4 +1,5 @@
 """Constants for Brother Printer library."""
+
 from typing import Final
 
 ATTR_CHARSET: Final = "charset"

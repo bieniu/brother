@@ -1,4 +1,5 @@
 """Example for Brother library."""
+
 import asyncio
 import logging
 from sys import argv

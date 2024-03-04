@@ -1,4 +1,5 @@
 """Setup file for brother module."""
+
 from pathlib import Path
 
 from setuptools import setup
