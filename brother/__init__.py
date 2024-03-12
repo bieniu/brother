@@ -141,8 +141,7 @@ class Brother:
 
         while True:
             async with timeout(DEFAULT_TIMEOUT * RETRIES):
-                get_result = await hlapi.getCmd(*request_args, *oids)
-                _, errstatus, errindex, _ = get_result
+                _, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *oids)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
@@ -300,8 +299,9 @@ class Brother:
                 ),
                 hlapi.ContextData(),
             ]
-            get_result = await hlapi.getCmd(*request_args, *self._oids)
-            errindication, errstatus, errindex, restable = get_result
+            errindication, errstatus, errindex, restable = await hlapi.getCmd(
+                *request_args, *self._oids
+            )
         except PySnmpError as err:
             raise ConnectionError(err) from err
         if errindication:
