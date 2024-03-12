@@ -2,6 +2,7 @@
 
 import logging
 import re
+from asyncio import timeout
 from collections.abc import Generator, Iterable
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
@@ -26,10 +27,12 @@ from .const import (
     ATTR_STATUS,
     ATTR_UPTIME,
     CHARSET_MAP,
+    DEFAULT_TIMEOUT,
     OIDS,
     OIDS_HEX,
     PERCENT_VALUES,
     PRINTER_TYPES,
+    RETRIES,
     UNSUPPORTED_MODELS,
     UPTIME_FLUCTUATION_SECONDS,
     VALUES_COUNTERS,
@@ -129,7 +132,7 @@ class Brother:
                 self._snmp_engine,
                 hlapi.CommunityData("public", mpModel=0),
                 hlapi.UdpTransportTarget(
-                    (self._host, self._port), timeout=2, retries=10
+                    (self._host, self._port), timeout=DEFAULT_TIMEOUT, retries=RETRIES
                 ),
                 hlapi.ContextData(),
             ]
@@ -137,8 +140,9 @@ class Brother:
             raise ConnectionError(err) from err
 
         while True:
-            get_result = await hlapi.getCmd(*request_args, *oids)
-            _, errstatus, errindex, _ = get_result
+            async with timeout(DEFAULT_TIMEOUT * RETRIES):
+                get_result = await hlapi.getCmd(*request_args, *oids)
+                _, errstatus, errindex, _ = get_result
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
