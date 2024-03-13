@@ -35,7 +35,7 @@ async def main() -> None:
             host, printer_type=printer_type, snmp_engine=snmp_engine
         )
         data = await brother.async_update()
-    except (ConnectionError, SnmpError, UnsupportedModelError) as error:
+    except (ConnectionError, SnmpError, TimeoutError, UnsupportedModelError) as error:
         print(f"{error}")
         return
 
