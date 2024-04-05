@@ -79,6 +79,7 @@ CHARSET_MAP: Final = {
     "2004": "roman8",
     "8": "cyrillic",
     "12": "latin5",
+    "106": "utf-8",
 }
 
 PRINTER_TYPES: Final = ("ink", "laser")
