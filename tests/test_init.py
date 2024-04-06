@@ -359,3 +359,47 @@ def test_iterate_oids() -> None:
     assert len(result) == 11
     for item in result:
         assert isinstance(item, ObjectType)
+
+
+@pytest.mark.asyncio()
+async def test_dcp_1618w_model() -> None:
+    """Test with valid data from DCP-1618W printer."""
+    with open("tests/fixtures/dcp-1618w.json", encoding="utf-8") as file:
+        data = json.load(file)
+    brother = Brother(HOST, printer_type="laser")
+
+    with patch("brother.Brother._get_data", return_value=data):
+        sensors = await brother.async_update()
+
+    brother.shutdown()
+
+    assert brother.model == "DCP-1618W"
+    assert brother.firmware == "D1605021248"
+    assert brother.serial == "serial_number"
+    assert sensors.status == "请等待"
+    assert sensors.page_counter == 3914
+    assert sensors.black_toner_remaining == 77
+    assert sensors.drum_counter == 312
+    assert sensors.black_toner == 80
+    assert sensors.drum_remaining_life == 97
+    assert sensors.drum_remaining_pages == 9688
+
+
+@pytest.mark.parametrize(
+    ("status", "encoding", "expected"),
+    [
+        (b"TRYB U\xa6PIENIA", "latin2", "TRYB UŚPIENIA"),
+        (b"PROSZ\xca CZEKA\xc6", "latin2", "PROSZĘ CZEKAĆ"),
+        (b"MA\xa3O TONERU (Y)", "latin2", "MAŁO TONERU (Y)"),
+        (b"\xe8\xaf\xb7\xe7\xad\x89\xe5\xbe\x85", "utf-8", "请等待"),
+        (b"Stap. Kopie\xcdn:01", "roman8", "Stap. Kopieën:01"),
+        (b"\xc1\xdf\xef\xe9\xd8\xd9 \xe0\xd5\xd6\xd8\xdc", "cyrillic", "Спящий режим"),
+    ],
+)
+def test_decode_status(status: bytes, encoding: str, expected: str) -> None:
+    """Test decoding status."""
+    brother = Brother(HOST, printer_type="laser")
+
+    result = brother._decode_status(status, encoding)
+
+    assert result == expected

@@ -182,12 +182,8 @@ class Brother:
         self.mac = raw_data[OIDS[ATTR_MAC]]
         self._firmware = raw_data.get(OIDS[ATTR_FIRMWARE])
 
-        charset = CHARSET_MAP.get(raw_data.get(OIDS[ATTR_CHARSET], "unknown"), "roman8")
-
         if status := raw_data[OIDS[ATTR_STATUS]]:
-            data[ATTR_STATUS] = (
-                self._cleanse_status(status).encode("latin1").decode(charset).lower()
-            )
+            data[ATTR_STATUS] = self._cleanse_status(status.lower())
 
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
@@ -289,6 +285,7 @@ class Brother:
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
         raw_data: dict[str, str | list[str]] = {}
+        raw_status: bytes | None = None
 
         try:
             request_args = [
@@ -331,8 +328,21 @@ class Brother:
             elif str(resrow[0]) == OIDS[ATTR_MAC]:
                 data = resrow[-1].asOctets()
                 raw_data[str(resrow[0])] = ":".join([f"{x:02x}" for x in data])
+            elif str(resrow[0]) == OIDS[ATTR_STATUS]:
+                raw_status = resrow[-1]._value  # noqa: SLF001
             else:
                 raw_data[str(resrow[0])] = str(resrow[-1])
+
+        if raw_status is not None:
+            charset = raw_data.get(OIDS[ATTR_CHARSET], "unknown")
+
+            if TYPE_CHECKING:
+                assert isinstance(charset, str)
+
+            encoding = CHARSET_MAP.get(charset, "roman8")
+            if status := self._decode_status(raw_status, encoding):
+                raw_data[OIDS[ATTR_STATUS]] = status
+
         # for legacy printers
         for resrow in restable:
             if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
@@ -397,3 +407,14 @@ class Brother:
     def _cleanse_status(status: str) -> str:
         """Cleanse and format status."""
         return " ".join(status.split()).strip()
+
+    @staticmethod
+    def _decode_status(status: bytes, encoding: str) -> str | None:
+        """Decode status."""
+        _LOGGER.debug("Status: %s, encoding: %s", status, encoding)
+        try:
+            result = status.decode(encoding)
+        except UnicodeDecodeError:
+            return None
+        else:
+            return result
