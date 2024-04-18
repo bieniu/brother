@@ -20,8 +20,8 @@ categories:
   - title: ":bug: Bug Fixes"
     label: "bugfix"
 
-  - title: ":white_check_mark: Test"
-    label: "test"
+  - title: ":white_check_mark: Tests"
+    label: "tests"
 
   - title: ":arrow_up: Dependency Updates"
     label: "dependencies"
@@ -34,7 +34,7 @@ include-labels:
   - "new-feature"
   - "bugfix"
   - "dependencies"
-  - "test"
+  - "tests"
   - "ci"
 
 template: |
