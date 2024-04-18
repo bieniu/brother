@@ -1,0 +1,157 @@
+# serializer version: 1
+# name: test_dcp_1618w_model
+  Brother(
+    firmware='D1605021248',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-1618W',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_dcp_1618w_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=77, black_toner_status=1, black_toner=80, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=312, drum_remaining_life=97, drum_remaining_pages=9688, drum_status=1, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=3914, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='请等待', uptime=FakeDatetime(2019, 11, 10, 17, 40, 22, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_dcp_7070dw_model
+  Brother(
+    firmware='U1307022128VER.J',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-7070DW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_dcp_7070dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=72, black_toner_status=1, black_toner=None, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=1603, drum_remaining_life=88, drum_remaining_pages=10397, drum_status=1, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=2652, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='stap. kopieën:01', uptime=FakeDatetime(2018, 11, 30, 13, 43, 26, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_dcp_9020cdw_model
+  Brother(
+    firmware='ZA1811191217',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-9020CDW',
+    port=161,
+    serial='E71833C4J372261',
+  )
+# ---
+# name: test_dcp_9020cdw_model.1
+  BrotherSensors(belt_unit_remaining_life=83, belt_unit_remaining_pages=41160, black_counter=4891, black_drum_counter=4939, black_drum_remaining_life=68, black_drum_remaining_pages=10061, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=91, black_toner_status=1, black_toner=100, bw_counter=1762, color_counter=3177, cyan_counter=2705, cyan_drum_counter=4939, cyan_drum_remaining_life=68, cyan_drum_remaining_pages=10061, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=61, cyan_toner_status=1, cyan_toner=70, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=91, fuser_unit_remaining_pages=None, image_counter=13443, laser_remaining_life=None, laser_unit_remaining_pages=45061, magenta_counter=2724, magenta_drum_counter=4939, magenta_drum_remaining_life=68, magenta_drum_remaining_pages=10061, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=59, magenta_toner_status=1, magenta_toner=60, page_counter=4939, pf_kit_1_remaining_life=92, pf_kit_1_remaining_pages=45750, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='tryb uśpienia', uptime=FakeDatetime(2019, 11, 10, 13, 1, 53, tzinfo=datetime.timezone.utc), yellow_counter=3123, yellow_drum_counter=4939, yellow_drum_remaining_life=68, yellow_drum_remaining_pages=10061, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=20, yellow_toner_status=1, yellow_toner=20)
+# ---
+# name: test_dcp_j132w_model
+  Brother(
+    firmware='Q1906110144',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-J132W',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_dcp_j132w_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=71, black_ink_status=1, black_ink=80, black_toner_remaining=None, black_toner_status=None, black_toner=None, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=879, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='ready', uptime=None, yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_dcp_l2540dw_model
+  Brother(
+    firmware='R1906110243',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-L2540DN',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_dcp_l2540dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=55, black_toner_status=1, black_toner=60, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=333, drum_remaining_life=98, drum_remaining_pages=11667, drum_status=1, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=333, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='спящий режим', uptime=FakeDatetime(2019, 11, 11, 5, 55, 20, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_dcp_l3550cdw_model
+  Brother(
+    firmware='J1906051424',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='DCP-L3550CDW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_dcp_l3550cdw_model.1
+  BrotherSensors(belt_unit_remaining_life=97, belt_unit_remaining_pages=48436, black_counter=None, black_drum_counter=1611, black_drum_remaining_life=92, black_drum_remaining_pages=16389, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=26, black_toner_status=1, black_toner=30, bw_counter=709, color_counter=902, cyan_counter=None, cyan_drum_counter=1611, cyan_drum_remaining_life=92, cyan_drum_remaining_pages=16389, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=10, cyan_toner_status=1, cyan_toner=10, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=538, fuser_remaining_life=97, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=48389, magenta_counter=None, magenta_drum_counter=1611, magenta_drum_remaining_life=92, magenta_drum_remaining_pages=16389, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=8, magenta_toner_status=2, magenta_toner=10, page_counter=1611, pf_kit_1_remaining_life=98, pf_kit_1_remaining_pages=48741, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='mało toneru (y)', uptime=None, yellow_counter=None, yellow_drum_counter=1611, yellow_drum_remaining_life=92, yellow_drum_remaining_pages=16389, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=2, yellow_toner_status=2, yellow_toner=10)
+# ---
+# name: test_hl_2270dw_model
+  Brother(
+    firmware='1.16',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='HL-2270DW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_hl_2270dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=None, black_toner_status=None, black_toner=None, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=7809, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=4191, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='sleep', uptime=FakeDatetime(2019, 11, 11, 7, 10, 26, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_hl_5350dn_model
+  Brother(
+    firmware=None,
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='HL-5350DN',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_hl_5350dn_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=None, black_toner_status=21037313, black_toner=None, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=25000, drum_remaining_life=None, drum_remaining_pages=0, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=30589, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=30589, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=69411, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=73818, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=38430, status='energiesparen trommel ersetz.', uptime=FakeDatetime(2019, 11, 11, 9, 9, 6, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_hl_l2340dw_model
+  Brother(
+    firmware='1.17',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='HL-L2340DW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_hl_l2340dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=None, black_ink=None, black_toner_remaining=75, black_toner_status=1, black_toner=80, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=986, drum_remaining_life=92, drum_remaining_pages=11014, drum_status=1, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=986, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='oczekiwanie', uptime=FakeDatetime(2019, 9, 24, 12, 14, 56, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_mfc_5490cn_model
+  Brother(
+    firmware='U1005271959VER.E',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='MFC-5490CN',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_mfc_5490cn_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=20, black_ink_status=None, black_ink=None, black_toner_remaining=None, black_toner_status=None, black_toner=None, bw_counter=None, color_counter=None, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=60, cyan_ink_status=None, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=30, magenta_ink_status=None, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=8989, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='sleep mode', uptime=FakeDatetime(2019, 11, 2, 23, 44, 2, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=55, yellow_ink_status=None, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_mfc_j680dw_model
+  Brother(
+    firmware='U1804191714VER.J',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='MFC-J680DW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_mfc_j680dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=47, black_ink_status=1, black_ink=47, black_toner_remaining=None, black_toner_status=None, black_toner=None, bw_counter=461, color_counter=491, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=35, cyan_ink_status=1, cyan_ink=35, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=None, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=85, magenta_ink_status=1, magenta_ink=85, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=None, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='uyku', uptime=None, yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=45, yellow_ink_status=1, yellow_ink=45, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
+# name: test_mfc_t910dw_model
+  Brother(
+    firmware='M2009041848',
+    host='localhost',
+    mac='aa:bb:cc:dd:ee:ff',
+    model='MFC-T910DW',
+    port=161,
+    serial='serial_number',
+  )
+# ---
+# name: test_mfc_t910dw_model.1
+  BrotherSensors(belt_unit_remaining_life=None, belt_unit_remaining_pages=None, black_counter=None, black_drum_counter=None, black_drum_remaining_life=None, black_drum_remaining_pages=None, black_ink_remaining=None, black_ink_status=1, black_ink=None, black_toner_remaining=None, black_toner_status=None, black_toner=None, bw_counter=185, color_counter=3199, cyan_counter=None, cyan_drum_counter=None, cyan_drum_remaining_life=None, cyan_drum_remaining_pages=None, cyan_ink_remaining=None, cyan_ink_status=1, cyan_ink=None, cyan_toner_remaining=None, cyan_toner_status=None, cyan_toner=None, drum_counter=None, drum_remaining_life=None, drum_remaining_pages=None, drum_status=None, duplex_unit_pages_counter=1445, fuser_remaining_life=None, fuser_unit_remaining_pages=None, image_counter=None, laser_remaining_life=None, laser_unit_remaining_pages=None, magenta_counter=None, magenta_drum_counter=None, magenta_drum_remaining_life=None, magenta_drum_remaining_pages=None, magenta_ink_remaining=None, magenta_ink_status=1, magenta_ink=None, magenta_toner_remaining=None, magenta_toner_status=None, magenta_toner=None, page_counter=3384, pf_kit_1_remaining_life=None, pf_kit_1_remaining_pages=None, pf_kit_mp_remaining_life=None, pf_kit_mp_remaining_pages=None, status='oczekiwanie', uptime=FakeDatetime(2019, 11, 6, 12, 37, 50, tzinfo=datetime.timezone.utc), yellow_counter=None, yellow_drum_counter=None, yellow_drum_remaining_life=None, yellow_drum_remaining_pages=None, yellow_ink_remaining=None, yellow_ink_status=1, yellow_ink=None, yellow_toner_remaining=None, yellow_toner_status=None, yellow_toner=None)
+# ---
