@@ -96,6 +96,9 @@ class Brother:
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
+        self._request_args: tuple[
+            SnmpEngine, CommunityData, UdpTransportTarget, ContextData
+        ]
 
     @property
     def firmware(self) -> str | None:
@@ -136,20 +139,20 @@ class Brother:
         oids = list(self._iterate_oids(OIDS.values()))
 
         try:
-            request_args = [
+            self._request_args = (
                 self._snmp_engine,
                 CommunityData("public", mpModel=0),
                 UdpTransportTarget(
                     (self._host, self._port), timeout=DEFAULT_TIMEOUT, retries=RETRIES
                 ),
                 ContextData(),
-            ]
+            )
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
         while True:
             async with timeout(DEFAULT_TIMEOUT * RETRIES):
-                _, errstatus, errindex, _ = await getCmd(*request_args, *oids)
+                _, errstatus, errindex, _ = await getCmd(*self._request_args, *oids)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
@@ -296,14 +299,8 @@ class Brother:
         raw_status: bytes | None = None
 
         try:
-            request_args = [
-                self._snmp_engine,
-                CommunityData("public", mpModel=0),
-                UdpTransportTarget((self._host, self._port), timeout=2, retries=10),
-                ContextData(),
-            ]
             errindication, errstatus, errindex, restable = await getCmd(
-                *request_args, *self._oids
+                *self._request_args, *self._oids
             )
         except PySnmpError as err:
             raise ConnectionError(err) from err
