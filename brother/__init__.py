@@ -8,9 +8,16 @@ from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, Self, cast
 
-import pysnmp.hlapi.asyncio as hlapi
 from dacite import from_dict
 from pysnmp.error import PySnmpError
+from pysnmp.hlapi.asyncio import (
+    CommunityData,
+    ContextData,
+    ObjectIdentity,
+    SnmpEngine,
+    UdpTransportTarget,
+    getCmd,
+)
 from pysnmp.hlapi.asyncio.cmdgen import lcd
 from pysnmp.smi.rfc1902 import ObjectType
 
@@ -42,6 +49,7 @@ from .const import (
 )
 from .exceptions import SnmpError, UnsupportedModelError
 from .model import BrotherSensors
+from .utils import async_get_snmp_engine
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,7 +67,7 @@ class Brother:
         port: int = 161,
         printer_type: str = "laser",
         model: str | None = None,
-        snmp_engine: hlapi.SnmpEngine = None,
+        snmp_engine: SnmpEngine = None,
     ) -> None:
         """Initialize."""
         if model and any(
@@ -88,6 +96,9 @@ class Brother:
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
+        self._request_args: tuple[
+            SnmpEngine, CommunityData, UdpTransportTarget, ContextData
+        ]
 
     @property
     def firmware(self) -> str | None:
@@ -111,7 +122,7 @@ class Brother:
         port: int = 161,
         printer_type: str = "laser",
         model: str | None = None,
-        snmp_engine: hlapi.SnmpEngine = None,
+        snmp_engine: SnmpEngine = None,
     ) -> Self:
         """Create a new device instance."""
         instance = cls(host, port, printer_type, model, snmp_engine)
@@ -123,25 +134,25 @@ class Brother:
         _LOGGER.debug("Initializing device %s", self._host)
 
         if not self._snmp_engine:
-            self._snmp_engine = hlapi.SnmpEngine()
+            self._snmp_engine = await async_get_snmp_engine()
 
         oids = list(self._iterate_oids(OIDS.values()))
 
         try:
-            request_args = [
+            self._request_args = (
                 self._snmp_engine,
-                hlapi.CommunityData("public", mpModel=0),
-                hlapi.UdpTransportTarget(
+                CommunityData("public", mpModel=0),
+                UdpTransportTarget(
                     (self._host, self._port), timeout=DEFAULT_TIMEOUT, retries=RETRIES
                 ),
-                hlapi.ContextData(),
-            ]
+                ContextData(),
+            )
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
         while True:
             async with timeout(DEFAULT_TIMEOUT * RETRIES):
-                _, errstatus, errindex, _ = await hlapi.getCmd(*request_args, *oids)
+                _, errstatus, errindex, _ = await getCmd(*self._request_args, *oids)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
@@ -288,16 +299,8 @@ class Brother:
         raw_status: bytes | None = None
 
         try:
-            request_args = [
-                self._snmp_engine,
-                hlapi.CommunityData("public", mpModel=0),
-                hlapi.UdpTransportTarget(
-                    (self._host, self._port), timeout=2, retries=10
-                ),
-                hlapi.ContextData(),
-            ]
-            errindication, errstatus, errindex, restable = await hlapi.getCmd(
-                *request_args, *self._oids
+            errindication, errstatus, errindex, restable = await getCmd(
+                *self._request_args, *self._oids
             )
         except PySnmpError as err:
             raise ConnectionError(err) from err
@@ -377,7 +380,7 @@ class Brother:
     def _iterate_oids(oids: Iterable) -> Generator:
         """Iterate OIDS to retrieve from printer."""
         for oid in oids:
-            yield hlapi.ObjectType(hlapi.ObjectIdentity(oid))
+            yield ObjectType(ObjectIdentity(oid))
 
     @staticmethod
     def _iterate_data(iterable: Iterable, values_map: dict[str, str]) -> Generator:
