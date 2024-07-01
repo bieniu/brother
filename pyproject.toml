@@ -43,7 +43,7 @@ lint.ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "ASYNC101", # Async functions should not call `open`, `time.sleep`, or `subprocess` methods
+    "ASYNC230", # Async functions should not open files with blocking methods like `open`
     "PLR2004",  # Magic value used in comparison
     "S101",     # Use of `assert` detected
     "SLF001",   # Private member accessed
