@@ -1,4 +1,4 @@
-ARG VARIANT="3.11"
+ARG VARIANT="3.12"
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT}
 
 COPY requirements*.txt /tmp/pip-tmp/

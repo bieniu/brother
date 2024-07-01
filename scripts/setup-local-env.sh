@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PYTHON_VERSION=3.11
+PYTHON_VERSION=3.12
 
 python$PYTHON_VERSION -m pip install uv
 python$PYTHON_VERSION -m uv venv venv --seed --python=$PYTHON_VERSION
