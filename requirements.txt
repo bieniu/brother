@@ -1,2 +1,2 @@
 dacite>=1.7.0
-pysnmp-lextudio>=5.0.31
+pysnmp>=6.0
