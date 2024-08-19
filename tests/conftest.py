@@ -8,7 +8,7 @@ from syrupy.extensions.amber import AmberSnapshotExtension
 from syrupy.location import PyTestLocation
 
 
-@pytest.fixture()
+@pytest.fixture
 def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
     """Return snapshot assertion fixture."""
     return snapshot.use_extension(SnapshotExtension)
