@@ -1,2 +1,2 @@
 dacite>=1.7.0
-pysnmp>=6.0
+pysnmp>=6.0,<7.0
