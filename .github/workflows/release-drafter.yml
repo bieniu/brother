@@ -11,7 +11,7 @@ jobs:
     name: Release Drafter
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -24,7 +24,7 @@ jobs:
           echo "::set-output name=version::$version"
 
       - name: Run Release Drafter
-        uses: release-drafter/release-drafter@v6.0.0
+        uses: release-drafter/release-drafter@v6
         with:
           tag: ${{ steps.version.outputs.version }}
           name: Version ${{ steps.version.outputs.version }}
