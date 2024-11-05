@@ -2,9 +2,8 @@
 
 import asyncio
 
-from pysnmp.hlapi.asyncio import SnmpEngine
-from pysnmp.hlapi.asyncio.cmdgen import vbProcessor
-from pysnmp.smi.builder import MibBuilder
+from pysnmp.hlapi.v3arch.asyncio import SnmpEngine
+from pysnmp.hlapi.varbinds import MibViewControllerManager
 
 
 async def async_get_snmp_engine() -> SnmpEngine:
@@ -16,11 +15,10 @@ async def async_get_snmp_engine() -> SnmpEngine:
 def _get_snmp_engine() -> SnmpEngine:
     """Return an instance of SnmpEngine."""
     engine = SnmpEngine()
-    mib_controller = vbProcessor.getMibViewController(engine)
-    # Actually load the MIBs from disk so we do
-    # not do it in the event loop
-    builder: MibBuilder = mib_controller.mibBuilder
-    if "PYSNMP-MIB" not in builder.mibSymbols:
-        builder.loadModules()
+    # Actually load the MIBs from disk so we do not do it in the event loop
+    mib_view_controller = MibViewControllerManager.get_mib_view_controller(engine.cache)
+    if "PYSNMP-MIB" not in mib_view_controller.mibBuilder.mibSymbols:
+        mib_view_controller.mibBuilder.load_modules()
+    engine.cache["mibViewController"] = mib_view_controller
 
     return engine
