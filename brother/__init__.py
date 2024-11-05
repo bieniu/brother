@@ -10,15 +10,15 @@ from typing import TYPE_CHECKING, Any, Self, cast
 
 from dacite import from_dict
 from pysnmp.error import PySnmpError
-from pysnmp.hlapi.asyncio import (
+from pysnmp.hlapi.v3arch.asyncio import (
     CommunityData,
     ContextData,
     ObjectIdentity,
     SnmpEngine,
     UdpTransportTarget,
-    getCmd,
+    get_cmd,
 )
-from pysnmp.hlapi.asyncio.cmdgen import lcd
+from pysnmp.hlapi.v3arch.asyncio.cmdgen import LCD
 from pysnmp.smi.rfc1902 import ObjectType
 
 from .const import (
@@ -142,7 +142,7 @@ class Brother:
             self._request_args = (
                 self._snmp_engine,
                 CommunityData("public", mpModel=0),
-                UdpTransportTarget(
+                await UdpTransportTarget.create(
                     (self._host, self._port), timeout=DEFAULT_TIMEOUT, retries=RETRIES
                 ),
                 ContextData(),
@@ -152,7 +152,7 @@ class Brother:
 
         while True:
             async with timeout(DEFAULT_TIMEOUT * RETRIES):
-                _, errstatus, errindex, _ = await getCmd(*self._request_args, *oids)
+                _, errstatus, errindex, _ = await get_cmd(*self._request_args, *oids)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
@@ -291,7 +291,7 @@ class Brother:
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
         if self._snmp_engine:
-            lcd.unconfigure(self._snmp_engine, None)
+            LCD.unconfigure(self._snmp_engine, None)
 
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
@@ -299,7 +299,7 @@ class Brother:
         raw_status: bytes | None = None
 
         try:
-            errindication, errstatus, errindex, restable = await getCmd(
+            errindication, errstatus, errindex, restable = await get_cmd(
                 *self._request_args, *self._oids
             )
         except PySnmpError as err:
