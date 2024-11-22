@@ -22,7 +22,7 @@ setup(
     long_description=README_FILE.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     url="https://github.com/bieniu/brother",
-    license="Apache-2.0 License",
+    license="Apache-2.0",
     packages=["brother"],
     package_data={"brother": ["py.typed"]},
     zip_safe=True,
