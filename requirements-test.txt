@@ -1,7 +1,7 @@
 coverage==7.6.10
 freezegun==1.5.1
 mypy==1.14.1
-pytest-asyncio==0.25.2
+pytest-asyncio==0.25.3
 pytest-cov==6.0.0
 pytest-error-for-skips==2.0.2
 pytest-timeout==2.3.1
