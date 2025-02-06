@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: Test with tox
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,17 +19,23 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
 
-      - name: Install dependencies
-        run: |
-          pip install uv tox tox-gh-actions tox-uv
+      - name: Cache tox environments
+        uses: actions/cache@v4
+        with:
+          path: .tox
+          key: tox-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('tox.ini', 'requirements.txt', 'requirements-test.txt') }}
+          restore-keys: |
+            tox-${{ runner.os }}-${{ matrix.python-version }}-
+            tox-${{ runner.os }}-
+
 
       - name: Test with tox
-        run: tox
+        run: |
+          tox -p auto
