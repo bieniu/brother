@@ -28,7 +28,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install uv tox tox-uv
+          pip install uv
+          uv pip install --system tox tox-uv
 
       - name: Cache tox environments
         uses: actions/cache@v4
