@@ -1,3 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name        = "brother"
+version     = "5.0.0"
+license     = {text = "Apache-2.0"}
+description = "Python wrapper for getting data from Brother laser and inkjet printers via SNMP."
+readme      = "README.md"
+authors     = [{name = "Maciej Bieniek"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Typing :: Typed",
+]
+requires-python = ">=3.12"
+dependencies    = [
+    "dacite>=1.7.0",
+    "pysnmp>=7.1.6"
+]
+
+[project.urls]
+Homepage = "https://github.com/bieniu/brother"
+
+[tool.setuptools.packages.find]
+include = ["brother*"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
 
@@ -27,8 +61,6 @@ target-version = "py313"
 lint.select = ["ALL"]
 
 lint.ignore = [
-    "ANN101",   # Missing type annotation for `self` in method
-    "ANN102",   # Missing type annotation for `cls` in classmethod
     "COM812",   # Trailing comma missing
     "D203",     # 1 blank line required before class docstring
     "D213",     # Multi-line docstring summary should start at the second line
@@ -37,7 +69,7 @@ lint.ignore = [
     "PLR0912",  # Too many branches
     "PLR0913",  # Too many arguments to function call
     "PTH123",   # `open()` should be replaced by `Path.open()`
-    "TCH002",   # Move third-party import into a type-checking block
+    "TC002",   # Move third-party import into a type-checking block
     "TRY003",   # Avoid specifying long messages outside the exception class
 ]
 
