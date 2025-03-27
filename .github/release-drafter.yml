@@ -1,41 +1,58 @@
+name-template: "Version $RESOLVED_VERSION"
+tag-template: "$RESOLVED_VERSION"
+
 change-template: "- #$NUMBER $TITLE @$AUTHOR"
 sort-direction: ascending
 
 categories:
-  - title: ":boom: Breaking Changes"
+  - title: "🚨 Breaking changes"
     label: "breaking-change"
 
-  - title: ":sparkles: New Features"
+  - title: "✨ New features"
     label: "new-feature"
 
-  - title: ":zap: Performance"
-    label: "performance"
-
-  - title: ":recycle: Refactor"
-    label: "refactor"
-
-  - title: ":green_heart: CI"
-    label: "ci"
-
-  - title: ":bug: Bug Fixes"
+  - title: "🐛 Bug fixes"
     label: "bugfix"
 
-  - title: ":white_check_mark: Tests"
-    label: "tests"
+  - title: "🚀 Enhancements"
+    labels:
+      - "enhancement"
+      - "refactor"
+      - "performance"
 
-  - title: ":arrow_up: Dependency Updates"
-    label: "dependencies"
+  - title: "🧰 Maintenance"
+    labels:
+      - "maintenance"
+      - "ci"
+
+  - title: "📚 Documentation"
+    labels:
+      - "documentation"
+
+  - title: "⬆️ Dependency updates"
     collapse-after: 1
+    labels:
+      - "dependencies"
 
-include-labels:
-  - "breaking-change"
-  - "performance"
-  - "refactor"
-  - "new-feature"
-  - "bugfix"
-  - "dependencies"
-  - "tests"
-  - "ci"
+version-resolver:
+  major:
+    labels:
+      - "breaking-change"
+  minor:
+    labels:
+      - "new-feature"
+  patch:
+    labels:
+      - "bugfix"
+      - "ci"
+      - "dependencies"
+      - "documentation"
+      - "enhancement"
+      - "performance"
+      - "refactor"
+  default: patch
 
 template: |
+  ## What's changed
+
   $CHANGES

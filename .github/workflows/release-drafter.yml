@@ -20,17 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Find Version
-        id: version
-        run: |
-          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          echo Version from pyproject.toml: $version
-          echo "version=$version" >> $GITHUB_OUTPUT
-
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v6
-        with:
-          tag: ${{ steps.version.outputs.version }}
-          name: Version ${{ steps.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
