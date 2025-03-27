@@ -11,24 +11,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5.4.0
         with:
+          enable-cache: true
           python-version: 3.13
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-          pip install uv
-          uv pip install --upgrade setuptools wheel build --system
 
       - name: Set package version
         run: |
           version="${{ github.event.release.tag_name }}"
           sed -i "s/^version = \".*\"/version = \"${version}\"/" pyproject.toml
 
-      - name: Build
-        run: python -m build
+      - name: Build package
+        run: uv build
 
       - name: Publish release to PyPI
         uses: pypa/gh-action-pypi-publish@v1.12.4
