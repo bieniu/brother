@@ -32,7 +32,7 @@ Homepage = "https://github.com/bieniu/brother"
 include = ["brother*"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.mypy]
 python_version = "3.13"

@@ -20,17 +20,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5.4.0
         with:
+          enable-cache: true
           python-version: ${{ matrix.python-version }}
-          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install uv
-          uv pip install --system tox tox-uv
+        run: uv pip install tox tox-uv
 
       - name: Test with tox
-        run: |
-          tox
+        run: tox
