@@ -1,5 +1,0 @@
--r requirements.txt
--r requirements-test.txt
-pre-commit==4.2.0
-
--e .

@@ -20,9 +20,26 @@ classifiers = [
     "Typing :: Typed",
 ]
 requires-python = ">=3.12"
-dependencies    = [
-    "dacite>=1.7.0",
-    "pysnmp>=7.1.6"
+dependencies = [
+  "dacite>=1.7.0",
+  "pysnmp>=7.1.6"
+]
+
+[project.optional-dependencies]
+test = [
+  "coverage==7.8.0",
+  "freezegun==1.5.1",
+  "mypy==1.15.0",
+  "pytest-asyncio==0.26.0",
+  "pytest-cov==6.1.1",
+  "pytest-error-for-skips==2.0.2",
+  "pytest-timeout==2.3.1",
+  "pytest==8.3.5",
+  "ruff==0.11.5",
+  "syrupy==4.9.1",
+]
+dev = [
+  "pre-commit==4.2.0",
 ]
 
 [project.urls]
@@ -106,8 +123,7 @@ python =
 commands =
   pytest --timeout=30 --cov=brother --cov-report=xml {posargs} --error-for-skips
 deps =
-  -rrequirements.txt
-  -rrequirements-test.txt
+  .[test]
 
 [testenv:lint]
 basepython = python3
