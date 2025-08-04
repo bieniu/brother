@@ -29,7 +29,7 @@ dependencies = [
 test = [
   "coverage==7.10.2",
   "freezegun==1.5.4",
-  "mypy==1.17.0",
+  "mypy==1.17.1",
   "pytest-asyncio==1.1.0",
   "pytest-cov==6.2.1",
   "pytest-error-for-skips==2.0.2",
