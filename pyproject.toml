@@ -28,7 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
   "coverage==7.10.2",
-  "freezegun==1.5.3",
+  "freezegun==1.5.4",
   "mypy==1.17.0",
   "pytest-asyncio==1.1.0",
   "pytest-cov==6.2.1",
