@@ -39,7 +39,7 @@ test = [
   "syrupy==4.9.1",
 ]
 dev = [
-  "pre-commit==4.2.0",
+  "pre-commit==4.3.0",
 ]
 
 [project.urls]
