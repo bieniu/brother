@@ -310,7 +310,10 @@ class Brother:
             msg = f"{errstatus}, {errindex}"
             raise SnmpError(msg)
         for resrow in restable:
-            if str(resrow[0]) in OIDS_HEX:
+            # Cache the OID string conversion to avoid repeated str() calls
+            oid_str = str(resrow[0])
+
+            if oid_str in OIDS_HEX:
                 # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
@@ -318,7 +321,7 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
+                data_str = self._bytes_to_hex_string(data)
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -327,14 +330,38 @@ class Brother:
                     for ind in range(0, len(data_str), CHUNK_SIZE)
                 ]
                 # map sensors names to OIDs
-                raw_data[str(resrow[0])] = result
-            elif str(resrow[0]) == OIDS[ATTR_MAC]:
+                raw_data[oid_str] = result
+            elif oid_str == OIDS[ATTR_MAC]:
                 data = resrow[-1].asOctets()
-                raw_data[str(resrow[0])] = ":".join([f"{x:02x}" for x in data])
-            elif str(resrow[0]) == OIDS[ATTR_STATUS]:
+                raw_data[oid_str] = ":".join([f"{x:02x}" for x in data])
+            elif oid_str == OIDS[ATTR_STATUS]:
                 raw_status = resrow[-1]._value  # noqa: SLF001
+            elif oid_str == OIDS[ATTR_MAINTENANCE]:
+                # Check for legacy printers during main loop to avoid second iteration
+                # asOctets() gives bytes data
+                data = resrow[-1].asOctets()
+                # convert to string without checksum FF at the end, gives
+                # 'a101020414a201020c14a301020614a401020b14'
+                data_str = self._bytes_to_hex_string(data)
+                if self._legacy_printer(data_str):
+                    self._legacy = True
+                    # split to 10 digits words in list, gives ['a101020414',
+                    # 'a201020c14', 'a301020614', 'a401020b14']
+                    result = [
+                        data_str[ind : ind + LEGACY_CHUNK_SIZE]
+                        for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
+                    ]
+                    # map sensors names to OIDs
+                    raw_data[oid_str] = result
+                else:
+                    # Process as regular data if not legacy
+                    result = [
+                        data_str[ind : ind + CHUNK_SIZE]
+                        for ind in range(0, len(data_str), CHUNK_SIZE)
+                    ]
+                    raw_data[oid_str] = result
             else:
-                raw_data[str(resrow[0])] = str(resrow[-1])
+                raw_data[oid_str] = str(resrow[-1])
 
         if raw_status is not None:
             charset = raw_data.get(OIDS[ATTR_CHARSET], "unknown")
@@ -345,36 +372,26 @@ class Brother:
             encoding = CHARSET_MAP.get(charset, "roman8")
             if status := self._decode_status(raw_status, encoding):
                 raw_data[OIDS[ATTR_STATUS]] = status
-
-        # for legacy printers
-        for resrow in restable:
-            if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
-                # asOctets() gives bytes data
-                data = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives
-                # 'a101020414a201020c14a301020614a401020b14'
-                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
-                if self._legacy_printer(data_str):
-                    self._legacy = True
-                    # split to 10 digits words in list, gives ['a101020414',
-                    # 'a201020c14', 'a301020614', 'a401020b14']
-                    result = [
-                        data_str[ind : ind + LEGACY_CHUNK_SIZE]
-                        for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
-                    ]
-                    # map sensors names to OIDs
-                    raw_data[str(resrow[0])] = result
-                    break
         return raw_data
+
+    @staticmethod
+    def _bytes_to_hex_string(data: bytes) -> str:
+        """Convert bytes to hex string efficiently, excluding last byte (checksum)."""
+        # More efficient than join with list comprehension
+        # Remove last 2 characters (last byte in hex) for checksum
+        return data[:-1].hex()
 
     @staticmethod
     def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
-        nums = [x * 10 for x in range(length // 10)][1:]
-        if results := [string[i - 2 : i] == "14" for i in nums]:
-            return all(item for item in results)
-        return False
+        # Check if we have valid data (at least 10 chars and divisible by 10)
+        if length < LEGACY_CHUNK_SIZE or length % LEGACY_CHUNK_SIZE != 0:
+            return False
+
+        # Check each 10-character chunk ends with "14" using early exit
+        # Start at position 8 (10-2) and check every 10 positions
+        return all(string[i:i + 2] == "14" for i in range(8, length, LEGACY_CHUNK_SIZE))
 
     @staticmethod
     def _iterate_oids(oids: Iterable) -> Generator:
