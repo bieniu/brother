@@ -111,13 +111,14 @@ source = ["brother"]
 legacy_tox_ini = """
 
 [tox]
-envlist = py312, py313, lint, typing, coverage
+envlist = py312, py313, py314, lint, typing, coverage
 skip_missing_interpreters = True
 
 [gh-actions]
 python =
   3.12: py312, lint, typing, coverage
   3.13: py313
+  3.14: py314
 
 [testenv]
 commands =
