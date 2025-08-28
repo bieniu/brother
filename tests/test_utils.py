@@ -15,9 +15,9 @@ def test_get_snmp_engine() -> None:
         mock_mib_view_controller = MagicMock()
         mock_mib_view_controller.mibBuilder.mibSymbols = {}
         mock_mib_manager.get_mib_view_controller.return_value = mock_mib_view_controller
-        
+
         engine = _get_snmp_engine()
-        
+
         assert isinstance(engine, SnmpEngine)
         mock_mib_manager.get_mib_view_controller.assert_called_once()
         mock_mib_view_controller.mibBuilder.load_modules.assert_called_once()
@@ -31,9 +31,9 @@ def test_get_snmp_engine_with_existing_mibs() -> None:
         # MIBs already loaded
         mock_mib_view_controller.mibBuilder.mibSymbols = {"PYSNMP-MIB": True}
         mock_mib_manager.get_mib_view_controller.return_value = mock_mib_view_controller
-        
+
         engine = _get_snmp_engine()
-        
+
         assert isinstance(engine, SnmpEngine)
         mock_mib_manager.get_mib_view_controller.assert_called_once()
         # load_modules should not be called since MIBs are already loaded
@@ -47,9 +47,9 @@ async def test_async_get_snmp_engine() -> None:
     with patch("brother.utils._get_snmp_engine") as mock_get_engine:
         mock_engine = MagicMock(spec=SnmpEngine)
         mock_get_engine.return_value = mock_engine
-        
+
         result = await async_get_snmp_engine()
-        
+
         assert result == mock_engine
         mock_get_engine.assert_called_once()
 
@@ -63,9 +63,9 @@ async def test_async_get_snmp_engine_uses_executor() -> None:
         mock_engine = MagicMock(spec=SnmpEngine)
         mock_loop.run_in_executor.return_value = asyncio.Future()
         mock_loop.run_in_executor.return_value.set_result(mock_engine)
-        
+
         result = await async_get_snmp_engine()
-        
+
         assert result == mock_engine
         mock_get_loop.assert_called_once()
         mock_loop.run_in_executor.assert_called_once()
