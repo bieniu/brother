@@ -19,7 +19,12 @@ async def main() -> None:
     #                        ink   - for inkjet printer
 
     try:
-        brother = await Brother.create(host, printer_type=printer_type)
+        brother = await Brother.create(
+            host,
+            port=161,
+            community="public",
+            printer_type=printer_type,
+        )
         data = await brother.async_update()
     except (ConnectionError, SnmpError, TimeoutError, UnsupportedModelError) as error:
         print(f"{error}")
