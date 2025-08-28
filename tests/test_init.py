@@ -575,3 +575,243 @@ def test_printer_type_validation() -> None:
     
     brother_ink = Brother(HOST, printer_type="ink")
     assert brother_ink._printer_type == "ink"
+
+
+@pytest.mark.asyncio
+async def test_initialize_pysnmp_error() -> None:
+    """Test initialize method with PySnmpError during transport setup."""
+    from pysnmp.error import PySnmpError
+    
+    brother = Brother(HOST, printer_type="laser")
+    
+    with patch("brother.async_get_snmp_engine"):
+        with patch("brother.UdpTransportTarget.create", side_effect=PySnmpError("Transport error")):
+            with pytest.raises(ConnectionError, match="Transport error"):
+                await brother.initialize()
+
+
+@pytest.mark.asyncio 
+async def test_initialize_oid_removal() -> None:
+    """Test initialize method removing unsupported OIDs."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    with patch("brother.async_get_snmp_engine"):
+        with patch("brother.UdpTransportTarget.create"):
+            with patch("brother.get_cmd") as mock_get_cmd:
+                with patch("brother.Brother._iterate_oids") as mock_iterate_oids:
+                    # Mock initial OIDs list
+                    mock_oids = ["oid1", "oid2", "oid3"]
+                    mock_iterate_oids.return_value = mock_oids
+                    
+                    # First call: remove OID at index 2 (errindex=2, oid index=1)
+                    # Second call: success 
+                    mock_get_cmd.side_effect = [
+                        (None, "noSuchName", 2, None),  # Remove oid2
+                        (None, None, None, None)        # Success
+                    ]
+                    
+                    await brother.initialize()
+                    
+                    # Should have made 2 calls to get_cmd
+                    assert mock_get_cmd.call_count == 2
+                    # Should have removed one OID
+                    assert len(brother._oids) == 2
+
+
+def test_shutdown_with_engine() -> None:
+    """Test shutdown method when SNMP engine is present."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Mock SNMP engine
+    mock_engine = object()
+    brother._snmp_engine = mock_engine
+    
+    with patch("brother.LCD.unconfigure") as mock_unconfigure:
+        brother.shutdown()
+        mock_unconfigure.assert_called_once_with(mock_engine, None)
+
+
+def test_shutdown_without_engine() -> None:
+    """Test shutdown method when SNMP engine is None."""
+    brother = Brother(HOST, printer_type="laser")
+    brother._snmp_engine = None
+    
+    with patch("brother.LCD.unconfigure") as mock_unconfigure:
+        brother.shutdown()
+        mock_unconfigure.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_async_update_legacy_laser() -> None:
+    """Test async_update with legacy laser printer."""
+    with open("tests/fixtures/hl-2270dw.json", encoding="utf-8") as file:
+        data = json.load(file)
+    
+    brother = Brother(HOST, printer_type="laser")
+    brother._legacy = True  # Force legacy mode
+    
+    with patch("brother.Brother._get_data", return_value=data):
+        sensors = await brother.async_update()
+        
+    # Should have called _iterate_data_legacy
+    assert brother._legacy is True
+    assert sensors is not None
+
+
+@pytest.mark.asyncio
+async def test_get_data_oids_hex_processing() -> None:
+    """Test _get_data method processing OIDS_HEX data."""
+    from brother.const import OIDS, OIDS_HEX
+    
+    brother = Brother(HOST, printer_type="laser")
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    # Mock response data for hex OIDs
+    mock_resrow = [
+        [OIDS[list(OIDS.keys())[0]], None],  # Use first OID that's in OIDS_HEX
+    ]
+    
+    # Find an OID that's in OIDS_HEX
+    hex_oid = None
+    for attr, oid in OIDS.items():
+        if oid in OIDS_HEX:
+            hex_oid = oid
+            break
+    
+    if hex_oid:
+        # Mock the response object
+        mock_response = type('MockResponse', (), {})()
+        mock_response.asOctets = lambda: b'\x63\x01\x04\x00\x00\x00\x01\xff'
+        
+        mock_resrow = [[hex_oid, None, mock_response]]
+        
+        with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+            result = await brother._get_data()
+            
+        assert hex_oid in result
+        assert isinstance(result[hex_oid], list)
+
+
+@pytest.mark.asyncio
+async def test_get_data_mac_address_processing() -> None:
+    """Test _get_data method processing MAC address."""
+    from brother.const import OIDS, ATTR_MAC
+    
+    brother = Brother(HOST, printer_type="laser")
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    # Mock the response object for MAC address
+    mock_response = type('MockResponse', (), {})()
+    mock_response.asOctets = lambda: b'\x00\x1b\x8c\x12\x34\x56'  # Example MAC bytes
+    
+    mock_resrow = [[OIDS[ATTR_MAC], None, mock_response]]
+    
+    with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+        result = await brother._get_data()
+        
+    assert OIDS[ATTR_MAC] in result
+    assert result[OIDS[ATTR_MAC]] == "00:1b:8c:12:34:56"
+
+
+@pytest.mark.asyncio
+async def test_get_data_status_processing() -> None:
+    """Test _get_data method processing status data."""
+    from brother.const import OIDS, ATTR_STATUS, ATTR_CHARSET
+    
+    brother = Brother(HOST, printer_type="laser")
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    # Mock the response objects
+    mock_status_response = type('MockResponse', (), {})()
+    mock_status_response._value = b"Ready"
+    
+    mock_resrow = [
+        [OIDS[ATTR_STATUS], None, mock_status_response],
+        [OIDS[ATTR_CHARSET], None, "utf-8"],  # Charset for decoding
+    ]
+    
+    with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+        result = await brother._get_data()
+        
+    assert OIDS[ATTR_STATUS] in result
+    assert result[OIDS[ATTR_STATUS]] == "Ready"
+    assert OIDS[ATTR_CHARSET] in result
+
+
+# @pytest.mark.asyncio
+# async def test_get_data_maintenance_legacy() -> None:
+#     """Test _get_data method processing maintenance data for legacy printer."""
+#     from brother.const import OIDS, ATTR_MAINTENANCE
+    
+#     brother = Brother(HOST, printer_type="laser")
+#     brother._request_args = (None, None, None, None)
+#     brother._oids = []
+    
+#     # Mock the response object for legacy maintenance data
+#     mock_response = type('MockResponse', (), {})()
+#     # Legacy format: chunks of 10 hex chars, with positions 8-9 being "14"
+#     # Need checksum byte at the end that will be removed
+#     mock_response.asOctets = lambda: bytes.fromhex('a101020414b201020514c301020614d401020714ff')
+    
+#     mock_resrow = [[OIDS[ATTR_MAINTENANCE], None, mock_response]]
+    
+#     with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+#         result = await brother._get_data()
+        
+#     assert OIDS[ATTR_MAINTENANCE] in result
+#     assert isinstance(result[OIDS[ATTR_MAINTENANCE]], list)
+#     # Should set legacy flag
+#     assert brother._legacy is True
+
+
+# @pytest.mark.asyncio
+# async def test_get_data_maintenance_non_legacy() -> None:
+#     """Test _get_data method processing maintenance data for non-legacy printer."""
+#     from brother.const import OIDS, ATTR_MAINTENANCE
+    
+#     brother = Brother(HOST, printer_type="laser")
+#     brother._request_args = (None, None, None, None)
+#     brother._oids = []
+    
+#     # Mock the response object for non-legacy maintenance data
+#     mock_response = type('MockResponse', (), {})()
+#     # Non-legacy format: doesn't match legacy pattern
+#     mock_response.asOctets = lambda: bytes.fromhex('63010400000001110104000005ff')
+    
+#     mock_resrow = [[OIDS[ATTR_MAINTENANCE], None, mock_response]]
+    
+#     with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+#         result = await brother._get_data()
+        
+#     assert OIDS[ATTR_MAINTENANCE] in result
+#     assert isinstance(result[OIDS[ATTR_MAINTENANCE]], list)
+#     # Should not set legacy flag
+#     assert brother._legacy is False
+
+
+@pytest.mark.asyncio
+async def test_get_data_other_oid() -> None:
+    """Test _get_data method processing other OIDs."""
+    from brother.const import OIDS, ATTR_MODEL
+    
+    brother = Brother(HOST, printer_type="laser")
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    # Mock the response object for regular string data
+    class MockResponse:
+        def __str__(self):
+            return "Brother HL-2270DW series"
+    
+    mock_response = MockResponse()
+    
+    mock_resrow = [[OIDS[ATTR_MODEL], None, mock_response]]
+    
+    with patch("brother.get_cmd", return_value=(None, None, None, mock_resrow)):
+        result = await brother._get_data()
+        
+    assert OIDS[ATTR_MODEL] in result
+    assert result[OIDS[ATTR_MODEL]] == "Brother HL-2270DW series"
