@@ -65,6 +65,7 @@ class Brother:
         self,
         host: str,
         port: int = 161,
+        community: str = "public",
         printer_type: str = "laser",
         model: str | None = None,
         snmp_engine: SnmpEngine = None,
@@ -93,6 +94,7 @@ class Brother:
         self.mac: str
         self._host = host
         self._port = port
+        self._community = community
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
@@ -115,17 +117,23 @@ class Brother:
         """Return port."""
         return self._port
 
+    @property
+    def community(self) -> str:
+        """Return SNMP community."""
+        return self._community
+
     @classmethod
     async def create(
         cls,
         host: str,
         port: int = 161,
+        community: str = "public",
         printer_type: str = "laser",
         model: str | None = None,
         snmp_engine: SnmpEngine = None,
     ) -> Self:
         """Create a new device instance."""
-        instance = cls(host, port, printer_type, model, snmp_engine)
+        instance = cls(host, port, community, printer_type, model, snmp_engine)
         await instance.initialize()
         return instance
 
@@ -141,7 +149,7 @@ class Brother:
         try:
             self._request_args = (
                 self._snmp_engine,
-                CommunityData("public", mpModel=0),
+                CommunityData(self.community, mpModel=0),
                 await UdpTransportTarget.create(
                     (self._host, self._port), timeout=DEFAULT_TIMEOUT, retries=RETRIES
                 ),
