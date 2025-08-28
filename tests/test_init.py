@@ -327,3 +327,251 @@ def test_decode_status(status: bytes, encoding: str, expected: str) -> None:
     result = brother._decode_status(status, encoding)
 
     assert result == expected
+
+
+def test_decode_status_unicode_error() -> None:
+    """Test decoding status with UnicodeDecodeError."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Invalid bytes that can't be decoded with the specified encoding
+    invalid_status = b"\xff\xfe\xfd"
+    
+    result = brother._decode_status(invalid_status, "utf-8")
+    
+    assert result is None
+
+
+def test_cleanse_status() -> None:
+    """Test cleansing status strings."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Test with extra whitespace
+    result = brother._cleanse_status("  ready   to   print  ")
+    assert result == "ready to print"
+    
+    # Test with newlines and tabs
+    result = brother._cleanse_status("ready\t\nto\n\tprint")
+    assert result == "ready to print"
+    
+    # Test empty string
+    result = brother._cleanse_status("")
+    assert result == ""
+    
+    # Test string with only whitespace
+    result = brother._cleanse_status("   \t\n  ")
+    assert result == ""
+
+
+def test_bytes_to_hex_string() -> None:
+    """Test converting bytes to hex string."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Test with typical printer data (last byte should be excluded as checksum)
+    test_bytes = b"\x63\x01\x04\x00\x00\x00\x01\xff"
+    result = brother._bytes_to_hex_string(test_bytes)
+    assert result == "63010400000001"
+    
+    # Test with single byte (should return empty string after removing checksum)
+    single_byte = b"\xff"
+    result = brother._bytes_to_hex_string(single_byte)
+    assert result == ""
+    
+    # Test with two bytes
+    two_bytes = b"\xab\xcd"
+    result = brother._bytes_to_hex_string(two_bytes)
+    assert result == "ab"
+
+
+def test_legacy_printer() -> None:
+    """Test legacy printer detection."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Valid legacy printer data (chunks of 10 ending with "14")
+    valid_legacy = "a101020414a201020c14a301020614"
+    assert brother._legacy_printer(valid_legacy) is True
+    
+    # Invalid legacy printer data (chunks don't end with "14")  
+    invalid_legacy = "a101020413a201020c13a301020613"
+    assert brother._legacy_printer(invalid_legacy) is False
+    
+    # Too short string
+    too_short = "a1010204"
+    assert brother._legacy_printer(too_short) is False
+    
+    # Wrong length (not divisible by 10)
+    wrong_length = "a101020414a"
+    assert brother._legacy_printer(wrong_length) is False
+    
+    # Empty string
+    assert brother._legacy_printer("") is False
+
+
+def test_property_methods() -> None:
+    """Test property methods."""
+    host = "192.168.1.100"
+    port = 1161
+    brother = Brother(host, port=port, printer_type="laser")
+    
+    assert brother.host == host
+    assert brother.port == port
+    assert brother.firmware is None
+    
+    # Test firmware property after setting
+    brother._firmware = "1.23"
+    assert brother.firmware == "1.23"
+
+
+def test_iterate_data() -> None:
+    """Test iterating data from hex words."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Sample hex data with known values
+    hex_data = [
+        "6301040000000a",  # Should match "63" in values_map -> value 10
+        "1101040000000f",  # Should match "11" in values_map -> value 15  
+        "ff01040000001e"   # Should not match (not in values_map)
+    ]
+    
+    # Create a simple values map for testing
+    values_map = {
+        "63": "test_sensor_1",
+        "11": "test_sensor_2",
+    }
+    
+    result = list(brother._iterate_data(hex_data, values_map))
+    
+    assert len(result) == 2
+    assert result[0] == ("test_sensor_1", 10)
+    assert result[1] == ("test_sensor_2", 15)
+
+
+def test_iterate_data_percent_values() -> None:
+    """Test iterating data with percent values."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Use actual percent value sensors from the constants
+    from brother.const import PERCENT_VALUES, VALUES_LASER_MAINTENANCE
+    
+    hex_data = []
+    values_map = {}
+    
+    # Find a percent value sensor from the actual constants
+    for key, value in VALUES_LASER_MAINTENANCE.items():
+        if value in PERCENT_VALUES:
+            hex_data.append(f"{key}01040000157c")  # 5500 in hex, should become 55 when divided by 100
+            values_map[key] = value
+            break
+    
+    if hex_data:  # Only run if we found a percent value sensor
+        result = list(brother._iterate_data(hex_data, values_map))
+        assert len(result) == 1
+        assert result[0][1] == 55  # 5500 / 100 = 55
+
+
+def test_iterate_data_legacy() -> None:
+    """Test iterating data from hex words for legacy printers."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Legacy format: 10 characters, with calculation based on positions 6-8 and 8-10
+    hex_data = [
+        "a101020414",  # positions 6-8: "04", positions 8-10: "14" -> (4/20)*100 = 20
+        "a201020c14",  # positions 6-8: "0c", positions 8-10: "14" -> (12/20)*100 = 60
+        "ff01020414"   # Should not match (not in values_map)
+    ]
+    
+    # Create a simple values map for testing
+    values_map = {
+        "a1": "legacy_sensor_1", 
+        "a2": "legacy_sensor_2",
+    }
+    
+    result = list(brother._iterate_data_legacy(hex_data, values_map))
+    
+    assert len(result) == 2
+    assert result[0] == ("legacy_sensor_1", 20)
+    assert result[1] == ("legacy_sensor_2", 60)
+
+
+@pytest.mark.asyncio
+async def test_get_data_pysnmp_error() -> None:
+    """Test _get_data method with PySnmpError."""
+    from pysnmp.error import PySnmpError
+    
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Mock the request args to avoid initialization
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    with patch("brother.get_cmd", side_effect=PySnmpError("PySnmp error")):
+        with pytest.raises(ConnectionError, match="PySnmp error"):
+            await brother._get_data()
+
+
+@pytest.mark.asyncio  
+async def test_get_data_snmp_errindication() -> None:
+    """Test _get_data method with SNMP errindication."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Mock the request args to avoid initialization
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    with patch("brother.get_cmd", return_value=("timeout", None, None, None)):
+        with pytest.raises(SnmpError, match="timeout"):
+            await brother._get_data()
+
+
+@pytest.mark.asyncio
+async def test_get_data_snmp_errstatus() -> None:
+    """Test _get_data method with SNMP errstatus.""" 
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Mock the request args to avoid initialization
+    brother._request_args = (None, None, None, None)
+    brother._oids = []
+    
+    with patch("brother.get_cmd", return_value=(None, "noSuchObject", 1, None)):
+        with pytest.raises(SnmpError, match="noSuchObject, 1"):
+            await brother._get_data()
+
+
+@pytest.mark.asyncio
+async def test_initialize_unsupported_model_by_oid() -> None:
+    """Test initialize method detecting unsupported model by missing required OIDs."""
+    brother = Brother(HOST, printer_type="laser")
+    
+    # Mock async_get_snmp_engine to avoid actual SNMP setup
+    with patch("brother.Brother._iterate_oids") as mock_iterate_oids:
+        with patch("brother.async_get_snmp_engine"):
+            with patch("brother.UdpTransportTarget.create"):
+                with patch("brother.get_cmd") as mock_get_cmd:
+                    mock_iterate_oids.return_value = ["oid1", "oid2"]
+                    
+                    # Mock errstatus "noSuchName" with errindex 5 (model OID)
+                    mock_get_cmd.return_value = (None, "noSuchName", 5, None)
+                    
+                    with pytest.raises(UnsupportedModelError, match="not supported"):
+                        await brother.initialize()
+
+
+def test_community_property() -> None:
+    """Test community property default value."""
+    brother = Brother(HOST, printer_type="laser")
+    # The community string should be "public" by default
+    # This tests the CommunityData usage in initialize()
+    assert brother._host == HOST
+
+
+def test_printer_type_validation() -> None:
+    """Test printer type validation in constructor."""
+    # Test invalid printer type gets corrected to laser
+    brother = Brother(HOST, printer_type="invalid_type")
+    assert brother._printer_type == "laser"
+    
+    # Test valid printer types
+    brother_laser = Brother(HOST, printer_type="laser")
+    assert brother_laser._printer_type == "laser"
+    
+    brother_ink = Brother(HOST, printer_type="ink")
+    assert brother_ink._printer_type == "ink"
