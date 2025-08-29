@@ -18,10 +18,10 @@ def test_get_snmp_engine() -> None:
 
         engine = _get_snmp_engine()
 
-        assert isinstance(engine, SnmpEngine)
-        mock_mib_manager.get_mib_view_controller.assert_called_once()
-        mock_mib_view_controller.mibBuilder.load_modules.assert_called_once()
-        assert engine.cache["mibViewController"] == mock_mib_view_controller
+    assert isinstance(engine, SnmpEngine)
+    mock_mib_manager.get_mib_view_controller.assert_called_once()
+    mock_mib_view_controller.mibBuilder.load_modules.assert_called_once()
+    assert engine.cache["mibViewController"] == mock_mib_view_controller
 
 
 def test_get_snmp_engine_with_existing_mibs() -> None:
@@ -34,11 +34,11 @@ def test_get_snmp_engine_with_existing_mibs() -> None:
 
         engine = _get_snmp_engine()
 
-        assert isinstance(engine, SnmpEngine)
-        mock_mib_manager.get_mib_view_controller.assert_called_once()
-        # load_modules should not be called since MIBs are already loaded
-        mock_mib_view_controller.mibBuilder.load_modules.assert_not_called()
-        assert engine.cache["mibViewController"] == mock_mib_view_controller
+    assert isinstance(engine, SnmpEngine)
+    mock_mib_manager.get_mib_view_controller.assert_called_once()
+    # load_modules should not be called since MIBs are already loaded
+    mock_mib_view_controller.mibBuilder.load_modules.assert_not_called()
+    assert engine.cache["mibViewController"] == mock_mib_view_controller
 
 
 @pytest.mark.asyncio
@@ -50,8 +50,8 @@ async def test_async_get_snmp_engine() -> None:
 
         result = await async_get_snmp_engine()
 
-        assert result == mock_engine
-        mock_get_engine.assert_called_once()
+    assert result == mock_engine
+    mock_get_engine.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -66,9 +66,9 @@ async def test_async_get_snmp_engine_uses_executor() -> None:
 
         result = await async_get_snmp_engine()
 
-        assert result == mock_engine
-        mock_get_loop.assert_called_once()
-        mock_loop.run_in_executor.assert_called_once()
-        args = mock_loop.run_in_executor.call_args[0]
-        assert args[0] is None  # executor should be None (default)
-        assert callable(args[1])  # second arg should be the _get_snmp_engine function
+    assert result == mock_engine
+    mock_get_loop.assert_called_once()
+    mock_loop.run_in_executor.assert_called_once()
+    args = mock_loop.run_in_executor.call_args[0]
+    assert args[0] is None  # executor should be None (default)
+    assert callable(args[1])  # second arg should be the _get_snmp_engine function
