@@ -86,7 +86,7 @@ class Brother:
         else:
             self._printer_type = printer_type
 
-        self._legacy = False
+        self._legacy: bool | None = None
 
         self._firmware: str | None = None
         self.model: str
@@ -224,7 +224,7 @@ class Brother:
                 data[ATTR_UPTIME] = self._last_uptime = (
                     datetime.now(tz=UTC) - timedelta(seconds=uptime)
                 ).replace(microsecond=0, tzinfo=UTC)
-        if self._legacy:
+        if self._legacy is True:
             if self._printer_type == "laser":
                 data.update(
                     self._iterate_data_legacy(
@@ -239,7 +239,7 @@ class Brother:
                         VALUES_INK_MAINTENANCE,
                     )
                 )
-        else:
+        elif self._legacy is False:
             data.update(
                 self._iterate_data(
                     raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
@@ -309,6 +309,12 @@ class Brother:
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
                 data_str = self._bytes_to_hex_string(data)
+
+                if self._legacy is None:
+                    self._legacy = self._is_legacy_printer(data_str)
+                if self._legacy:
+                    continue
+
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -336,7 +342,9 @@ class Brother:
             if status := self._decode_status(raw_status, encoding):
                 raw_data[OIDS[ATTR_STATUS]] = status
 
-        # for legacy printers
+        if not self._legacy:
+            return raw_data
+
         for resrow in restable:
             oid_str = str(resrow[0])
             if oid_str == OIDS[ATTR_MAINTENANCE]:
@@ -345,8 +353,8 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
                 data_str = self._bytes_to_hex_string(data)
-                if self._legacy_printer(data_str):
-                    self._legacy = True
+
+                if self._legacy:
                     # split to 10 digits words in list, gives ['a101020414',
                     # 'a201020c14', 'a301020614', 'a401020b14']
                     result = [
@@ -359,7 +367,7 @@ class Brother:
         return raw_data
 
     @staticmethod
-    def _legacy_printer(string: str) -> bool:
+    def _is_legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
         nums = [x * 10 for x in range(length // 10)][1:]

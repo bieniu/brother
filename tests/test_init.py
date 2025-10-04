@@ -39,6 +39,7 @@ async def test_hl_l2340dw_model(snapshot: SnapshotAssertion) -> None:
         freeze_time(TEST_TIME),
     ):
         brother = await Brother.create(HOST, printer_type="foo")
+        brother._legacy = False
         sensors = await brother.async_update()
         assert mock_update.call_count == 1
 
@@ -58,6 +59,7 @@ async def test_dcp_l3550cdw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-l3550cdw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -74,6 +76,7 @@ async def test_dcp_j132w_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-j132w.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="ink")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -107,6 +110,7 @@ async def test_dcp_l2540dw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-l2540dn.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -123,6 +127,7 @@ async def test_dcp_7070dw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-7070dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -146,6 +151,7 @@ async def test_mfc_j680dw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/mfc-j680dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="ink")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -162,6 +168,7 @@ async def test_dcp_9020cdw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-9020cdw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -178,6 +185,7 @@ async def test_hl_2270dw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/hl-2270dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -194,6 +202,7 @@ async def test_mfc_t910dw_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/mfc-t910dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="ink")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -210,6 +219,7 @@ async def test_hl_5350dn_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/hl-5350dn.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -226,6 +236,7 @@ async def test_invalid_data() -> None:
     with open("tests/fixtures/invalid.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
+    brother._legacy = False
 
     with (
         patch("brother.Brother._get_data", return_value=data),
@@ -242,6 +253,7 @@ async def test_incomplete_data() -> None:
     with open("tests/fixtures/incomplete.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST)
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data):
         await brother.async_update()
@@ -253,6 +265,7 @@ async def test_incomplete_data() -> None:
 async def test_empty_data() -> None:
     """Test with empty data from printer."""
     brother = Brother(HOST)
+    brother._legacy = False
 
     with (
         patch("brother.Brother._get_data", return_value=None),
@@ -310,6 +323,7 @@ async def test_dcp_1618w_model(snapshot: SnapshotAssertion) -> None:
     with open("tests/fixtures/dcp-1618w.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="laser")
+    brother._legacy = False
 
     with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
         sensors = await brother.async_update()
@@ -399,22 +413,22 @@ def test_legacy_printer() -> None:
 
     # Valid legacy printer data (chunks of 10 ending with "14")
     valid_legacy = "a101020414a201020c14a301020614"
-    assert brother._legacy_printer(valid_legacy) is True
+    assert brother._is_legacy_printer(valid_legacy) is True
 
     # Invalid legacy printer data (chunks don't end with "14")
     invalid_legacy = "a101020413a201020c13a301020613"
-    assert brother._legacy_printer(invalid_legacy) is False
+    assert brother._is_legacy_printer(invalid_legacy) is False
 
     # Too short string
     too_short = "a1010204"
-    assert brother._legacy_printer(too_short) is False
+    assert brother._is_legacy_printer(too_short) is False
 
     # Wrong length (not divisible by 10)
     wrong_length = "a101020414a"
-    assert brother._legacy_printer(wrong_length) is False
+    assert brother._is_legacy_printer(wrong_length) is False
 
     # Empty string
-    assert brother._legacy_printer("") is False
+    assert brother._is_legacy_printer("") is False
 
 
 def test_property_methods() -> None:
