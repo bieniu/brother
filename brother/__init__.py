@@ -227,60 +227,41 @@ class Brother:
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
-                    dict(
-                        self._iterate_data_legacy(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_LASER_MAINTENANCE,
-                        )
+                    self._iterate_data_legacy(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_LASER_MAINTENANCE,
                     )
                 )
-            if self._printer_type == "ink":
+            elif self._printer_type == "ink":
                 data.update(
-                    dict(
-                        self._iterate_data_legacy(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_INK_MAINTENANCE,
-                        )
+                    self._iterate_data_legacy(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_INK_MAINTENANCE,
                     )
                 )
         else:
+            data.update(
+                self._iterate_data(
+                    raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
+                )
+            )
             if self._printer_type == "laser":
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_LASER_MAINTENANCE,
                     )
                 )
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_LASER_MAINTENANCE,
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
                     )
                 )
+            elif self._printer_type == "ink":
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
-                        )
-                    )
-                )
-            if self._printer_type == "ink":
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
-                        )
-                    )
-                )
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_INK_MAINTENANCE,
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_INK_MAINTENANCE,
                     )
                 )
         # page counter for old printer models
@@ -318,7 +299,8 @@ class Brother:
             msg = f"{errstatus}, {errindex}"
             raise SnmpError(msg)
         for resrow in restable:
-            if str(resrow[0]) in OIDS_HEX:
+            oid_str = str(resrow[0])
+            if oid_str in OIDS_HEX:
                 # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
                 # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
                 # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
@@ -335,14 +317,14 @@ class Brother:
                     for ind in range(0, len(data_str), CHUNK_SIZE)
                 ]
                 # map sensors names to OIDs
-                raw_data[str(resrow[0])] = result
-            elif str(resrow[0]) == OIDS[ATTR_MAC]:
+                raw_data[oid_str] = result
+            elif oid_str == OIDS[ATTR_MAC]:
                 data = resrow[-1].asOctets()
-                raw_data[str(resrow[0])] = ":".join([f"{x:02x}" for x in data])
-            elif str(resrow[0]) == OIDS[ATTR_STATUS]:
+                raw_data[oid_str] = ":".join([f"{x:02x}" for x in data])
+            elif oid_str == OIDS[ATTR_STATUS]:
                 raw_status = resrow[-1]._value  # noqa: SLF001
             else:
-                raw_data[str(resrow[0])] = str(resrow[-1])
+                raw_data[oid_str] = str(resrow[-1])
 
         if raw_status is not None:
             charset = raw_data.get(OIDS[ATTR_CHARSET], "unknown")
@@ -356,7 +338,8 @@ class Brother:
 
         # for legacy printers
         for resrow in restable:
-            if str(resrow[0]) == OIDS[ATTR_MAINTENANCE]:
+            oid_str = str(resrow[0])
+            if oid_str == OIDS[ATTR_MAINTENANCE]:
                 # asOctets() gives bytes data
                 data = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
@@ -371,7 +354,7 @@ class Brother:
                         for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
                     ]
                     # map sensors names to OIDs
-                    raw_data[str(resrow[0])] = result
+                    raw_data[oid_str] = result
                     break
         return raw_data
 
