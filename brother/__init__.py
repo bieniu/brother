@@ -376,15 +376,10 @@ class Brother:
     def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
-        # Check if we have valid data (at least 10 chars and divisible by 10)
-        if length < LEGACY_CHUNK_SIZE or length % LEGACY_CHUNK_SIZE != 0:
-            return False
-
-        # Check each 10-character chunk ends with "14" using early exit
-        # Start at position 8 (10-2) and check every 10 positions
-        return all(
-            string[i : i + 2] == "14" for i in range(8, length, LEGACY_CHUNK_SIZE)
-        )
+        nums = [x * LEGACY_CHUNK_SIZE for x in range(length // LEGACY_CHUNK_SIZE)][1:]
+        if results := [string[i - 2 : i] == str(CHUNK_SIZE) for i in nums]:
+            return all(item for item in results)
+        return False
 
     @staticmethod
     def _iterate_oids(oids: Iterable) -> Generator:
