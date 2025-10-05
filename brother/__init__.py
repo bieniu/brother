@@ -102,6 +102,8 @@ class Brother:
             SnmpEngine, CommunityData, UdpTransportTarget, ContextData
         ]
 
+        _LOGGER.info("Brother debug version 100.0.0")
+
     @property
     def firmware(self) -> str | None:
         """Return firmware version."""
