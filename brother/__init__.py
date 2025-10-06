@@ -229,60 +229,41 @@ class Brother:
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
-                    dict(
-                        self._iterate_data_legacy(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_LASER_MAINTENANCE,
-                        )
+                    self._iterate_data_legacy(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_LASER_MAINTENANCE,
                     )
                 )
             if self._printer_type == "ink":
                 data.update(
-                    dict(
-                        self._iterate_data_legacy(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_INK_MAINTENANCE,
-                        )
+                    self._iterate_data_legacy(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_INK_MAINTENANCE,
                     )
                 )
         else:
+            data.update(
+                self._iterate_data(
+                    raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
+                )
+            )
             if self._printer_type == "laser":
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_LASER_MAINTENANCE,
                     )
                 )
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_LASER_MAINTENANCE,
-                        )
-                    )
-                )
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
                     )
                 )
             if self._printer_type == "ink":
                 data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
-                        )
-                    )
-                )
-                data.update(
-                    dict(
-                        self._iterate_data(
-                            raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
-                            VALUES_INK_MAINTENANCE,
-                        )
+                    self._iterate_data(
+                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        VALUES_INK_MAINTENANCE,
                     )
                 )
         # page counter for old printer models
