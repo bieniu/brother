@@ -49,7 +49,7 @@ from .const import (
 )
 from .exceptions import SnmpError, UnsupportedModelError
 from .model import BrotherSensors
-from .utils import async_get_snmp_engine
+from .utils import async_get_snmp_engine, bytes_to_hex_string
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -309,7 +309,7 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # '630104000000011101040000052c410104000022c4310104000000016f01040000190
                 #  0810104000000468601040000000a'
-                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
+                data_str = bytes_to_hex_string(data)
                 # split to 14 digits words in list, gives ['63010400000001',
                 # '1101040000052c', '410104000022c4', '31010400000001',
                 # '6f010400001900', '81010400000046', '8601040000000a']
@@ -344,7 +344,7 @@ class Brother:
                 data = resrow[-1].asOctets()
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
-                data_str = "".join([f"{x:02x}" for x in data])[0:-2]
+                data_str = bytes_to_hex_string(data)
                 if self._legacy_printer(data_str):
                     self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',

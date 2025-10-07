@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pysnmp.hlapi.v3arch.asyncio import SnmpEngine
 
-from brother.utils import _get_snmp_engine, async_get_snmp_engine
+from brother.utils import _get_snmp_engine, async_get_snmp_engine, bytes_to_hex_string
 
 
 def test_get_snmp_engine() -> None:
@@ -72,3 +72,21 @@ async def test_async_get_snmp_engine_uses_executor() -> None:
     args = mock_loop.run_in_executor.call_args[0]
     assert args[0] is None  # executor should be None (default)
     assert callable(args[1])  # second arg should be the _get_snmp_engine function
+
+
+def test_bytes_to_hex_string() -> None:
+    """Test converting bytes to hex string."""
+    # Test with typical printer data (last byte should be excluded as checksum)
+    test_bytes = b"\x63\x01\x04\x00\x00\x00\x01\xff"
+    result = bytes_to_hex_string(test_bytes)
+    assert result == "63010400000001"
+
+    # Test with single byte (should return empty string after removing checksum)
+    single_byte = b"\xff"
+    result = bytes_to_hex_string(single_byte)
+    assert result == ""
+
+    # Test with two bytes
+    two_bytes = b"\xab\xcd"
+    result = bytes_to_hex_string(two_bytes)
+    assert result == "ab"
