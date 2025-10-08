@@ -364,7 +364,7 @@ class Brother:
     def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
-        nums = [x * 10 for x in range(length // 10)][1:]
+        nums = [x * LEGACY_CHUNK_SIZE for x in range(length // LEGACY_CHUNK_SIZE)][1:]
         if results := [string[i - 2 : i] == "14" for i in nums]:
             return all(item for item in results)
         return False
