@@ -22,3 +22,10 @@ def _get_snmp_engine() -> SnmpEngine:
     engine.cache["mibViewController"] = mib_view_controller
 
     return engine
+
+
+def bytes_to_hex_string(data: bytes) -> str:
+    """Convert bytes to hex string efficiently, excluding last byte (checksum)."""
+    # More efficient than join with list comprehension
+    # Remove last 2 characters (last byte in hex) for checksum
+    return data[:-1].hex()
