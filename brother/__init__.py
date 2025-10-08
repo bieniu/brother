@@ -338,6 +338,9 @@ class Brother:
             if status := self._decode_status(raw_status, encoding):
                 raw_data[OIDS[ATTR_STATUS]] = status
 
+        if self._legacy:
+            return raw_data
+
         # for legacy printers
         for resrow in restable:
             oid_str = str(resrow[0])
@@ -348,7 +351,8 @@ class Brother:
                 # 'a101020414a201020c14a301020614a401020b14'
                 data_str = bytes_to_hex_string(data)
                 if self._legacy_printer(data_str):
-                    self._legacy = True
+                    if not self._legacy:
+                        self._legacy = True
                     # split to 10 digits words in list, gives ['a101020414',
                     # 'a201020c14', 'a301020614', 'a401020b14']
                     result = [
