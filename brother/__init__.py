@@ -86,7 +86,7 @@ class Brother:
         else:
             self._printer_type = printer_type
 
-        self._legacy = False
+        self._legacy: bool | None = None
 
         self._firmware: str | None = None
         self.model: str
@@ -102,7 +102,7 @@ class Brother:
             SnmpEngine, CommunityData, UdpTransportTarget, ContextData
         ]
 
-        _LOGGER.info("Brother debug version 107.0.0")
+        _LOGGER.info("Brother debug version 108.0.0")
 
     @property
     def firmware(self) -> str | None:
@@ -338,7 +338,7 @@ class Brother:
             if status := self._decode_status(raw_status, encoding):
                 raw_data[OIDS[ATTR_STATUS]] = status
 
-        if self._legacy:
+        if self._legacy is False:
             return raw_data
 
         # for legacy printers
@@ -350,9 +350,9 @@ class Brother:
                 # convert to string without checksum FF at the end, gives
                 # 'a101020414a201020c14a301020614a401020b14'
                 data_str = bytes_to_hex_string(data)
-                if self._legacy_printer(data_str):
-                    if not self._legacy:
-                        self._legacy = True
+                if self._legacy is None:
+                    self._legacy = self._legacy_printer(data_str)
+                if self._legacy:
                     # split to 10 digits words in list, gives ['a101020414',
                     # 'a201020c14', 'a301020614', 'a401020b14']
                     result = [
