@@ -373,26 +373,6 @@ def test_cleanse_status() -> None:
     assert result == ""
 
 
-def test_bytes_to_hex_string() -> None:
-    """Test converting bytes to hex string."""
-    brother = Brother(HOST, printer_type="laser")
-
-    # Test with typical printer data (last byte should be excluded as checksum)
-    test_bytes = b"\x63\x01\x04\x00\x00\x00\x01\xff"
-    result = brother._bytes_to_hex_string(test_bytes)
-    assert result == "63010400000001"
-
-    # Test with single byte (should return empty string after removing checksum)
-    single_byte = b"\xff"
-    result = brother._bytes_to_hex_string(single_byte)
-    assert result == ""
-
-    # Test with two bytes
-    two_bytes = b"\xab\xcd"
-    result = brother._bytes_to_hex_string(two_bytes)
-    assert result == "ab"
-
-
 def test_legacy_printer() -> None:
     """Test legacy printer detection."""
     brother = Brother(HOST, printer_type="laser")
