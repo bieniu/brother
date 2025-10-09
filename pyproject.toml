@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "brother"
-version = "108.0.0"
+version = "0.0.0"
 license = "Apache-2.0"
 description = "Python wrapper for getting data from Brother laser and inkjet printers via SNMP."
 readme = "README.md"
