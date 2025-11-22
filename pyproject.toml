@@ -85,7 +85,7 @@ lint.ignore = [
     "PLR0913",  # Too many arguments to function call
     "PTH123",   # `open()` should be replaced by `Path.open()`
     "TC002",    # Move third-party import into a type-checking block
-    "TC006",    #Add quotes to type expression in `typing.cast()`
+    "TC006",    # Add quotes to type expression in `typing.cast()`
     "TRY003",   # Avoid specifying long messages outside the exception class
 ]
 
@@ -126,7 +126,7 @@ deps =
   .[test]
 
 [testenv:lint]
-basepython = python3
+basepython = python3.13
 depends = py313
 ignore_errors = True
 skip_install = True
@@ -136,7 +136,7 @@ commands =
   ruff format --check .
 
 [testenv:typing]
-basepython = python3
+basepython = python3.13
 depends = py313
 ignore_errors = True
 skip_install = True
@@ -145,7 +145,7 @@ commands =
   mypy brother
 
 [testenv:coverage]
-basepython = python3
+basepython = python3.13
 depends = py313
 skip_install = True
 usedevelop = False
