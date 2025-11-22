@@ -85,6 +85,7 @@ lint.ignore = [
     "PLR0913",  # Too many arguments to function call
     "PTH123",   # `open()` should be replaced by `Path.open()`
     "TC002",    # Move third-party import into a type-checking block
+    "TC003",    # Move standard library import into a type-checking block
     "TC006",    # Add quotes to type expression in `typing.cast()`
     "TRY003",   # Avoid specifying long messages outside the exception class
 ]
