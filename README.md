@@ -1,3 +1,5 @@
+[![CI](https://img.shields.io/github/actions/workflow/status/bieniu/brother/ci.yml?branch=master&label=CI&logo=github&style=popout)](https://github.com/bieniu/brother/actions/workflows/ci.yml?query=branch%3Amaster)
+[![codecov](https://codecov.io/github/bieniu/brother/graph/badge.svg?token=XMLZ7CKL83)](https://codecov.io/github/bieniu/brother)
 [![GitHub Release][releases-shield]][releases]
 [![PyPI][pypi-releases-shield]][pypi-releases]
 [![PyPI - Downloads][pypi-downloads]][pypi-statistics]
@@ -62,6 +64,18 @@ async def main():
 loop = asyncio.new_event_loop()
 loop.run_until_complete(main())
 loop.close()
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## How to create a dev environment
+
+```bash
+git clone https://github.com/bieniu/brother.git
+cd brother
+./scripts/setup-local-env.sh
 ```
 
 [releases]: https://github.com/bieniu/brother/releases
