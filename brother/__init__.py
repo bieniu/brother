@@ -68,7 +68,7 @@ class Brother:
         community: str = "public",
         printer_type: str = "laser",
         model: str | None = None,
-        snmp_engine: SnmpEngine = None,
+        snmp_engine: SnmpEngine | None = None,
     ) -> None:
         """Initialize."""
         if model and any(
@@ -130,7 +130,7 @@ class Brother:
         community: str = "public",
         printer_type: str = "laser",
         model: str | None = None,
-        snmp_engine: SnmpEngine = None,
+        snmp_engine: SnmpEngine | None = None,
     ) -> Self:
         """Create a new device instance."""
         instance = cls(host, port, community, printer_type, model, snmp_engine)
@@ -294,7 +294,7 @@ class Brother:
         except PySnmpError as err:
             raise ConnectionError(err) from err
         if errindication:
-            raise SnmpError(errindication)
+            raise SnmpError(str(errindication))
         if errstatus:
             msg = f"{errstatus}, {errindex}"
             raise SnmpError(msg)
