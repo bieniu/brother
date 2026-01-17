@@ -43,6 +43,7 @@ jobs:
         run: ty check brother
 
       - name: Run prek
+        if: ${{ matrix.python-version }} == "3.13"
         run: |
           prek run \
             end-of-file-fixer \
@@ -51,7 +52,8 @@ jobs:
             check-yaml \
             check-json \
             check-toml \
-            mixed-line-ending
+            mixed-line-ending \
+            --all-files
 
       - name: Run tests
         run: pytest --timeout=30 --cov --cov-branch --cov-report=xml --error-for-skips
