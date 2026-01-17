@@ -64,6 +64,18 @@ loop.run_until_complete(main())
 loop.close()
 ```
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## How to create a dev environment
+
+```bash
+git clone https://github.com/bieniu/brother.git
+cd brother
+./scripts/setup-local-env.sh
+```
+
 [releases]: https://github.com/bieniu/brother/releases
 [releases-shield]: https://img.shields.io/github/release/bieniu/brother.svg?style=popout
 [pypi-releases]: https://pypi.org/project/brother/

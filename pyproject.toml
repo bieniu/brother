@@ -26,10 +26,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = [
-  "coverage==7.13.1",
+dev = [
   "freezegun==1.5.5",
-  "mypy==1.19.1",
+  "prek==0.2.28",
   "pytest-asyncio==1.3.0",
   "pytest-cov==7.0.0",
   "pytest-error-for-skips==2.0.2",
@@ -37,9 +36,7 @@ test = [
   "pytest==9.0.2",
   "ruff==0.14.11",
   "syrupy==5.0.0",
-]
-dev = [
-  "pre-commit==4.5.1",
+  "ty==0.0.11",
 ]
 
 [project.urls]
@@ -51,28 +48,8 @@ include = ["brother*"]
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "session"
 
-[tool.mypy]
-python_version = "3.14"
-show_error_codes = true
-follow_imports = "silent"
-ignore_missing_imports = true
-warn_incomplete_stub = true
-warn_redundant_casts = true
-warn_unused_configs = true
-check_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = true
-disallow_untyped_defs = true
-no_implicit_optional = true
-strict_equality = true
-warn_return_any = true
-warn_unused_ignores = true
-warn_unreachable = true
-
 [tool.ruff]
-target-version = "py314"
+target-version = "py313"
 
 lint.select = ["ALL"]
 
@@ -105,51 +82,5 @@ lint.ignore = [
 [tool.ruff.lint.mccabe]
 max-complexity = 25
 
-[tool.coverage.run]
-source = ["brother"]
-
-[tool.tox]
-legacy_tox_ini = """
-
-[tox]
-envlist = py313, py314, lint, typing, coverage
-skip_missing_interpreters = True
-
-[gh-actions]
-python =
-  3.13: py313, lint, typing, coverage
-  3.14: py314
-
-[testenv]
-commands =
-  pytest --timeout=30 --cov=brother --cov-report=xml {posargs} --error-for-skips
-deps =
-  .[test]
-
-[testenv:lint]
-basepython = python3.13
-depends = py313
-ignore_errors = True
-skip_install = True
-usedevelop = False
-commands =
-  ruff check .
-  ruff format --check .
-
-[testenv:typing]
-basepython = python3.13
-depends = py313
-ignore_errors = True
-skip_install = True
-usedevelop = False
-commands =
-  mypy brother
-
-[testenv:coverage]
-basepython = python3.13
-depends = py313
-skip_install = True
-usedevelop = False
-commands =
-    coverage report --fail-under=79
-"""
+[tool.ty.environment]
+python-version = "3.13"

@@ -1,0 +1,63 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.13"
+          - "3.14"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          activate-environment: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv pip install .[dev]
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Check format
+        run: ruff format --check .
+
+      - name: Check types
+        run: ty check brother
+
+      - name: Run prek
+        run: |
+          prek run \
+            end-of-file-fixer \
+            trailing-whitespace \
+            check-added-large-files \
+            check-yaml \
+            check-json \
+            check-toml \
+            mixed-line-ending
+
+      - name: Run tests
+        run: pytest --timeout=30 --cov --cov-branch --cov-report=xml --error-for-skips
+
+      - name: Upload coverage reports to Codecov
+        if: ${{ matrix.python-version }} == "3.14"
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
