@@ -25,7 +25,7 @@ dependencies = [
   "pysnmp>=7.1.22"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "freezegun==1.5.5",
   "prek==0.2.29",

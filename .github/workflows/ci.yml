@@ -30,22 +30,19 @@ jobs:
           activate-environment: true
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: uv pip install .[dev]
-
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: Check format
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
       - name: Check types
-        run: ty check brother
+        run: uv run ty check brother
 
       - name: Run prek
         if: ${{ matrix.python-version }} == "3.13"
         run: |
-          prek run \
+          uv run prek run \
             end-of-file-fixer \
             trailing-whitespace \
             check-added-large-files \
@@ -56,7 +53,7 @@ jobs:
             --all-files
 
       - name: Run tests
-        run: pytest --timeout=30 --cov --cov-branch --cov-report=xml --error-for-skips
+        run: uv run pytest --timeout=30 --cov --cov-branch --cov-report=xml --error-for-skips
 
       - name: Upload coverage reports to Codecov
         if: ${{ matrix.python-version }} == "3.14"

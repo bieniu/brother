@@ -1,19 +1,18 @@
 {
     "name": "Brother",
-    "build": {
-        "dockerfile": "Dockerfile",
-        "context": ".."
-    },
+    "image": "mcr.microsoft.com/devcontainers/python:3.14",
     "customizations": {
         "vscode": {
             "settings": {
+                "python.defaultInterpreterPath": "/workspaces/brother/venv/bin/python",
+                "python.pythonPath": "/workspaces/brother/venv/bin/python",
+                "python.terminal.activateEnvInCurrentTerminal": true,
                 "terminal.integrated.profiles.linux": {
                     "zsh": {
                         "path": "/usr/bin/zsh"
                     }
                 },
                 "terminal.integrated.defaultProfile.linux": "zsh",
-                "python.pythonPath": "/usr/local/bin/python",
                 "python.languageServer": "Pylance",
                 "[python]": {
                     "editor.defaultFormatter": "charliermarsh.ruff"
@@ -22,11 +21,10 @@
             "extensions": [
                 "ms-python.python",
                 "ms-python.vscode-pylance",
-                "ms-python.pylint",
                 "charliermarsh.ruff"
             ]
         }
     },
-    "postCreateCommand": "scripts/setup-devcontainer-env.sh",
+    "postCreateCommand": "pip install uv && uv venv venv --clear && . venv/bin/activate && uv sync --all-groups --active && prek install",
     "remoteUser": "vscode"
 }
