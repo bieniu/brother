@@ -28,7 +28,7 @@ dependencies = [
 [dependency-groups]
 dev = [
   "freezegun==1.5.5",
-  "prek==0.2.29",
+  "prek==0.2.30",
   "pytest-asyncio==1.3.0",
   "pytest-cov==7.0.0",
   "pytest-error-for-skips==2.0.2",
