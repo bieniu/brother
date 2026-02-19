@@ -1,4 +1,5 @@
 version: 2
+enable-beta-ecosystems: true
 updates:
   - package-ecosystem: "uv"
     directory: "/"
@@ -18,6 +19,10 @@ updates:
           - "syrupy"
           - "ty"
   - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
       interval: "weekly"
