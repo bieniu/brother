@@ -1,5 +1,6 @@
 version: 2
 enable-beta-ecosystems: true
+
 updates:
   - package-ecosystem: "uv"
     directory: "/"
@@ -10,19 +11,24 @@ updates:
         patterns:
           - "freezegun"
           - "prek"
-          - "pytest-asyncio"
-          - "pytest-cov"
-          - "pytest-error-for-skips"
-          - "pytest-timeout"
           - "pytest"
+          - "pytest-*"
           - "ruff"
           - "syrupy"
           - "ty"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      ci:
+        patterns: ["*"]
+
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      pre-commit:
+        patterns: ["*"]
