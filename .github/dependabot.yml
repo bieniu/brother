@@ -1,36 +1,34 @@
 version: 2
 enable-beta-ecosystems: true
 
-multi-ecosystem-groups:
-  dev:
-    schedule:
-      interval: "weekly"
-
 updates:
   - package-ecosystem: "uv"
     directory: "/"
-    patterns:
-      - "freezegun"
-      - "prek"
-      - "pytest-asyncio"
-      - "pytest-cov"
-      - "pytest-error-for-skips"
-      - "pytest-timeout"
-      - "pytest"
-      - "ruff"
-      - "syrupy"
-      - "ty"
-    multi-ecosystem-group: "dev"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev:
+        patterns:
+          - "freezegun"
+          - "prek"
+          - "pytest"
+          - "pytest-*"
+          - "ruff"
+          - "syrupy"
+          - "ty"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     groups:
       ci:
-        patterns:
-          - "*"
+        patterns: ["*"]
+
   - package-ecosystem: "pre-commit"
     directory: "/"
-    patterns:
-      - "*"
-    multi-ecosystem-group: "dev"
+    schedule:
+      interval: "weekly"
+    groups:
+      pre-commit:
+        patterns: ["*"]
