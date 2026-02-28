@@ -34,9 +34,9 @@ dev = [
   "pytest-error-for-skips==2.0.2",
   "pytest-timeout==2.4.0",
   "pytest==9.0.2",
-  "ruff==0.15.2",
+  "ruff==0.15.4",
   "syrupy==5.1.0",
-  "ty==0.0.18",
+  "ty==0.0.19",
 ]
 
 [project.urls]
