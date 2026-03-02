@@ -9,13 +9,18 @@ updates:
     groups:
       dev:
         patterns:
-          - "freezegun"
           - "prek"
+          - "ruff"
+          - "ty"
+      test:
+        patterns:
+          - "freezegun"
           - "pytest"
           - "pytest-*"
-          - "ruff"
           - "syrupy"
-          - "ty"
+    ignore:
+      - dependency-name: "dacite"
+      - dependency-name: "pysnmp"
 
   - package-ecosystem: "github-actions"
     directory: "/"
