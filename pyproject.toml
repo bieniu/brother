@@ -28,8 +28,8 @@ dependencies = [
 [dependency-groups]
 dev = [
   "prek==0.3.4",
-  "ruff==0.15.4",
-  "ty==0.0.20",
+  "ruff==0.15.5",
+  "ty==0.0.21",
 ]
 test = [
   "freezegun==1.5.5",
