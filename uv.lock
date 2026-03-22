@@ -8,6 +8,7 @@ version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "dacite" },
+    { name = "pyasn1" },
     { name = "pysnmp" },
 ]
 
@@ -30,6 +31,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "dacite", specifier = ">=1.7.0" },
+    { name = "pyasn1", specifier = ">=0.6.3" },
     { name = "pysnmp", specifier = ">=7.1.22" },
 ]
 
