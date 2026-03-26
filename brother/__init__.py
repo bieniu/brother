@@ -36,7 +36,6 @@ from .const import (
     ATTR_STATUS,
     ATTR_UPTIME,
     CHARSET_MAP,
-    DATEANDTIME_MIN_LENGTH,
     DEFAULT_TIMEOUT,
     DEFAULT_WRITE_COMMUNITY,
     OID_DATETIME,
@@ -54,7 +53,12 @@ from .const import (
 )
 from .exceptions import SnmpError, UnsupportedModelError
 from .model import BrotherSensors
-from .utils import async_get_snmp_engine, bytes_to_hex_string
+from .utils import (
+    async_get_snmp_engine,
+    build_dateandtime,
+    bytes_to_hex_string,
+    parse_dateandtime,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -326,7 +330,7 @@ class Brother:
             raise SnmpError(msg)
 
         raw: bytes = restable[0][-1].asOctets()
-        return self._parse_dateandtime(raw)
+        return parse_dateandtime(raw)
 
     async def async_set_datetime(self, dt: datetime | None = None) -> None:
         """Set the printer's date and time via SNMP.
@@ -351,7 +355,7 @@ class Brother:
         if dt is None:
             dt = datetime.now(tz=UTC).astimezone()
 
-        payload = OctetString(self._build_dateandtime(dt))
+        payload = OctetString(build_dateandtime(dt))
         oid = ObjectType(
             ObjectIdentity(OID_DATETIME),
             payload,
@@ -382,31 +386,6 @@ class Brother:
             self._request_args[2],
             self._request_args[3],
         )
-
-    @staticmethod
-    def _build_dateandtime(dt: datetime) -> bytes:
-        """Encode a datetime as an 8-byte SNMP DateAndTime value (RFC 2579)."""
-        return (
-            dt.year.to_bytes(2, "big")
-            + bytes([dt.month, dt.day, dt.hour, dt.minute, dt.second, 0])
-        )
-
-    @staticmethod
-    def _parse_dateandtime(raw: bytes) -> datetime | None:
-        """Decode an SNMP DateAndTime value into a naive datetime.
-
-        The 8-byte DateAndTime format carries no timezone offset, so the
-        returned datetime is naive and represents the printer's local clock.
-        """
-        if len(raw) < DATEANDTIME_MIN_LENGTH:
-            return None
-        year = int.from_bytes(raw[0:2], "big")
-        try:
-            return datetime(  # noqa: DTZ001
-                year, raw[2], raw[3], raw[4], raw[5], raw[6]
-            )
-        except ValueError:
-            return None
 
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
