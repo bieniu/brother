@@ -132,6 +132,17 @@ async def test_get_datetime_not_available() -> None:
     assert result is None
 
 
+@pytest.mark.asyncio
+async def test_get_datetime_snmp_error() -> None:
+    """Test that non-noSuchName errors raise SnmpError."""
+    brother = Brother(HOST)
+    _setup_request_args(brother)
+
+    mock_get = AsyncMock(return_value=(None, "genErr", 1, []))
+    with patch("brother.get_cmd", mock_get), pytest.raises(SnmpError):
+        await brother.async_get_datetime()
+
+
 def test_build_dateandtime() -> None:
     """Test DateAndTime encoding."""
     dt = datetime(2026, 3, 26, 14, 30, 45, tzinfo=UTC)
@@ -156,6 +167,13 @@ def test_parse_dateandtime() -> None:
 def test_parse_dateandtime_too_short() -> None:
     """Test DateAndTime decoding with too-short data."""
     result = Brother._parse_dateandtime(b"\x07\xea\x03")
+    assert result is None
+
+
+def test_parse_dateandtime_invalid_values() -> None:
+    """Test DateAndTime decoding with invalid month/day returns None."""
+    raw = b"\x07\xea\x00\x00\x00\x00\x00\x00"
+    result = Brother._parse_dateandtime(raw)
     assert result is None
 
 

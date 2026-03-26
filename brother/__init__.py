@@ -101,7 +101,11 @@ class Brother:
         self._host = host
         self._port = port
         self._community = community
-        self._write_community = write_community or DEFAULT_WRITE_COMMUNITY
+        self._write_community = (
+            DEFAULT_WRITE_COMMUNITY
+            if write_community is None
+            else write_community
+        )
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
@@ -301,7 +305,7 @@ class Brother:
         oid = ObjectType(ObjectIdentity(OID_DATETIME))
 
         try:
-            errindication, errstatus, _, restable = await get_cmd(
+            errindication, errstatus, errindex, restable = await get_cmd(
                 *self._request_args, oid
             )
         except PySnmpError as err:
@@ -310,7 +314,10 @@ class Brother:
         if errindication:
             raise SnmpError(str(errindication))
         if errstatus:
-            return None
+            if str(errstatus) == "noSuchName":
+                return None
+            msg = f"SNMP GET failed: {errstatus} at index {errindex}"
+            raise SnmpError(msg)
 
         raw: bytes = restable[0][-1].asOctets()
         return self._parse_dateandtime(raw)
@@ -382,9 +389,12 @@ class Brother:
         if len(raw) < DATEANDTIME_MIN_LENGTH:
             return None
         year = int.from_bytes(raw[0:2], "big")
-        return datetime(  # noqa: DTZ001
-            year, raw[2], raw[3], raw[4], raw[5], raw[6]
-        )
+        try:
+            return datetime(  # noqa: DTZ001
+                year, raw[2], raw[3], raw[4], raw[5], raw[6]
+            )
+        except ValueError:
+            return None
 
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
