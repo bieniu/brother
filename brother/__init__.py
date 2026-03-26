@@ -346,8 +346,8 @@ class Brother:
                 components are sent to the printer (no timezone offset).
 
         Raises:
-            SnmpError: If the printer rejects the SNMP SET request.
-            ConnectionError: If the printer is unreachable.
+            SnmpError: If SNMP returns an error indication or SET error status.
+            ConnectionError: If PySNMP raises a transport-level error.
 
         """
         if dt is None:

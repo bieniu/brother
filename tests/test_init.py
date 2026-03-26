@@ -772,6 +772,8 @@ async def test_set_datetime(brother_with_request_args: Brother) -> None:
     mock_set.assert_called_once()
     args = mock_set.call_args
     oid_arg = args[0][-1]
+    # ObjectType from mocked set_cmd is not fully initialized; unpacking (__getitem__)
+    # raises SmiError, so read the bound value from the internal tuple.
     val = oid_arg._ObjectType__args[1]
     expected = b"\x07\xea\x03\x1a\x0e\x1e\x00\x00"
     assert bytes(val) == expected
@@ -780,13 +782,23 @@ async def test_set_datetime(brother_with_request_args: Brother) -> None:
 @pytest.mark.asyncio
 async def test_set_datetime_default_uses_now(
     brother_with_request_args: Brother,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test that async_set_datetime with no argument uses current time."""
+    """Test that async_set_datetime(None) encodes the same instant as now(local)."""
+    monkeypatch.setenv("TZ", "UTC")
     mock_set = AsyncMock(return_value=(None, 0, 0, []))
-    with patch("brother.set_cmd", mock_set):
+    frozen = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
+    with (
+        patch("brother.set_cmd", mock_set),
+        freeze_time(frozen),
+    ):
+        expected = build_dateandtime(datetime.now(tz=UTC).astimezone())
         await brother_with_request_args.async_set_datetime()
 
     mock_set.assert_called_once()
+    oid_arg = mock_set.call_args[0][-1]
+    val = oid_arg._ObjectType__args[1]
+    assert bytes(val) == expected
 
 
 @pytest.mark.asyncio
