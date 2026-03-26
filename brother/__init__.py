@@ -146,7 +146,13 @@ class Brother:
     ) -> Self:
         """Create a new device instance."""
         instance = cls(
-            host, port, community, printer_type, model, snmp_engine, write_community
+            host=host,
+            port=port,
+            community=community,
+            printer_type=printer_type,
+            model=model,
+            snmp_engine=snmp_engine,
+            write_community=write_community,
         )
         await instance.initialize()
         return instance
@@ -351,15 +357,10 @@ class Brother:
             payload,
         )
 
-        write_args = (
-            self._request_args[0],
-            CommunityData(self._write_community, mpModel=0),
-            self._request_args[2],
-            self._request_args[3],
-        )
-
         try:
-            errindication, errstatus, errindex, _ = await set_cmd(*write_args, oid)
+            errindication, errstatus, errindex, _ = await set_cmd(
+                *self._request_args_for(self._write_community), oid
+            )
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
@@ -370,6 +371,17 @@ class Brother:
             raise SnmpError(msg)
 
         _LOGGER.debug("Printer datetime set to %s", dt.isoformat())
+
+    def _request_args_for(
+        self, community: str
+    ) -> tuple[SnmpEngine, CommunityData, UdpTransportTarget, ContextData]:
+        """Return SNMP request args with the given community string."""
+        return (
+            self._request_args[0],
+            CommunityData(community, mpModel=0),
+            self._request_args[2],
+            self._request_args[3],
+        )
 
     @staticmethod
     def _build_dateandtime(dt: datetime) -> bytes:
