@@ -106,9 +106,7 @@ class Brother:
         self._port = port
         self._community = community
         self._write_community = (
-            DEFAULT_WRITE_COMMUNITY
-            if write_community is None
-            else write_community
+            DEFAULT_WRITE_COMMUNITY if write_community is None else write_community
         )
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine

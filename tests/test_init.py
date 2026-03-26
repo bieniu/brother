@@ -877,6 +877,26 @@ async def test_get_datetime_snmp_error(
         await brother_with_request_args.async_get_datetime()
 
 
+@pytest.mark.asyncio
+async def test_get_datetime_errindication(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that SNMP error indication raises SnmpError."""
+    mock_get = AsyncMock(return_value=("requestTimedOut", 0, 0, []))
+    with patch("brother.get_cmd", mock_get), pytest.raises(SnmpError):
+        await brother_with_request_args.async_get_datetime()
+
+
+@pytest.mark.asyncio
+async def test_get_datetime_connection_error(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that PySnmpError from get_cmd raises ConnectionError."""
+    mock_get = AsyncMock(side_effect=PySnmpError("timeout"))
+    with patch("brother.get_cmd", mock_get), pytest.raises(ConnectionError):
+        await brother_with_request_args.async_get_datetime()
+
+
 def test_build_dateandtime() -> None:
     """Test DateAndTime encoding."""
     dt = datetime(2026, 3, 26, 14, 30, 45, tzinfo=UTC)

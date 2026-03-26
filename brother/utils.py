@@ -36,9 +36,8 @@ def bytes_to_hex_string(data: bytes) -> str:
 
 def build_dateandtime(dt: datetime) -> bytes:
     """Encode a datetime as an 8-byte SNMP DateAndTime value (RFC 2579)."""
-    return (
-        dt.year.to_bytes(2, "big")
-        + bytes([dt.month, dt.day, dt.hour, dt.minute, dt.second, 0])
+    return dt.year.to_bytes(2, "big") + bytes(
+        [dt.month, dt.day, dt.hour, dt.minute, dt.second, 0]
     )
 
 
