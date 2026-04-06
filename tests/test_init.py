@@ -765,18 +765,12 @@ async def test_get_data_other_oid() -> None:
 async def test_set_datetime(brother_with_request_args: Brother) -> None:
     """Test setting printer datetime via SNMP."""
     mock_set = AsyncMock(return_value=(None, 0, 0, []))
-    with patch("brother.set_cmd", mock_set):
-        dt = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
-        await brother_with_request_args.async_set_datetime(dt)
-
-    mock_set.assert_called_once()
-    args = mock_set.call_args
-    oid_arg = args[0][-1]
-    # ObjectType from mocked set_cmd is not fully initialized; unpacking (__getitem__)
-    # raises SmiError, so read the bound value from the internal tuple.
-    val = oid_arg._ObjectType__args[1]
+    dt = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
     expected = b"\x07\xea\x03\x1a\x0e\x1e\x00\x00"
-    assert bytes(val) == expected
+    with patch("brother.set_cmd", mock_set), patch("brother.OctetString") as mock_octet:
+        await brother_with_request_args.async_set_datetime(dt)
+    mock_octet.assert_called_once_with(expected)
+    mock_set.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -790,21 +784,20 @@ async def test_set_datetime_default_uses_now(
     frozen = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
     with (
         patch("brother.set_cmd", mock_set),
+        patch("brother.OctetString") as mock_octet,
         freeze_time(frozen),
     ):
         expected = build_dateandtime(datetime.now(tz=UTC).astimezone())
         await brother_with_request_args.async_set_datetime()
-
+    mock_octet.assert_called_once_with(expected)
     mock_set.assert_called_once()
-    oid_arg = mock_set.call_args[0][-1]
-    val = oid_arg._ObjectType__args[1]
-    assert bytes(val) == expected
 
 
 @pytest.mark.asyncio
 async def test_set_datetime_custom_write_community() -> None:
     """Test that write_community parameter is used for SET."""
     brother = Brother(HOST, write_community="private")
+    brother.model = "DCP-J552DW"
     brother._request_args = (None, None, None, None)
 
     mock_set = AsyncMock(return_value=(None, 0, 0, []))
@@ -850,6 +843,26 @@ async def test_set_datetime_connection_error(
         await brother_with_request_args.async_set_datetime(
             datetime(2026, 1, 1, tzinfo=UTC)
         )
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_unsupported_model() -> None:
+    """Test that async_set_datetime raises UnsupportedModelError for unsupported models."""
+    brother = Brother(HOST)
+    brother.model = "HL-L2340DW"
+    brother._request_args = (None, None, None, None)
+
+    with pytest.raises(UnsupportedModelError):
+        await brother.async_set_datetime(datetime(2026, 1, 1, tzinfo=UTC))
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_model_unknown() -> None:
+    """Test that async_set_datetime raises UnsupportedModelError when model is not set."""
+    brother = Brother(HOST)
+    # model attribute not set (async_update not called)
+    with pytest.raises(UnsupportedModelError):
+        await brother.async_set_datetime(datetime(2026, 1, 1, tzinfo=UTC))
 
 
 @pytest.mark.asyncio

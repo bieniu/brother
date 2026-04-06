@@ -22,6 +22,7 @@ def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
 def brother_with_request_args() -> Brother:
     """Return a Brother instance with fake _request_args for SNMP tests."""
     brother = Brother("localhost")
+    brother.model = "DCP-J552DW"
     brother._request_args = (
         MagicMock(spec=SnmpEngine),
         CommunityData("public", mpModel=0),
