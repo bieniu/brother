@@ -36,8 +36,8 @@ from .const import (
     ATTR_STATUS,
     ATTR_UPTIME,
     CHARSET_MAP,
-    DEFAULT_TIMEOUT,
     DATETIME_SET_SUPPORTED_MODELS,
+    DEFAULT_TIMEOUT,
     DEFAULT_WRITE_COMMUNITY,
     OID_DATETIME,
     OIDS,
@@ -331,9 +331,8 @@ class Brother:
         if model is None or not any(
             m in model.lower() for m in DATETIME_SET_SUPPORTED_MODELS
         ):
-            raise UnsupportedModelError(
-                f"Setting datetime is not supported on model {model}"
-            )
+            msg = f"Setting datetime is not supported on model {model}"
+            raise UnsupportedModelError(msg)
 
         if dt is None:
             dt = datetime.now(tz=UTC).astimezone()

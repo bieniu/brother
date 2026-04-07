@@ -847,7 +847,7 @@ async def test_set_datetime_connection_error(
 
 @pytest.mark.asyncio
 async def test_set_datetime_unsupported_model() -> None:
-    """Test that async_set_datetime raises UnsupportedModelError for unsupported models."""
+    """Test UnsupportedModelError for printer not in DATETIME_SET_SUPPORTED_MODELS."""
     brother = Brother(HOST)
     brother.model = "HL-L2340DW"
     brother._request_args = (None, None, None, None)
@@ -858,7 +858,7 @@ async def test_set_datetime_unsupported_model() -> None:
 
 @pytest.mark.asyncio
 async def test_set_datetime_model_unknown() -> None:
-    """Test that async_set_datetime raises UnsupportedModelError when model is not set."""
+    """Test that async_set_datetime raises UnsupportedModelError before async_update."""
     brother = Brother(HOST)
     # model attribute not set (async_update not called)
     with pytest.raises(UnsupportedModelError):
