@@ -16,3 +16,7 @@ class SnmpError(BrotherError):
 
 class UnsupportedModelError(BrotherError):
     """Raised when no model, serial no, firmware data."""
+
+
+class MethodNotSupportedError(BrotherError):
+    """Raised when a method is not supported by the printer model."""

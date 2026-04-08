@@ -10,7 +10,7 @@ from pysnmp.error import PySnmpError
 from pysnmp.smi.rfc1902 import ObjectType
 from syrupy import SnapshotAssertion
 
-from brother import Brother, SnmpError, UnsupportedModelError
+from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
 from brother.const import (
     ATTR_CHARSET,
     ATTR_MAC,
@@ -847,22 +847,26 @@ async def test_set_datetime_connection_error(
 
 @pytest.mark.asyncio
 async def test_set_datetime_unsupported_model() -> None:
-    """Test UnsupportedModelError for printer not in DATETIME_SET_SUPPORTED_MODELS."""
+    """Test MethodNotSupportedError for model not in DATETIME_SET_SUPPORTED_MODELS."""
     brother = Brother(HOST)
     brother.model = "HL-L2340DW"
-    brother._request_args = (None, None, None, None)
 
-    with pytest.raises(UnsupportedModelError):
+    with pytest.raises(MethodNotSupportedError):
         await brother.async_set_datetime(datetime(2026, 1, 1, tzinfo=UTC))
 
 
-@pytest.mark.asyncio
-async def test_set_datetime_model_unknown() -> None:
-    """Test that async_set_datetime raises UnsupportedModelError before async_update."""
+def test_is_datetime_set_supported_true() -> None:
+    """Test is_datetime_set_supported returns True for supported model."""
     brother = Brother(HOST)
-    # model attribute not set (async_update not called)
-    with pytest.raises(UnsupportedModelError):
-        await brother.async_set_datetime(datetime(2026, 1, 1, tzinfo=UTC))
+    brother.model = "DCP-J552DW"
+    assert brother.is_datetime_set_supported is True
+
+
+def test_is_datetime_set_supported_false() -> None:
+    """Test is_datetime_set_supported returns False for unsupported model."""
+    brother = Brother(HOST)
+    brother.model = "HL-L2340DW"
+    assert brother.is_datetime_set_supported is False
 
 
 @pytest.mark.asyncio

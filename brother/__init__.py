@@ -52,7 +52,7 @@ from .const import (
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
 )
-from .exceptions import SnmpError, UnsupportedModelError
+from .exceptions import MethodNotSupportedError, SnmpError, UnsupportedModelError
 from .model import BrotherSensors
 from .utils import (
     async_get_snmp_engine,
@@ -133,6 +133,11 @@ class Brother:
     def community(self) -> str:
         """Return SNMP community."""
         return self._community
+
+    @property
+    def is_datetime_set_supported(self) -> bool:
+        """Return True if the printer model supports setting the datetime via SNMP."""
+        return any(m in self.model.lower() for m in DATETIME_SET_SUPPORTED_MODELS)
 
     @classmethod
     async def create(
@@ -327,12 +332,9 @@ class Brother:
 
     async def async_set_datetime(self, dt: datetime | None = None) -> None:
         """Set the printer's date and time via SNMP."""
-        model = getattr(self, "model", None)
-        if model is None or not any(
-            m in model.lower() for m in DATETIME_SET_SUPPORTED_MODELS
-        ):
-            msg = f"Setting datetime is not supported on model {model}"
-            raise UnsupportedModelError(msg)
+        if not self.is_datetime_set_supported:
+            msg = f"Setting datetime is not supported on model {self.model}"
+            raise MethodNotSupportedError(msg)
 
         if dt is None:
             dt = datetime.now(tz=UTC).astimezone()
