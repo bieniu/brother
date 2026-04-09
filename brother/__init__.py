@@ -17,8 +17,10 @@ from pysnmp.hlapi.v3arch.asyncio import (
     SnmpEngine,
     UdpTransportTarget,
     get_cmd,
+    set_cmd,
 )
 from pysnmp.hlapi.v3arch.asyncio.cmdgen import LCD
+from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.smi.rfc1902 import ObjectType
 
 from .const import (
@@ -34,7 +36,10 @@ from .const import (
     ATTR_STATUS,
     ATTR_UPTIME,
     CHARSET_MAP,
+    DATETIME_SET_SUPPORTED_MODELS,
     DEFAULT_TIMEOUT,
+    DEFAULT_WRITE_COMMUNITY,
+    OID_DATETIME,
     OIDS,
     OIDS_HEX,
     PERCENT_VALUES,
@@ -47,9 +52,14 @@ from .const import (
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
 )
-from .exceptions import SnmpError, UnsupportedModelError
+from .exceptions import MethodNotSupportedError, SnmpError, UnsupportedModelError
 from .model import BrotherSensors
-from .utils import async_get_snmp_engine, bytes_to_hex_string
+from .utils import (
+    async_get_snmp_engine,
+    build_dateandtime,
+    bytes_to_hex_string,
+    parse_dateandtime,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,6 +79,7 @@ class Brother:
         printer_type: str = "laser",
         model: str | None = None,
         snmp_engine: SnmpEngine | None = None,
+        write_community: str = DEFAULT_WRITE_COMMUNITY,
     ) -> None:
         """Initialize."""
         if model and any(
@@ -95,6 +106,7 @@ class Brother:
         self._host = host
         self._port = port
         self._community = community
+        self._write_community = write_community
         self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
@@ -122,6 +134,11 @@ class Brother:
         """Return SNMP community."""
         return self._community
 
+    @property
+    def is_datetime_set_supported(self) -> bool:
+        """Return True if the printer model supports setting the datetime via SNMP."""
+        return any(m in self.model.lower() for m in DATETIME_SET_SUPPORTED_MODELS)
+
     @classmethod
     async def create(
         cls,
@@ -131,9 +148,18 @@ class Brother:
         printer_type: str = "laser",
         model: str | None = None,
         snmp_engine: SnmpEngine | None = None,
+        write_community: str = DEFAULT_WRITE_COMMUNITY,
     ) -> Self:
         """Create a new device instance."""
-        instance = cls(host, port, community, printer_type, model, snmp_engine)
+        instance = cls(
+            host=host,
+            port=port,
+            community=community,
+            printer_type=printer_type,
+            model=model,
+            snmp_engine=snmp_engine,
+            write_community=write_community,
+        )
         await instance.initialize()
         return instance
 
@@ -281,6 +307,69 @@ class Brother:
         """Unconfigure SNMP engine."""
         if self._snmp_engine:
             LCD.unconfigure(self._snmp_engine, None)
+
+    async def async_get_datetime(self) -> datetime | None:
+        """Return the printer's current date and time, or None if not available."""
+        oid = ObjectType(ObjectIdentity(OID_DATETIME))
+
+        try:
+            errindication, errstatus, errindex, restable = await get_cmd(
+                *self._request_args, oid
+            )
+        except PySnmpError as err:
+            raise ConnectionError(err) from err
+
+        if errindication:
+            raise SnmpError(str(errindication))
+        if errstatus:
+            if str(errstatus) == "noSuchName":
+                return None
+            msg = f"SNMP GET failed: {errstatus} at index {errindex}"
+            raise SnmpError(msg)
+
+        raw: bytes = restable[0][-1].asOctets()
+        return parse_dateandtime(raw)
+
+    async def async_set_datetime(self, dt: datetime | None = None) -> None:
+        """Set the printer's date and time via SNMP."""
+        if not self.is_datetime_set_supported:
+            msg = f"Setting datetime is not supported on model {self.model}"
+            raise MethodNotSupportedError(msg)
+
+        if dt is None:
+            dt = datetime.now(tz=UTC).astimezone()
+
+        payload = OctetString(build_dateandtime(dt))
+        oid = ObjectType(
+            ObjectIdentity(OID_DATETIME),
+            payload,
+        )
+
+        try:
+            errindication, errstatus, errindex, _ = await set_cmd(
+                *self._write_request_args(), oid
+            )
+        except PySnmpError as err:
+            raise ConnectionError(err) from err
+
+        if errindication:
+            raise SnmpError(str(errindication))
+        if errstatus:
+            msg = f"SNMP SET failed: {errstatus} at index {errindex}"
+            raise SnmpError(msg)
+
+        _LOGGER.debug("Printer datetime set to %s", dt.isoformat())
+
+    def _write_request_args(
+        self,
+    ) -> tuple[SnmpEngine, CommunityData, UdpTransportTarget, ContextData]:
+        """Return SNMP request args using the write community string."""
+        return (
+            self._request_args[0],
+            CommunityData(self._write_community, mpModel=0),
+            self._request_args[2],
+            self._request_args[3],
+        )
 
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""

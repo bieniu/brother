@@ -2,7 +2,7 @@
 
 import json
 from datetime import UTC, datetime
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from freezegun import freeze_time
@@ -10,7 +10,7 @@ from pysnmp.error import PySnmpError
 from pysnmp.smi.rfc1902 import ObjectType
 from syrupy import SnapshotAssertion
 
-from brother import Brother, SnmpError, UnsupportedModelError
+from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
 from brother.const import (
     ATTR_CHARSET,
     ATTR_MAC,
@@ -21,6 +21,7 @@ from brother.const import (
     PERCENT_VALUES,
     VALUES_LASER_MAINTENANCE,
 )
+from brother.utils import build_dateandtime, parse_dateandtime
 
 HOST = "localhost"
 INVALID_HOST = "foo.local"
@@ -758,3 +759,214 @@ async def test_get_data_other_oid() -> None:
 
     assert OIDS[ATTR_MODEL] in result
     assert result[OIDS[ATTR_MODEL]] == "Brother HL-2270DW series"
+
+
+@pytest.mark.asyncio
+async def test_set_datetime(brother_with_request_args: Brother) -> None:
+    """Test setting printer datetime via SNMP."""
+    mock_set = AsyncMock(return_value=(None, 0, 0, []))
+    dt = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
+    expected = b"\x07\xea\x03\x1a\x0e\x1e\x00\x00"
+    with patch("brother.set_cmd", mock_set), patch("brother.OctetString") as mock_octet:
+        await brother_with_request_args.async_set_datetime(dt)
+    mock_octet.assert_called_once_with(expected)
+    mock_set.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_default_uses_now(
+    brother_with_request_args: Brother,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that async_set_datetime(None) encodes the same instant as now(local)."""
+    monkeypatch.setenv("TZ", "UTC")
+    mock_set = AsyncMock(return_value=(None, 0, 0, []))
+    frozen = datetime(2026, 3, 26, 14, 30, 0, tzinfo=UTC)
+    with (
+        patch("brother.set_cmd", mock_set),
+        patch("brother.OctetString") as mock_octet,
+        freeze_time(frozen),
+    ):
+        expected = build_dateandtime(datetime.now(tz=UTC).astimezone())
+        await brother_with_request_args.async_set_datetime()
+    mock_octet.assert_called_once_with(expected)
+    mock_set.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_custom_write_community() -> None:
+    """Test that write_community parameter is used for SET."""
+    brother = Brother(HOST, write_community="private")
+    brother.model = "DCP-J552DW"
+    brother._request_args = (None, None, None, None)
+
+    mock_set = AsyncMock(return_value=(None, 0, 0, []))
+    with patch("brother.set_cmd", mock_set):
+        await brother.async_set_datetime(datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC))
+
+    call_args = mock_set.call_args[0]
+    community_data = call_args[1]
+    assert str(community_data.communityName) == "private"
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_snmp_error(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that SNMP error indication raises SnmpError."""
+    mock_set = AsyncMock(return_value=("requestTimedOut", 0, 0, []))
+    with patch("brother.set_cmd", mock_set), pytest.raises(SnmpError):
+        await brother_with_request_args.async_set_datetime(
+            datetime(2026, 1, 1, tzinfo=UTC)
+        )
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_snmp_set_rejected(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that SNMP SET rejection raises SnmpError."""
+    mock_set = AsyncMock(return_value=(None, "notWritable", 1, []))
+    with patch("brother.set_cmd", mock_set), pytest.raises(SnmpError):
+        await brother_with_request_args.async_set_datetime(
+            datetime(2026, 1, 1, tzinfo=UTC)
+        )
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_connection_error(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that PySnmpError raises ConnectionError."""
+    mock_set = AsyncMock(side_effect=PySnmpError("timeout"))
+    with patch("brother.set_cmd", mock_set), pytest.raises(ConnectionError):
+        await brother_with_request_args.async_set_datetime(
+            datetime(2026, 1, 1, tzinfo=UTC)
+        )
+
+
+@pytest.mark.asyncio
+async def test_set_datetime_unsupported_model() -> None:
+    """Test MethodNotSupportedError for model not in DATETIME_SET_SUPPORTED_MODELS."""
+    brother = Brother(HOST)
+    brother.model = "HL-L2340DW"
+
+    with pytest.raises(MethodNotSupportedError):
+        await brother.async_set_datetime(datetime(2026, 1, 1, tzinfo=UTC))
+
+
+def test_is_datetime_set_supported_true() -> None:
+    """Test is_datetime_set_supported returns True for supported model."""
+    brother = Brother(HOST)
+    brother.model = "DCP-J552DW"
+    assert brother.is_datetime_set_supported is True
+
+
+def test_is_datetime_set_supported_false() -> None:
+    """Test is_datetime_set_supported returns False for unsupported model."""
+    brother = Brother(HOST)
+    brother.model = "HL-L2340DW"
+    assert brother.is_datetime_set_supported is False
+
+
+@pytest.mark.asyncio
+async def test_get_datetime(brother_with_request_args: Brother) -> None:
+    """Test reading printer datetime via SNMP."""
+
+    class FakeVal:
+        def asOctets(self) -> bytes:  # noqa: N802
+            return b"\x07\xea\x03\x1a\x0e\x1e\x00\x00"
+
+    mock_get = AsyncMock(return_value=(None, 0, 0, [(None, FakeVal())]))
+    with patch("brother.get_cmd", mock_get):
+        result = await brother_with_request_args.async_get_datetime()
+
+    assert result == datetime(2026, 3, 26, 14, 30, 0)  # noqa: DTZ001
+
+
+@pytest.mark.asyncio
+async def test_get_datetime_not_available(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test reading datetime when OID is not supported returns None."""
+    mock_get = AsyncMock(return_value=(None, "noSuchName", 1, []))
+    with patch("brother.get_cmd", mock_get):
+        result = await brother_with_request_args.async_get_datetime()
+
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_get_datetime_snmp_error(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that non-noSuchName errors raise SnmpError."""
+    mock_get = AsyncMock(return_value=(None, "genErr", 1, []))
+    with patch("brother.get_cmd", mock_get), pytest.raises(SnmpError):
+        await brother_with_request_args.async_get_datetime()
+
+
+@pytest.mark.asyncio
+async def test_get_datetime_errindication(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that SNMP error indication raises SnmpError."""
+    mock_get = AsyncMock(return_value=("requestTimedOut", 0, 0, []))
+    with patch("brother.get_cmd", mock_get), pytest.raises(SnmpError):
+        await brother_with_request_args.async_get_datetime()
+
+
+@pytest.mark.asyncio
+async def test_get_datetime_connection_error(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test that PySnmpError from get_cmd raises ConnectionError."""
+    mock_get = AsyncMock(side_effect=PySnmpError("timeout"))
+    with patch("brother.get_cmd", mock_get), pytest.raises(ConnectionError):
+        await brother_with_request_args.async_get_datetime()
+
+
+def test_build_dateandtime() -> None:
+    """Test DateAndTime encoding."""
+    dt = datetime(2026, 3, 26, 14, 30, 45, tzinfo=UTC)
+    result = build_dateandtime(dt)
+    assert result == b"\x07\xea\x03\x1a\x0e\x1e\x2d\x00"
+
+
+def test_build_dateandtime_midnight() -> None:
+    """Test DateAndTime encoding at midnight."""
+    dt = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
+    result = build_dateandtime(dt)
+    assert result == b"\x07\xea\x01\x01\x00\x00\x00\x00"
+
+
+def test_parse_dateandtime() -> None:
+    """Test DateAndTime decoding."""
+    raw = b"\x07\xea\x03\x1a\x0e\x1e\x2d\x00"
+    result = parse_dateandtime(raw)
+    assert result == datetime(2026, 3, 26, 14, 30, 45)  # noqa: DTZ001
+
+
+def test_parse_dateandtime_too_short() -> None:
+    """Test DateAndTime decoding with too-short data."""
+    result = parse_dateandtime(b"\x07\xea\x03")
+    assert result is None
+
+
+def test_parse_dateandtime_invalid_values() -> None:
+    """Test DateAndTime decoding with invalid month/day returns None."""
+    raw = b"\x07\xea\x00\x00\x00\x00\x00\x00"
+    result = parse_dateandtime(raw)
+    assert result is None
+
+
+def test_default_write_community() -> None:
+    """Test that default write community is 'internal'."""
+    brother = Brother(HOST)
+    assert brother._write_community == "internal"
+
+
+def test_custom_write_community() -> None:
+    """Test custom write community."""
+    brother = Brother(HOST, write_community="private")
+    assert brother._write_community == "private"

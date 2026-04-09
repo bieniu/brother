@@ -14,6 +14,11 @@ ATTR_SERIAL: Final = "serial"
 ATTR_STATUS: Final = "status"
 ATTR_UPTIME: Final = "uptime"
 
+OID_DATETIME: Final = "1.3.6.1.2.1.25.1.2.0"
+DATEANDTIME_MIN_LENGTH: Final = 8
+
+DEFAULT_WRITE_COMMUNITY: Final = "internal"
+
 VAL_BELT_REMAIN: Final = "belt_unit_remaining_life"
 VAL_BELT_REMAIN_PAGES: Final = "belt_unit_remaining_pages"
 VAL_BLACK_COUNT: Final = "black_counter"
@@ -205,6 +210,8 @@ OIDS_HEX: Final = (
 )
 
 UNSUPPORTED_MODELS: Final = ("mfc-8660dn", "mfc-8860dn")
+
+DATETIME_SET_SUPPORTED_MODELS: Final = ("dcp-j552dw",)
 
 UPTIME_FLUCTUATION_SECONDS: Final = 5
 DEFAULT_TIMEOUT: Final = 2
