@@ -2,7 +2,7 @@
 
 import json
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from freezegun import freeze_time
@@ -138,6 +138,7 @@ async def test_dcp_7070dw_model(snapshot: SnapshotAssertion) -> None:
 
     brother.shutdown()
 
+    assert sensors.uptime
     assert sensors.uptime.isoformat() == "2018-11-30T13:53:26+00:00"
 
 
@@ -490,7 +491,7 @@ async def test_get_data_pysnmp_error() -> None:
     brother = Brother(HOST, printer_type="laser")
 
     # Mock the request args to avoid initialization
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     with (
@@ -506,7 +507,7 @@ async def test_get_data_snmp_errindication() -> None:
     brother = Brother(HOST, printer_type="laser")
 
     # Mock the request args to avoid initialization
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     with (
@@ -522,7 +523,7 @@ async def test_get_data_snmp_errstatus() -> None:
     brother = Brother(HOST, printer_type="laser")
 
     # Mock the request args to avoid initialization
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     with (
@@ -610,7 +611,7 @@ async def test_initialize_oid_removal() -> None:
         # Second call: success
         mock_get_cmd.side_effect = [
             (None, "noSuchName", 2, None),  # Remove oid2
-            (None, None, None, None),  # Success
+            (Mock(), Mock(), Mock(), Mock()),  # Success
         ]
 
         await brother.initialize()
@@ -626,7 +627,7 @@ def test_shutdown_with_engine() -> None:
     brother = Brother(HOST, printer_type="laser")
 
     # Mock SNMP engine
-    mock_engine = object()
+    mock_engine = Mock()
     brother._snmp_engine = mock_engine
 
     with patch("brother.LCD.unconfigure") as mock_unconfigure:
@@ -665,7 +666,7 @@ async def test_async_update_legacy_laser() -> None:
 async def test_get_data_oids_hex_processing() -> None:
     """Test _get_data method processing OIDS_HEX data."""
     brother = Brother(HOST, printer_type="laser")
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     # Mock response data for hex OIDs
@@ -682,8 +683,11 @@ async def test_get_data_oids_hex_processing() -> None:
 
     if hex_oid:
         # Mock the response object
-        mock_response = type("MockResponse", (), {})()
-        mock_response.asOctets = lambda: b"\x63\x01\x04\x00\x00\x00\x01\xff"
+        class MockResponse:
+            def asOctets(self) -> bytes:  # noqa: N802
+                return b"\x63\x01\x04\x00\x00\x00\x01\xff"
+
+        mock_response = MockResponse()
 
         mock_resrow = [[hex_oid, None, mock_response]]
 
@@ -698,12 +702,15 @@ async def test_get_data_oids_hex_processing() -> None:
 async def test_get_data_mac_address_processing() -> None:
     """Test _get_data method processing MAC address."""
     brother = Brother(HOST, printer_type="laser")
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     # Mock the response object for MAC address
-    mock_response = type("MockResponse", (), {})()
-    mock_response.asOctets = lambda: b"\x00\x1b\x8c\x12\x34\x56"  # Example MAC bytes
+    class MockResponse:
+        def asOctets(self) -> bytes:  # noqa: N802
+            return b"\x00\x1b\x8c\x12\x34\x56"  # Example MAC bytes
+
+    mock_response = MockResponse()
 
     mock_resrow = [[OIDS[ATTR_MAC], None, mock_response]]
 
@@ -718,12 +725,12 @@ async def test_get_data_mac_address_processing() -> None:
 async def test_get_data_status_processing() -> None:
     """Test _get_data method processing status data."""
     brother = Brother(HOST, printer_type="laser")
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     # Mock the response objects
     mock_status_response = type("MockResponse", (), {})()
-    mock_status_response._value = b"Ready"
+    mock_status_response._value = b"Ready"  # ty:ignore[unresolved-attribute]
 
     mock_resrow = [
         [OIDS[ATTR_STATUS], None, mock_status_response],
@@ -742,7 +749,7 @@ async def test_get_data_status_processing() -> None:
 async def test_get_data_other_oid() -> None:
     """Test _get_data method processing other OIDs."""
     brother = Brother(HOST, printer_type="laser")
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
     brother._oids = []
 
     # Mock the response object for regular string data
@@ -798,7 +805,7 @@ async def test_set_datetime_custom_write_community() -> None:
     """Test that write_community parameter is used for SET."""
     brother = Brother(HOST, write_community="private")
     brother.model = "DCP-J552DW"
-    brother._request_args = (None, None, None, None)
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
 
     mock_set = AsyncMock(return_value=(None, 0, 0, []))
     with patch("brother.set_cmd", mock_set):
