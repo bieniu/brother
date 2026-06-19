@@ -4,8 +4,8 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "python.defaultInterpreterPath": "/workspaces/brother/venv/bin/python",
-                "python.pythonPath": "/workspaces/brother/venv/bin/python",
+                "python.defaultInterpreterPath": "/workspaces/brother/.venv/bin/python",
+                "python.pythonPath": "/workspaces/brother/.venv/bin/python",
                 "python.terminal.activateEnvInCurrentTerminal": true,
                 "terminal.integrated.profiles.linux": {
                     "zsh": {
@@ -21,10 +21,11 @@
             "extensions": [
                 "ms-python.python",
                 "ms-python.vscode-pylance",
-                "charliermarsh.ruff"
+                "charliermarsh.ruff",
+                "astral-sh.ty"
             ]
         }
     },
-    "postCreateCommand": "pip install uv && uv venv venv --clear && . venv/bin/activate && uv sync --all-groups --active && prek install",
+    "postCreateCommand": "pip install uv && uv venv .venv --clear && . .venv/bin/activate && uv sync --all-groups && prek install",
     "remoteUser": "vscode"
 }
