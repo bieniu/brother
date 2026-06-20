@@ -107,7 +107,6 @@ class Brother:
         self._port = port
         self._community = community
         self._write_community = write_community
-        self._last_uptime: datetime | None = None
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
         self._request_args: tuple[
@@ -212,7 +211,7 @@ class Brother:
         data: dict[str, Any] = {}
 
         try:
-            model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
+            model_match = REGEX_MODEL_PATTERN.search(raw_data[OIDS[ATTR_MODEL]])
 
             if TYPE_CHECKING:
                 assert model_match is not None
@@ -235,21 +234,7 @@ class Brother:
         except TypeError:
             pass
         else:
-            if self._last_uptime:
-                new_uptime = (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(
-                    microsecond=0, tzinfo=UTC
-                )
-                if (
-                    abs((new_uptime - self._last_uptime).total_seconds())
-                    > UPTIME_FLUCTUATION_SECONDS
-                ):
-                    data[ATTR_UPTIME] = self._last_uptime = new_uptime
-                else:
-                    data[ATTR_UPTIME] = self._last_uptime
-            else:
-                data[ATTR_UPTIME] = self._last_uptime = (
-                    datetime.now(tz=UTC) - timedelta(seconds=uptime)
-                ).replace(microsecond=0, tzinfo=UTC)
+            data[ATTR_UPTIME] = (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(microsecond=0, tzinfo=UTC)
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
