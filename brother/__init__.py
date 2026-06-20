@@ -211,32 +211,35 @@ class Brother:
 
         data: dict[str, Any] = {}
 
+        oids = OIDS
+
         try:
-            model_match = re.search(REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]])
+            model_match = REGEX_MODEL_PATTERN.search(raw_data[oids[ATTR_MODEL]])
 
             if TYPE_CHECKING:
                 assert model_match is not None
 
             self.model = model_match.group("model")
-            self.serial = raw_data[OIDS[ATTR_SERIAL]]
+            self.serial = raw_data[oids[ATTR_SERIAL]]
         except (TypeError, AttributeError) as err:
             raise UnsupportedModelError(
                 "It seems that this printer model is not supported"
             ) from err
 
-        self.mac = raw_data[OIDS[ATTR_MAC]]
-        self._firmware = raw_data.get(OIDS[ATTR_FIRMWARE])
+        self.mac = raw_data[oids[ATTR_MAC]]
+        self._firmware = raw_data.get(oids[ATTR_FIRMWARE])
 
-        if status := raw_data[OIDS[ATTR_STATUS]]:
+        if status := raw_data[oids[ATTR_STATUS]]:
             data[ATTR_STATUS] = self._cleanse_status(status.lower())
 
         try:
-            uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
+            uptime = int(cast(str, raw_data.get(oids[ATTR_UPTIME]))) / 100
         except TypeError:
             pass
         else:
+            now = datetime.now(tz=UTC)
             if self._last_uptime:
-                new_uptime = (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(
+                new_uptime = (now - timedelta(seconds=uptime)).replace(
                     microsecond=0, tzinfo=UTC
                 )
                 if (
@@ -248,53 +251,53 @@ class Brother:
                     data[ATTR_UPTIME] = self._last_uptime
             else:
                 data[ATTR_UPTIME] = self._last_uptime = (
-                    datetime.now(tz=UTC) - timedelta(seconds=uptime)
+                    now - timedelta(seconds=uptime)
                 ).replace(microsecond=0, tzinfo=UTC)
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
                     self._iterate_data_legacy(
-                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        raw_data.get(oids[ATTR_MAINTENANCE], {}),
                         VALUES_LASER_MAINTENANCE,
                     )
                 )
             elif self._printer_type == "ink":
                 data.update(
                     self._iterate_data_legacy(
-                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        raw_data.get(oids[ATTR_MAINTENANCE], {}),
                         VALUES_INK_MAINTENANCE,
                     )
                 )
         else:
             data.update(
                 self._iterate_data(
-                    raw_data.get(OIDS[ATTR_COUNTERS], {}), VALUES_COUNTERS
+                    raw_data.get(oids[ATTR_COUNTERS], {}), VALUES_COUNTERS
                 )
             )
             if self._printer_type == "laser":
                 data.update(
                     self._iterate_data(
-                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        raw_data.get(oids[ATTR_MAINTENANCE], {}),
                         VALUES_LASER_MAINTENANCE,
                     )
                 )
                 data.update(
                     self._iterate_data(
-                        raw_data.get(OIDS[ATTR_NEXTCARE], {}), VALUES_LASER_NEXTCARE
+                        raw_data.get(oids[ATTR_NEXTCARE], {}),
+                        VALUES_LASER_NEXTCARE,
                     )
                 )
             elif self._printer_type == "ink":
                 data.update(
                     self._iterate_data(
-                        raw_data.get(OIDS[ATTR_MAINTENANCE], {}),
+                        raw_data.get(oids[ATTR_MAINTENANCE], {}),
                         VALUES_INK_MAINTENANCE,
                     )
                 )
-        # page counter for old printer models
         with suppress(ValueError):
-            if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
+            if not data.get(ATTR_PAGE_COUNT) and raw_data.get(oids[ATTR_PAGE_COUNT]):
                 data[ATTR_PAGE_COUNT] = int(
-                    cast(str, raw_data.get(OIDS[ATTR_PAGE_COUNT]))
+                    cast(str, raw_data.get(oids[ATTR_PAGE_COUNT]))
                 )
 
         _LOGGER.debug("Data: %s", data)
@@ -313,9 +316,12 @@ class Brother:
         oid = ObjectType(ObjectIdentity(OID_DATETIME))
 
         try:
-            errindication, errstatus, errindex, restable = await get_cmd(
-                *self._request_args, oid
-            )
+            async with timeout(DEFAULT_TIMEOUT * RETRIES):
+                errindication, errstatus, errindex, restable = await get_cmd(
+                    *self._request_args, oid
+                )
+        except TimeoutError as err:
+            raise ConnectionError(err) from err
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
@@ -346,9 +352,12 @@ class Brother:
         )
 
         try:
-            errindication, errstatus, errindex, _ = await set_cmd(
-                *self._write_request_args(), oid
-            )
+            async with timeout(DEFAULT_TIMEOUT * RETRIES):
+                errindication, errstatus, errindex, _ = await set_cmd(
+                    *self._write_request_args(), oid
+                )
+        except TimeoutError as err:
+            raise ConnectionError(err) from err
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
@@ -377,9 +386,12 @@ class Brother:
         raw_status: bytes | None = None
 
         try:
-            errindication, errstatus, errindex, restable = await get_cmd(
-                *self._request_args, *self._oids
-            )
+            async with timeout(DEFAULT_TIMEOUT * RETRIES):
+                errindication, errstatus, errindex, restable = await get_cmd(
+                    *self._request_args, *self._oids
+                )
+        except TimeoutError as err:
+            raise ConnectionError(err) from err
         except PySnmpError as err:
             raise ConnectionError(err) from err
         if errindication:
@@ -387,78 +399,62 @@ class Brother:
         if errstatus:
             msg = f"{errstatus}, {errindex}"
             raise SnmpError(msg)
+
+        oid_charset = OIDS[ATTR_CHARSET]
+        oid_mac = OIDS[ATTR_MAC]
+        oid_maintenance = OIDS[ATTR_MAINTENANCE]
+        oid_status = OIDS[ATTR_STATUS]
+
         for resrow in restable:
             oid_str = str(resrow[0])
             if oid_str in OIDS_HEX:
-                # asOctets gives bytes data b'c\x01\x04\x00\x00\x00\x01\x11\x01\x04\x00\
-                # x00\x05,A\x01\x04\x00\x00"\xc41\x01\x04\x00\x00\x00\x01o\x01\x04\x00\
-                # x00\x19\x00\x81\x01\x04\x00\x00\x00F\x86\x01\x04\x00\x00\x00\n\xff'
                 data = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives
-                # '630104000000011101040000052c410104000022c4310104000000016f01040000190
-                #  0810104000000468601040000000a'
                 data_str = bytes_to_hex_string(data)
-                # split to 14 digits words in list, gives ['63010400000001',
-                # '1101040000052c', '410104000022c4', '31010400000001',
-                # '6f010400001900', '81010400000046', '8601040000000a']
+                if oid_str == oid_maintenance and self._legacy is not False:
+                    if self._legacy is None:
+                        self._legacy = self._legacy_printer(data_str)
+                    if self._legacy:
+                        result = [
+                            data_str[ind : ind + LEGACY_CHUNK_SIZE]
+                            for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
+                        ]
+                        raw_data[oid_str] = result
+                        continue
                 result = [
                     data_str[ind : ind + CHUNK_SIZE]
                     for ind in range(0, len(data_str), CHUNK_SIZE)
                 ]
-                # map sensors names to OIDs
                 raw_data[oid_str] = result
-            elif oid_str == OIDS[ATTR_MAC]:
+            elif oid_str == oid_mac:
                 data = resrow[-1].asOctets()
                 raw_data[oid_str] = ":".join([f"{x:02x}" for x in data])
-            elif oid_str == OIDS[ATTR_STATUS]:
+            elif oid_str == oid_status:
                 raw_status = resrow[-1]._value  # noqa: SLF001
             else:
                 raw_data[oid_str] = str(resrow[-1])
 
         if raw_status is not None:
-            charset = raw_data.get(OIDS[ATTR_CHARSET], "unknown")
+            charset = raw_data.get(oid_charset, "unknown")
 
             if TYPE_CHECKING:
                 assert isinstance(charset, str)
 
             encoding = CHARSET_MAP.get(charset, "roman8")
             if status := self._decode_status(raw_status, encoding):
-                raw_data[OIDS[ATTR_STATUS]] = status
+                raw_data[oid_status] = status
 
-        if self._legacy is False:
-            return raw_data
-
-        # for legacy printers
-        for resrow in restable:
-            oid_str = str(resrow[0])
-            if oid_str == OIDS[ATTR_MAINTENANCE]:
-                # asOctets() gives bytes data
-                data = resrow[-1].asOctets()
-                # convert to string without checksum FF at the end, gives
-                # 'a101020414a201020c14a301020614a401020b14'
-                data_str = bytes_to_hex_string(data)
-                if self._legacy is None:
-                    self._legacy = self._legacy_printer(data_str)
-                if self._legacy:
-                    # split to 10 digits words in list, gives ['a101020414',
-                    # 'a201020c14', 'a301020614', 'a401020b14']
-                    result = [
-                        data_str[ind : ind + LEGACY_CHUNK_SIZE]
-                        for ind in range(0, len(data_str), LEGACY_CHUNK_SIZE)
-                    ]
-                    # map sensors names to OIDs
-                    raw_data[oid_str] = result
-                    break
         return raw_data
 
     @staticmethod
     def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
-        nums = [x * LEGACY_CHUNK_SIZE for x in range(length // LEGACY_CHUNK_SIZE)][1:]
-        if results := [string[i - 2 : i] == "14" for i in nums]:
-            return all(item for item in results)
-        return False
+        if length < LEGACY_CHUNK_SIZE * 2:
+            return False
+        return all(
+            string[i - 2 : i] == "14"
+            for i in range(LEGACY_CHUNK_SIZE, length, LEGACY_CHUNK_SIZE)
+        )
 
     @staticmethod
     def _iterate_oids(oids: Iterable) -> Generator:
