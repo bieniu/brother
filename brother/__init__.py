@@ -46,7 +46,6 @@ from .const import (
     PRINTER_TYPES,
     RETRIES,
     UNSUPPORTED_MODELS,
-    UPTIME_FLUCTUATION_SECONDS,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
     VALUES_LASER_MAINTENANCE,
@@ -234,7 +233,9 @@ class Brother:
         except TypeError:
             pass
         else:
-            data[ATTR_UPTIME] = (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(microsecond=0, tzinfo=UTC)
+            data[ATTR_UPTIME] = (
+                datetime.now(tz=UTC) - timedelta(seconds=uptime)
+            ).replace(microsecond=0, tzinfo=UTC)
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
