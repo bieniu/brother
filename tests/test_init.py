@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from freezegun import freeze_time
 from pysnmp.error import PySnmpError
-from pysnmp.smi.rfc1902 import ObjectType
+from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 from syrupy import SnapshotAssertion
 
 from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
@@ -246,7 +246,10 @@ async def test_incomplete_data() -> None:
     brother = Brother(HOST)
 
     with patch("brother.Brother._get_data", return_value=data):
-        await brother.async_update()
+        sensors = await brother.async_update()
+
+    assert sensors.status is None
+    assert sensors.page_counter is None
 
     brother.shutdown()
 
@@ -295,14 +298,34 @@ async def test_unsupported_model() -> None:
         Brother(HOST, model="mfc-8660dn")
 
 
-def test_iterate_oids() -> None:
-    """Test iterate_oids function."""
+@pytest.mark.asyncio
+async def test_missing_model_key_raises_key_error() -> None:
+    """Test that missing model key in raw_data raises KeyError."""
     brother = Brother(HOST)
-    oids = OIDS.values()
-    result = list(brother._iterate_oids(oids))
+    brother._request_args = (Mock(), Mock(), Mock(), Mock())
+    brother._oids = []
 
-    assert len(result) == 11
-    for item in result:
+    # Data without the model OID key
+    raw_data: dict[str, str] = {
+        "1.3.6.1.2.1.2.2.1.6.1": "00:00:00:00:00:00",
+        "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0": "serial",
+    }
+
+    with (
+        patch("brother.Brother._get_data", return_value=raw_data),
+        pytest.raises(KeyError),
+    ):
+        await brother.async_update()
+
+    brother.shutdown()
+
+
+def test_oid_list_construction() -> None:
+    """Test OID list construction from OIDS values."""
+    oids = [ObjectType(ObjectIdentity(oid)) for oid in OIDS.values()]
+
+    assert len(oids) == 11
+    for item in oids:
         assert isinstance(item, ObjectType)
 
 
@@ -540,15 +563,12 @@ async def test_initialize_unsupported_model_by_oid() -> None:
 
     # Mock async_get_snmp_engine to avoid actual SNMP setup
     with (
-        patch("brother.Brother._iterate_oids") as mock_iterate_oids,
         patch("brother.async_get_snmp_engine"),
         patch("brother.UdpTransportTarget.create"),
         patch("brother.get_cmd") as mock_get_cmd,
     ):
-        mock_iterate_oids.return_value = ["oid1", "oid2"]
-
-        # Mock errstatus "noSuchName" with errindex 5 (model OID)
-        mock_get_cmd.return_value = (None, "noSuchName", 5, None)
+        # Mock errstatus "noSuchName" with errindex 6 (1-based index for model OID)
+        mock_get_cmd.return_value = (None, "noSuchName", 6, None)
 
         with pytest.raises(UnsupportedModelError, match="not supported"):
             await brother.initialize()
@@ -576,6 +596,24 @@ def test_printer_type_validation() -> None:
     assert brother_ink._printer_type == "ink"
 
 
+@pytest.mark.parametrize(
+    ("host", "port"),
+    [
+        ("", 161),
+        (None, 161),  # type: ignore[arg-type]
+        (123, 161),  # type: ignore[arg-type]
+        (HOST, 0),
+        (HOST, -1),
+        (HOST, 65536),
+        (HOST, "abc"),  # type: ignore[arg-type]
+    ],
+)
+def test_invalid_host_or_port(host: str, port: int) -> None:
+    """Test that invalid host or port raises ValueError."""
+    with pytest.raises(ValueError, match=r"(host|port) must be"):
+        Brother(host=host, port=port)  # type: ignore[arg-type]
+
+
 @pytest.mark.asyncio
 async def test_initialize_pysnmp_error() -> None:
     """Test initialize method with PySnmpError during transport setup."""
@@ -601,25 +639,20 @@ async def test_initialize_oid_removal() -> None:
         patch("brother.async_get_snmp_engine"),
         patch("brother.UdpTransportTarget.create"),
         patch("brother.get_cmd") as mock_get_cmd,
-        patch("brother.Brother._iterate_oids") as mock_iterate_oids,
     ):
-        # Mock initial OIDs list
-        mock_oids = ["oid1", "oid2", "oid3"]
-        mock_iterate_oids.return_value = mock_oids
-
-        # First call: remove OID at index 2 (errindex=2, oid index=1)
+        # First call: remove a non-mandatory OID (errindex=1 → charset, index 0)
         # Second call: success
         mock_get_cmd.side_effect = [
-            (None, "noSuchName", 2, None),  # Remove oid2
-            (Mock(), Mock(), Mock(), Mock()),  # Success
+            (None, "noSuchName", 1, None),  # Remove first OID
+            (None, None, None, []),  # Success
         ]
 
         await brother.initialize()
 
         # Should have made 2 calls to get_cmd
         assert mock_get_cmd.call_count == 2
-        # Should have removed one OID
-        assert len(brother._oids) == 2
+        # Should have removed one OID (11 - 1 = 10)
+        assert len(brother._oids) == 10
 
 
 def test_shutdown_with_engine() -> None:
