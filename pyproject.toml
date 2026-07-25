@@ -58,12 +58,15 @@ lint.select = ["ALL"]
 
 lint.ignore = [
     "COM812",   # Trailing comma missing
+    "CPY001",   # Missing copyright notice at top of file
     "D203",     # 1 blank line required before class docstring
     "D213",     # Multi-line docstring summary should start at the second line
     "EM101",    # Exception must not use a string literal, assign to variable first
     "PLR0912",  # Too many branches
     "PLR0913",  # Too many arguments to function call
+    "PLR0917",  # Too many positional arguments
     "PTH123",   # `open()` should be replaced by `Path.open()`
+    "S508",     # The use of SNMPv1 and SNMPv2 is insecure.
     "TC002",    # Move third-party import into a type-checking block
     "TC003",    # Move standard library import into a type-checking block
     "TC006",    # Add quotes to type expression in `typing.cast()`
