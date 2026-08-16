@@ -65,6 +65,13 @@ _LOGGER = logging.getLogger(__name__)
 REGEX_MODEL_PATTERN = re.compile(r"MDL:(?P<model>[\w\-]+)")
 CHUNK_SIZE = 14
 LEGACY_CHUNK_SIZE = 10
+_MANDATORY_OID_INDICES = frozenset(
+    i for i, key in enumerate(OIDS, start=1) if key in {ATTR_MODEL, ATTR_SERIAL}
+)
+_IDX_ENGINE = 0
+_IDX_TRANSPORT = 2
+_IDX_CONTEXT = 3
+_MAX_PORT = 65535
 
 
 class Brother:
@@ -81,14 +88,23 @@ class Brother:
         write_community: str = DEFAULT_WRITE_COMMUNITY,
     ) -> None:
         """Initialize."""
-        if model and any(
-            unsupported_model in model.lower()
-            for unsupported_model in UNSUPPORTED_MODELS
-        ):
-            _LOGGER.debug("Model: %s", model)
-            raise UnsupportedModelError(
-                "It seems that this printer model is not supported"
-            )
+        if not host or not isinstance(host, str):
+            msg = "host must be a non-empty string"
+            raise ValueError(msg)
+        if not isinstance(port, int) or not 1 <= port <= _MAX_PORT:
+            msg = f"port must be an integer between 1 and {_MAX_PORT}, got {port}"
+            raise ValueError(msg)
+
+        if model:
+            model_lower = model.casefold()
+            if any(
+                unsupported_model in model_lower
+                for unsupported_model in UNSUPPORTED_MODELS
+            ):
+                _LOGGER.debug("Model: %s", model)
+                raise UnsupportedModelError(
+                    "It seems that this printer model is not supported"
+                )
 
         if printer_type not in PRINTER_TYPES:
             _LOGGER.warning("Wrong printer_type argument, 'laser' was used")
@@ -135,7 +151,8 @@ class Brother:
     @property
     def is_datetime_set_supported(self) -> bool:
         """Return True if the printer model supports setting the datetime via SNMP."""
-        return any(m in self.model.lower() for m in DATETIME_SET_SUPPORTED_MODELS)
+        model_lower = self.model.casefold()
+        return any(m in model_lower for m in DATETIME_SET_SUPPORTED_MODELS)
 
     @classmethod
     async def create(
@@ -168,7 +185,7 @@ class Brother:
         if not self._snmp_engine:
             self._snmp_engine = await async_get_snmp_engine()
 
-        oids = list(self._iterate_oids(OIDS.values()))
+        oids = [ObjectType(ObjectIdentity(oid)) for oid in OIDS.values()]
 
         try:
             self._request_args = (
@@ -182,13 +199,14 @@ class Brother:
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
-        while True:
+        max_retries = len(oids)
+        while max_retries:
+            max_retries -= 1
             async with timeout(DEFAULT_TIMEOUT * RETRIES):
                 _, errstatus, errindex, _ = await get_cmd(*self._request_args, *oids)
 
             if str(errstatus) == "noSuchName":
-                # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
-                if errindex in (5, 8):
+                if errindex in _MANDATORY_OID_INDICES:
                     raise UnsupportedModelError(
                         "It seems that this printer model is not supported"
                     )
@@ -207,8 +225,19 @@ class Brother:
 
         _LOGGER.debug("RAW data: %s", raw_data)
 
-        data: dict[str, Any] = {}
+        self._extract_identity(raw_data)
+        data: dict[str, Any] = {ATTR_STATUS: self._extract_status(raw_data)}
+        if uptime := self._extract_uptime(raw_data):
+            data[ATTR_UPTIME] = uptime
+        data.update(self._extract_counters(raw_data))
+        self._extract_page_count(raw_data, data)
 
+        _LOGGER.debug("Data: %s", data)
+
+        return from_dict(BrotherSensors, data)
+
+    def _extract_identity(self, raw_data: dict[str, Any]) -> None:
+        """Extract model, serial, mac and firmware from raw data."""
         try:
             model_match = REGEX_MODEL_PATTERN.search(raw_data[OIDS[ATTR_MODEL]])
 
@@ -225,17 +254,26 @@ class Brother:
         self.mac = raw_data[OIDS[ATTR_MAC]]
         self._firmware = raw_data.get(OIDS[ATTR_FIRMWARE])
 
-        if status := raw_data[OIDS[ATTR_STATUS]]:
-            data[ATTR_STATUS] = self._cleanse_status(status.lower())
+    def _extract_status(self, raw_data: dict[str, Any]) -> str | None:
+        """Extract and decode status from raw data."""
+        if status := raw_data.get(OIDS[ATTR_STATUS]):
+            return self._cleanse_status(status.lower())
+        return None
 
+    @staticmethod
+    def _extract_uptime(raw_data: dict[str, Any]) -> datetime | None:
+        """Extract and compute uptime datetime from raw data."""
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
         except TypeError:
-            pass
-        else:
-            data[ATTR_UPTIME] = (
-                datetime.now(tz=UTC) - timedelta(seconds=uptime)
-            ).replace(microsecond=0, tzinfo=UTC)
+            return None
+        return (datetime.now(tz=UTC) - timedelta(seconds=uptime)).replace(
+            microsecond=0, tzinfo=UTC
+        )
+
+    def _extract_counters(self, raw_data: dict[str, Any]) -> dict[str, int]:
+        """Extract sensor counters from raw data based on printer type."""
+        data: dict[str, int] = {}
         if self._legacy:
             if self._printer_type == "laser":
                 data.update(
@@ -276,18 +314,16 @@ class Brother:
                         VALUES_INK_MAINTENANCE,
                     )
                 )
-        # page counter for old printer models
+        return data
+
+    @staticmethod
+    def _extract_page_count(raw_data: dict[str, Any], data: dict[str, Any]) -> None:
+        """Extract page counter for old printer models."""
         with suppress(ValueError):
-            if not data.get(ATTR_PAGE_COUNT) and raw_data.get(OIDS[ATTR_PAGE_COUNT]):
-                data[ATTR_PAGE_COUNT] = int(
-                    cast(str, raw_data.get(OIDS[ATTR_PAGE_COUNT]))
-                )
-
-        _LOGGER.debug("Data: %s", data)
-
-        result: BrotherSensors = from_dict(BrotherSensors, data)
-
-        return result
+            if not data.get(ATTR_PAGE_COUNT):
+                raw_page_count = raw_data.get(OIDS[ATTR_PAGE_COUNT])
+                if raw_page_count:
+                    data[ATTR_PAGE_COUNT] = int(cast(str, raw_page_count))
 
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
@@ -351,10 +387,10 @@ class Brother:
     ) -> tuple[SnmpEngine, CommunityData, UdpTransportTarget, ContextData]:
         """Return SNMP request args using the write community string."""
         return (
-            self._request_args[0],
+            self._request_args[_IDX_ENGINE],
             CommunityData(self._write_community, mpModel=0),
-            self._request_args[2],
-            self._request_args[3],
+            self._request_args[_IDX_TRANSPORT],
+            self._request_args[_IDX_CONTEXT],
         )
 
     async def _get_data(self) -> dict[str, Any]:
@@ -395,9 +431,12 @@ class Brother:
                 raw_data[oid_str] = result
             elif oid_str == OIDS[ATTR_MAC]:
                 data = resrow[-1].asOctets()
-                raw_data[oid_str] = ":".join([f"{x:02x}" for x in data])
+                raw_data[oid_str] = ":".join(f"{x:02x}" for x in data)
             elif oid_str == OIDS[ATTR_STATUS]:
-                raw_status = resrow[-1]._value  # noqa: SLF001
+                try:
+                    raw_status = resrow[-1].asOctets()
+                except AttributeError:
+                    raw_status = resrow[-1]._value  # noqa: SLF001
             else:
                 raw_data[oid_str] = str(resrow[-1])
 
@@ -441,16 +480,12 @@ class Brother:
     def _legacy_printer(string: str) -> bool:
         """Return True if printer is legacy."""
         length = len(string)
-        nums = [x * LEGACY_CHUNK_SIZE for x in range(length // LEGACY_CHUNK_SIZE)][1:]
-        if results := [string[i - 2 : i] == "14" for i in nums]:
-            return all(item for item in results)
-        return False
-
-    @staticmethod
-    def _iterate_oids(oids: Iterable) -> Generator:
-        """Iterate OIDS to retrieve from printer."""
-        for oid in oids:
-            yield ObjectType(ObjectIdentity(oid))
+        if length < LEGACY_CHUNK_SIZE * 2:
+            return False
+        return all(
+            string[i - 2 : i] == "14"
+            for i in range(LEGACY_CHUNK_SIZE, length, LEGACY_CHUNK_SIZE)
+        )
 
     @staticmethod
     def _iterate_data(iterable: Iterable, values_map: dict[str, str]) -> Generator:
