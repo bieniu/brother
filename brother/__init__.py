@@ -490,12 +490,9 @@ class Brother:
         # For true roman8/latin2/cyrillic data, UTF-8 strict decode will
         # fail with UnicodeDecodeError and we fall back to the advertised
         # encoding below.
-        try:
+        with suppress(UnicodeDecodeError):
             return status.decode("utf-8")
-        except UnicodeDecodeError:
-            pass
         # Fall back to the encoding the printer claims to use.
-        try:
+        with suppress(UnicodeDecodeError, LookupError):
             return status.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
-            return None
+        return None
