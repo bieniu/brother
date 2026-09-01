@@ -977,3 +977,67 @@ def test_custom_write_community() -> None:
     """Test custom write community."""
     brother = Brother(HOST, write_community="private")
     assert brother._write_community == "private"
+
+
+def test_decode_status_utf8_mislabeled_as_roman8() -> None:
+    """Test that UTF-8 status bytes decode correctly even when charset is roman8.
+
+    Some printers (e.g. DCP-T735DW firmware 1.5) send valid UTF-8 status
+    bytes but report the charset OID as roman8 (2004). The decoder should
+    try UTF-8 first and return the correct text.
+    """
+    brother = Brother(HOST, printer_type="ink")
+
+    # UTF-8 encoding of "休眠" (sleep/standby)
+    utf8_bytes = b"\xe4\xbc\x91\xe7\x9c\xa0"
+
+    result = brother._decode_status(utf8_bytes, "roman8")
+
+    assert result == "休眠"
+
+
+def test_decode_status_utf8_mislabeled_as_roman8_not_garbled() -> None:
+    """Ensure the garbled roman8 interpretation of UTF-8 bytes is never returned."""
+    brother = Brother(HOST, printer_type="ink")
+
+    utf8_bytes = b"\xe4\xbc\x91\xe7\x9c\xa0"
+    result = brother._decode_status(utf8_bytes, "roman8")
+
+    # The garbled roman8 decode of these bytes would produce mojibake,
+    # not the correct Chinese characters.
+    garbled = utf8_bytes.decode("roman8")
+    assert result != garbled
+    assert result == "休眠"
+
+
+def test_decode_status_real_roman8_still_works() -> None:
+    """Verify that genuine roman8 strings still decode correctly after the fix."""
+    brother = Brother(HOST, printer_type="ink")
+
+    # A real roman8 string: "Stap. Kopieën:01"
+    roman8_bytes = b"Stap. Kopie\xcdn:01"
+
+    result = brother._decode_status(roman8_bytes, "roman8")
+
+    assert result == "Stap. Kopieën:01"
+
+
+@pytest.mark.asyncio
+async def test_dcp_t735dw_model() -> None:
+    """Test DCP-T735DW with UTF-8 status mislabeled as roman8 (firmware 1.5 bug)."""
+    with open("tests/fixtures/dcp-t735dw.json", encoding="utf-8") as file:
+        data = json.load(file)
+    brother = Brother(HOST, printer_type="ink")
+
+    with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
+        sensors = await brother.async_update()
+
+    assert brother.model == "DCP-T735DW"
+    assert brother.serial == "E83773M4H709920"
+    assert brother.mac == "aa:bb:cc:dd:ee:ff"
+    assert brother.firmware == "1.15"
+
+    assert sensors.status == "休眠"
+    assert sensors.page_counter == 1310
+
+    brother.shutdown()
