@@ -483,11 +483,16 @@ class Brother:
 
     @staticmethod
     def _decode_status(status: bytes, encoding: str) -> str | None:
-        """Decode status."""
+        """Decode status bytes, trying UTF-8 first to handle firmware bugs."""
         _LOGGER.debug("Status: %s, encoding: %s", status, encoding)
-        try:
-            result = status.decode(encoding)
-        except UnicodeDecodeError:
-            return None
-        else:
-            return result
+        # Try UTF-8 first. Some printers (e.g. DCP-T735DW after FW 1.5)
+        # send valid UTF-8 but report the charset as roman8.
+        # For true roman8/latin2/cyrillic data, UTF-8 strict decode will
+        # fail with UnicodeDecodeError and we fall back to the advertised
+        # encoding below.
+        with suppress(UnicodeDecodeError):
+            return status.decode("utf-8")
+        # Fall back to the encoding the printer claims to use.
+        with suppress(UnicodeDecodeError, LookupError):
+            return status.decode(encoding)
+        return None
