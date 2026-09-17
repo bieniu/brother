@@ -54,6 +54,7 @@ VAL_DUPLEX_COUNT: Final = "duplex_unit_pages_counter"
 VAL_FUSER_REMAIN: Final = "fuser_remaining_life"
 VAL_FUSER_REMAIN_PAGES: Final = "fuser_unit_remaining_pages"
 VAL_IMAGE_COUNT: Final = "image_counter"
+VAL_INK_BOX_REMAIN: Final = "ink_box_remaining_life"
 VAL_LASER_REMAIN: Final = "laser_remaining_life"
 VAL_LASER_REMAIN_PAGES: Final = "laser_unit_remaining_pages"
 VAL_MAGENTA_COUNT: Final = "magenta_counter"
@@ -203,6 +204,7 @@ VALUES_INK_MAINTENANCE: Final = {
     "82": VAL_CYAN_INK,
     "83": VAL_MAGENTA_INK,
     "84": VAL_YELLOW_INK,
+    "85": VAL_INK_BOX_REMAIN,
     "a1": VAL_BLACK_INK_REMAIN,
     "a2": VAL_CYAN_INK_REMAIN,
     "a3": VAL_MAGENTA_INK_REMAIN,
