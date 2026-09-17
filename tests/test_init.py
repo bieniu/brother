@@ -1071,7 +1071,7 @@ async def test_mfc_j5110dw_model(snapshot: SnapshotAssertion) -> None:
 
     brother.shutdown()
 
-    assert sensors.ink_box_remaining_life == 75
+    assert sensors.ink_capture_box_remaining_life == 75
     assert sensors.black_ink_remaining == 99
     assert sensors.black_ink == 99
     assert brother == snapshot

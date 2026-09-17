@@ -41,7 +41,7 @@ class BrotherSensors:
     fuser_remaining_life: int | None = None
     fuser_unit_remaining_pages: int | None = None
     image_counter: int | None = None
-    ink_box_remaining_life: int | None = None
+    ink_capture_box_remaining_life: int | None = None
     laser_remaining_life: int | None = None
     laser_unit_remaining_pages: int | None = None
     magenta_counter: int | None = None
