@@ -1060,6 +1060,25 @@ def test_decode_status_real_roman8_still_works() -> None:
 
 
 @pytest.mark.asyncio
+async def test_mfc_j5110dw_model(snapshot: SnapshotAssertion) -> None:
+    """Test with valid data from MFC-J5110DW printer with ink box sensor."""
+    with open("tests/fixtures/mfc-j5110dw.json", encoding="utf-8") as file:
+        data = json.load(file)
+    brother = Brother(HOST, printer_type="ink")
+
+    with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
+        sensors = await brother.async_update()
+
+    brother.shutdown()
+
+    assert sensors.ink_box_remaining_life == 75
+    assert sensors.black_ink_remaining == 99
+    assert sensors.black_ink == 99
+    assert brother == snapshot
+    assert sensors == snapshot
+
+
+@pytest.mark.asyncio
 async def test_dcp_t735dw_model() -> None:
     """Test DCP-T735DW with UTF-8 status mislabeled as roman8 (firmware 1.5 bug)."""
     with open("tests/fixtures/dcp-t735dw.json", encoding="utf-8") as file:
