@@ -4,12 +4,15 @@ from typing import Final
 
 ATTR_CHARSET: Final = "charset"
 ATTR_COUNTERS: Final = "counters"
+ATTR_DEVICE_STATUS: Final = "device_status"
 ATTR_FIRMWARE: Final = "firmware"
 ATTR_MAC = "mac"
 ATTR_MAINTENANCE: Final = "maintenance"
 ATTR_MODEL: Final = "model"
 ATTR_NEXTCARE: Final = "nextcare"
 ATTR_PAGE_COUNT: Final = "page_counter"
+ATTR_PRINTER_ERRORS: Final = "printer_errors"
+ATTR_PRINTER_STATUS: Final = "printer_status"
 ATTR_SERIAL: Final = "serial"
 ATTR_STATUS: Final = "status"
 ATTR_UPTIME: Final = "uptime"
@@ -101,7 +104,44 @@ OIDS: Final = {
     ATTR_SERIAL: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.1.0",
     ATTR_STATUS: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.4.5.2.0",
     ATTR_UPTIME: "1.3.6.1.2.1.1.3.0",
+    ATTR_DEVICE_STATUS: "1.3.6.1.2.1.25.3.2.1.5.1",
+    ATTR_PRINTER_STATUS: "1.3.6.1.2.1.25.3.5.1.1.1",
+    ATTR_PRINTER_ERRORS: "1.3.6.1.2.1.25.3.5.1.2.1",
 }
+
+DEVICE_STATUS_MAP: Final = {
+    "1": "unknown",
+    "2": "running",
+    "3": "warning",
+    "4": "testing",
+    "5": "down",
+}
+
+PRINTER_STATUS_MAP: Final = {
+    "1": "other",
+    "2": "unknown",
+    "3": "idle",
+    "4": "printing",
+    "5": "warmup",
+}
+
+PRINTER_ERRORS: Final = (
+    "low_paper",
+    "no_paper",
+    "low_toner",
+    "no_toner",
+    "door_open",
+    "jammed",
+    "offline",
+    "service_requested",
+    "input_tray_missing",
+    "output_tray_missing",
+    "marker_supply_missing",
+    "output_near_full",
+    "output_full",
+    "input_tray_empty",
+    "overdue_prevent_maint",
+)
 
 VALUES_COUNTERS: Final = {
     "00": VAL_PAGE_COUNT,
