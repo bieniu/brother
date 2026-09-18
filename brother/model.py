@@ -32,6 +32,7 @@ class BrotherSensors:
     cyan_toner_remaining: int | None = None
     cyan_toner_status: int | None = None
     cyan_toner: int | None = None
+    device_status: str | None = None
     drum_counter: int | None = None
     drum_remaining_life: int | None = None
     drum_remaining_pages: int | None = None
@@ -57,6 +58,8 @@ class BrotherSensors:
     pf_kit_1_remaining_pages: int | None = None
     pf_kit_mp_remaining_life: int | None = None
     pf_kit_mp_remaining_pages: int | None = None
+    printer_errors: list[str] | None = None
+    printer_status: str | None = None
     status: str | None = None
     uptime: datetime | None = None
     yellow_counter: int | None = None

@@ -26,12 +26,15 @@ from pysnmp.smi.rfc1902 import ObjectType
 from .const import (
     ATTR_CHARSET,
     ATTR_COUNTERS,
+    ATTR_DEVICE_STATUS,
     ATTR_FIRMWARE,
     ATTR_MAC,
     ATTR_MAINTENANCE,
     ATTR_MODEL,
     ATTR_NEXTCARE,
     ATTR_PAGE_COUNT,
+    ATTR_PRINTER_ERRORS,
+    ATTR_PRINTER_STATUS,
     ATTR_SERIAL,
     ATTR_STATUS,
     ATTR_UPTIME,
@@ -39,10 +42,13 @@ from .const import (
     DATETIME_SET_SUPPORTED_MODELS,
     DEFAULT_TIMEOUT,
     DEFAULT_WRITE_COMMUNITY,
+    DEVICE_STATUS_MAP,
     OID_DATETIME,
     OIDS,
     OIDS_HEX,
     PERCENT_VALUES,
+    PRINTER_ERRORS,
+    PRINTER_STATUS_MAP,
     PRINTER_TYPES,
     RETRIES,
     UNSUPPORTED_MODELS,
@@ -228,6 +234,21 @@ class Brother:
         if status := raw_data[OIDS[ATTR_STATUS]]:
             data[ATTR_STATUS] = self._cleanse_status(status.lower())
 
+        if device_status := DEVICE_STATUS_MAP.get(
+            cast(str, raw_data.get(OIDS[ATTR_DEVICE_STATUS]))
+        ):
+            data[ATTR_DEVICE_STATUS] = device_status
+
+        if printer_status := PRINTER_STATUS_MAP.get(
+            cast(str, raw_data.get(OIDS[ATTR_PRINTER_STATUS]))
+        ):
+            data[ATTR_PRINTER_STATUS] = printer_status
+
+        if (printer_errors := raw_data.get(OIDS[ATTR_PRINTER_ERRORS])) is not None:
+            data[ATTR_PRINTER_ERRORS] = self._parse_printer_errors(
+                cast(str, printer_errors)
+            )
+
         try:
             uptime = int(cast(str, raw_data.get(OIDS[ATTR_UPTIME]))) / 100
         except TypeError:
@@ -396,6 +417,8 @@ class Brother:
             elif oid_str == OIDS[ATTR_MAC]:
                 data = resrow[-1].asOctets()
                 raw_data[oid_str] = ":".join([f"{x:02x}" for x in data])
+            elif oid_str == OIDS[ATTR_PRINTER_ERRORS]:
+                raw_data[oid_str] = resrow[-1].asOctets().hex()
             elif oid_str == OIDS[ATTR_STATUS]:
                 raw_status = resrow[-1]._value  # noqa: SLF001
             else:
@@ -475,6 +498,18 @@ class Brother:
                     values_map[item[:2]],
                     round(int(item[6:8], 16) / int(item[8:10], 16) * 100),
                 )
+
+    @staticmethod
+    def _parse_printer_errors(hex_string: str) -> list[str]:
+        """Return the names of the error bits set in hrPrinterDetectedErrorState."""
+        value = int(hex_string or "0", 16)
+        bit_count = len(hex_string) * 4
+        # RFC 3805 numbers the bits from the most significant bit of the first octet
+        return [
+            error
+            for index, error in enumerate(PRINTER_ERRORS)
+            if index < bit_count and value >> (bit_count - 1 - index) & 1
+        ]
 
     @staticmethod
     def _cleanse_status(status: str) -> str:
