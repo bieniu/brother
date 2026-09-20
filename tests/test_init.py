@@ -1061,7 +1061,7 @@ def test_decode_status_real_roman8_still_works() -> None:
 
 @pytest.mark.asyncio
 async def test_mfc_j5110dw_model(snapshot: SnapshotAssertion) -> None:
-    """Test with valid data from MFC-J5110DW printer with ink box sensor."""
+    """Test with valid data from MFC-J5110DW printer with ink box cover sensor."""
     with open("tests/fixtures/mfc-j5110dw.json", encoding="utf-8") as file:
         data = json.load(file)
     brother = Brother(HOST, printer_type="ink")
