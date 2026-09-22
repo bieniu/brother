@@ -1074,6 +1074,9 @@ async def test_mfc_j5110dw_model(snapshot: SnapshotAssertion) -> None:
     assert sensors.ink_capture_box_remaining_life == 75
     assert sensors.black_ink_remaining == 99
     assert sensors.black_ink == 99
+    assert sensors.device_status == "running"
+    assert sensors.printer_status == "idle"
+    assert sensors.printer_errors == []
     assert brother == snapshot
     assert sensors == snapshot
 
