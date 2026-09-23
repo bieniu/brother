@@ -366,6 +366,8 @@ def test_decode_status_unicode_error() -> None:
         ("80", ["low_paper"]),
         ("2800", ["low_toner", "door_open"]),
         ("0006", ["input_tray_empty", "overdue_prevent_maint"]),
+        ("20", ["low_toner"]),
+        ("12", ["no_toner", "offline"]),
         ("0001", []),
     ],
 )
