@@ -13,9 +13,11 @@ from syrupy import SnapshotAssertion
 from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
 from brother.const import (
     ATTR_CHARSET,
+    ATTR_DEVICE_STATUS,
     ATTR_MAC,
     ATTR_MODEL,
     ATTR_PRINTER_ERRORS,
+    ATTR_PRINTER_STATUS,
     ATTR_STATUS,
     OIDS,
     OIDS_HEX,
@@ -364,6 +366,8 @@ def test_decode_status_unicode_error() -> None:
         ("80", ["low_paper"]),
         ("2800", ["low_toner", "door_open"]),
         ("0006", ["input_tray_empty", "overdue_prevent_maint"]),
+        ("20", ["low_toner"]),
+        ("12", ["no_toner", "offline"]),
         ("0001", []),
     ],
 )
@@ -1074,8 +1078,54 @@ async def test_mfc_j5110dw_model(snapshot: SnapshotAssertion) -> None:
     assert sensors.ink_capture_box_remaining_life == 75
     assert sensors.black_ink_remaining == 99
     assert sensors.black_ink == 99
+    assert sensors.device_status == "running"
+    assert sensors.printer_status == "idle"
+    assert sensors.printer_errors == []
     assert brother == snapshot
     assert sensors == snapshot
+
+
+@pytest.mark.parametrize(
+    (
+        "raw_device_status",
+        "raw_printer_status",
+        "raw_printer_errors",
+        "device_status",
+        "printer_status",
+        "printer_errors",
+    ),
+    [
+        ("2", "4", "00", "running", "printing", []),
+        ("5", "3", "00", "down", "idle", []),
+        ("5", "1", "02", "down", "other", ["offline"]),
+        ("5", "1", "0a", "down", "other", ["door_open", "offline"]),
+    ],
+)
+@pytest.mark.asyncio
+async def test_mfc_j5110dw_printer_states(
+    raw_device_status: str,
+    raw_printer_status: str,
+    raw_printer_errors: str,
+    device_status: str,
+    printer_status: str,
+    printer_errors: list[str],
+) -> None:
+    """Test Host Resources MIB states reported by MFC-J5110DW."""
+    with open("tests/fixtures/mfc-j5110dw.json", encoding="utf-8") as file:
+        data = json.load(file)
+    data[OIDS[ATTR_DEVICE_STATUS]] = raw_device_status
+    data[OIDS[ATTR_PRINTER_STATUS]] = raw_printer_status
+    data[OIDS[ATTR_PRINTER_ERRORS]] = raw_printer_errors
+    brother = Brother(HOST, printer_type="ink")
+
+    with patch("brother.Brother._get_data", return_value=data), freeze_time(TEST_TIME):
+        sensors = await brother.async_update()
+
+    brother.shutdown()
+
+    assert sensors.device_status == device_status
+    assert sensors.printer_status == printer_status
+    assert sensors.printer_errors == printer_errors
 
 
 @pytest.mark.asyncio
