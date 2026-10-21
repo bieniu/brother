@@ -5,12 +5,12 @@ if ! command -v uv >/dev/null 2>&1; then
 	export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 fi
 
-if command -v python3.14 >/dev/null 2>&1; then
+if command -v python3.15 >/dev/null 2>&1; then
+	PYTHON_VERSION=3.15
+elif command -v python3.14 >/dev/null 2>&1; then
 	PYTHON_VERSION=3.14
-elif command -v python3.13 >/dev/null 2>&1; then
-	PYTHON_VERSION=3.13
 else
-	echo "Error: neither python3.14 nor python3.13 is available in PATH" >&2
+	echo "Error: neither python3.15 nor python3.14 is available in PATH" >&2
 	exit 1
 fi
 
