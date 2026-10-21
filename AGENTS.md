@@ -28,7 +28,7 @@ tests/
 
 ## Python and environment
 
-- Target Python: >=3.13 (also tested on 3.14)
+- Target Python: >=3.14
 - Use the local venv in `./.venv`
 - `scripts/setup-local-env.sh` creates the venv, installs `uv`, then installs all dependency groups
 - Package manager: `uv` — dependencies declared in `pyproject.toml`
