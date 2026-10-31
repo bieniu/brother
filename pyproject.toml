@@ -30,7 +30,7 @@ dependencies = [
 dev = [
   "prek==0.5.7",
   "ruff==0.17.3",
-  "ty==0.0.92",
+  "ty==0.0.93",
 ]
 test = [
   "freezegun==1.5.5",
