@@ -256,4 +256,4 @@ UNSUPPORTED_MODELS: Final = ("mfc-8660dn", "mfc-8860dn")
 DATETIME_SET_SUPPORTED_MODELS: Final = ("dcp-j552dw",)
 
 DEFAULT_TIMEOUT: Final = 2
-RETRIES: Final = 10
+RETRIES: Final = 8

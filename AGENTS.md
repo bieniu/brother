@@ -13,7 +13,7 @@
 brother/
 ├── __init__.py    # Main Brother class — SNMP client, factory method, async_update()
 ├── const.py       # OID mappings, printer type constants, value/character-set mappings
-├── exceptions.py  # BrotherError (base), SnmpError, UnsupportedModelError, MethodNotSupportedError
+├── exceptions.py  # BrotherError (base), SnmpError, SnmpTimeoutError, UnsupportedModelError, MethodNotSupportedError
 ├── model.py       # BrotherSensors frozen dataclass (50+ sensor fields)
 └── utils.py       # SNMP engine init, RFC 2579 DateAndTime codec, hex helpers
 

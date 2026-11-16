@@ -7,10 +7,17 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from freezegun import freeze_time
 from pysnmp.error import PySnmpError
+from pysnmp.proto.errind import RequestTimedOut, requestTimedOut
 from pysnmp.smi.rfc1902 import ObjectType
 from syrupy import SnapshotAssertion
 
-from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
+from brother import (
+    Brother,
+    MethodNotSupportedError,
+    SnmpError,
+    SnmpTimeoutError,
+    UnsupportedModelError,
+)
 from brother.const import (
     ATTR_CHARSET,
     ATTR_DEVICE_STATUS,
@@ -540,6 +547,60 @@ async def test_get_data_snmp_errindication() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("method", "cmd", "args"),
+    [
+        ("_get_data", "get_cmd", ()),
+        ("async_get_datetime", "get_cmd", ()),
+        ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
+    ],
+)
+@pytest.mark.parametrize("errindication", [RequestTimedOut(), requestTimedOut])
+async def test_snmp_request_timed_out(
+    brother_with_request_args: Brother,
+    method: str,
+    cmd: str,
+    args: tuple[datetime, ...],
+    errindication: RequestTimedOut,
+) -> None:
+    """Test that RequestTimedOut raises SnmpTimeoutError."""
+    brother_with_request_args._oids = []
+    mock = AsyncMock(return_value=(errindication, 0, 0, []))
+    with (
+        patch(f"brother.{cmd}", mock),
+        pytest.raises(SnmpTimeoutError) as exc_info,
+    ):
+        await getattr(brother_with_request_args, method)(*args)
+
+    assert isinstance(exc_info.value, TimeoutError)
+    assert exc_info.value.status == str(errindication)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("method", "cmd", "args"),
+    [
+        ("_get_data", "get_cmd", ()),
+        ("async_get_datetime", "get_cmd", ()),
+        ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
+    ],
+)
+async def test_snmp_other_errindication_is_plain_error(
+    brother_with_request_args: Brother,
+    method: str,
+    cmd: str,
+    args: tuple[datetime, ...],
+) -> None:
+    """Test that a non-timeout errindication raises exactly SnmpError."""
+    brother_with_request_args._oids = []
+    mock = AsyncMock(return_value=("requestTimedOut", 0, 0, []))
+    with patch(f"brother.{cmd}", mock), pytest.raises(SnmpError) as exc_info:
+        await getattr(brother_with_request_args, method)(*args)
+
+    assert type(exc_info.value) is SnmpError
+
+
+@pytest.mark.asyncio
 async def test_get_data_snmp_errstatus() -> None:
     """Test _get_data method with SNMP errstatus."""
     brother = Brother(HOST, printer_type="laser")
@@ -752,7 +813,7 @@ async def test_get_data_status_processing() -> None:
 
     # Mock the response objects
     mock_status_response = type("MockResponse", (), {})()
-    mock_status_response._value = b"Ready"  # ty:ignore[unresolved-attribute]
+    mock_status_response._value = b"Ready"  # ty:ignore[missing-attribute]
 
     mock_resrow = [
         [OIDS[ATTR_STATUS], None, mock_status_response],
