@@ -546,14 +546,17 @@ async def test_get_data_snmp_errindication() -> None:
         await brother._get_data()
 
 
+SNMP_METHOD_CASES = [
+    ("_get_data", "get_cmd", ()),
+    ("async_get_datetime", "get_cmd", ()),
+    ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
+]
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("method", "cmd", "args"),
-    [
-        ("_get_data", "get_cmd", ()),
-        ("async_get_datetime", "get_cmd", ()),
-        ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
-    ],
+    SNMP_METHOD_CASES,
 )
 @pytest.mark.parametrize("errindication", [RequestTimedOut(), requestTimedOut])
 async def test_snmp_request_timed_out(
@@ -579,11 +582,7 @@ async def test_snmp_request_timed_out(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("method", "cmd", "args"),
-    [
-        ("_get_data", "get_cmd", ()),
-        ("async_get_datetime", "get_cmd", ()),
-        ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
-    ],
+    SNMP_METHOD_CASES,
 )
 async def test_snmp_other_errindication_is_plain_error(
     brother_with_request_args: Brother,
@@ -676,6 +675,29 @@ async def test_initialize_pysnmp_error() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("errindication", "error_type"),
+    [(RequestTimedOut(), SnmpTimeoutError), ("other", SnmpError)],
+)
+async def test_initialize_errindication(
+    errindication: object, error_type: type[SnmpError]
+) -> None:
+    """Test that initialize raises the mapped error for an errindication."""
+    brother = Brother(HOST, printer_type="laser")
+
+    with (
+        patch("brother.async_get_snmp_engine"),
+        patch("brother.UdpTransportTarget.create"),
+        patch("brother.Brother._iterate_oids", return_value=["oid1"]),
+        patch("brother.get_cmd", return_value=(errindication, 0, 0, [])),
+        pytest.raises(error_type) as exc_info,
+    ):
+        await brother.initialize()
+
+    assert type(exc_info.value) is error_type
+
+
+@pytest.mark.asyncio
 async def test_initialize_oid_removal() -> None:
     """Test initialize method removing unsupported OIDs."""
     brother = Brother(HOST, printer_type="laser")
@@ -694,7 +716,7 @@ async def test_initialize_oid_removal() -> None:
         # Second call: success
         mock_get_cmd.side_effect = [
             (None, "noSuchName", 2, None),  # Remove oid2
-            (Mock(), Mock(), Mock(), Mock()),  # Success
+            (None, Mock(), Mock(), Mock()),  # Success
         ]
 
         await brother.initialize()

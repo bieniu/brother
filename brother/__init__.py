@@ -2,7 +2,6 @@
 
 import logging
 import re
-from asyncio import timeout
 from collections.abc import Generator, Iterable
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
@@ -195,8 +194,11 @@ class Brother:
             raise ConnectionError(err) from err
 
         while True:
-            async with timeout(DEFAULT_TIMEOUT * (RETRIES + 1)):
-                _, errstatus, errindex, _ = await get_cmd(*self._request_args, *oids)
+            errindication, errstatus, errindex, _ = await get_cmd(
+                *self._request_args, *oids
+            )
+            if errindication:
+                raise self._snmp_error(errindication)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
