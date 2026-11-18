@@ -7,10 +7,17 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from freezegun import freeze_time
 from pysnmp.error import PySnmpError
+from pysnmp.proto.errind import RequestTimedOut, requestTimedOut
 from pysnmp.smi.rfc1902 import ObjectType
 from syrupy import SnapshotAssertion
 
-from brother import Brother, MethodNotSupportedError, SnmpError, UnsupportedModelError
+from brother import (
+    Brother,
+    MethodNotSupportedError,
+    SnmpError,
+    SnmpTimeoutError,
+    UnsupportedModelError,
+)
 from brother.const import (
     ATTR_CHARSET,
     ATTR_DEVICE_STATUS,
@@ -539,6 +546,59 @@ async def test_get_data_snmp_errindication() -> None:
         await brother._get_data()
 
 
+SNMP_METHOD_CASES = [
+    ("_get_data", "get_cmd", ()),
+    ("async_get_datetime", "get_cmd", ()),
+    ("async_set_datetime", "set_cmd", (datetime(2026, 1, 1, tzinfo=UTC),)),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("method", "cmd", "args"),
+    SNMP_METHOD_CASES,
+)
+@pytest.mark.parametrize("errindication", [RequestTimedOut(), requestTimedOut])
+async def test_snmp_request_timed_out(
+    brother_with_request_args: Brother,
+    method: str,
+    cmd: str,
+    args: tuple[datetime, ...],
+    errindication: RequestTimedOut,
+) -> None:
+    """Test that RequestTimedOut raises SnmpTimeoutError."""
+    brother_with_request_args._oids = []
+    mock = AsyncMock(return_value=(errindication, 0, 0, []))
+    with (
+        patch(f"brother.{cmd}", mock),
+        pytest.raises(SnmpTimeoutError) as exc_info,
+    ):
+        await getattr(brother_with_request_args, method)(*args)
+
+    assert isinstance(exc_info.value, TimeoutError)
+    assert exc_info.value.status == str(errindication)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("method", "cmd", "args"),
+    SNMP_METHOD_CASES,
+)
+async def test_snmp_other_errindication_is_plain_error(
+    brother_with_request_args: Brother,
+    method: str,
+    cmd: str,
+    args: tuple[datetime, ...],
+) -> None:
+    """Test that a non-timeout errindication raises exactly SnmpError."""
+    brother_with_request_args._oids = []
+    mock = AsyncMock(return_value=("requestTimedOut", 0, 0, []))
+    with patch(f"brother.{cmd}", mock), pytest.raises(SnmpError) as exc_info:
+        await getattr(brother_with_request_args, method)(*args)
+
+    assert type(exc_info.value) is SnmpError
+
+
 @pytest.mark.asyncio
 async def test_get_data_snmp_errstatus() -> None:
     """Test _get_data method with SNMP errstatus."""
@@ -615,6 +675,29 @@ async def test_initialize_pysnmp_error() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("errindication", "error_type"),
+    [(RequestTimedOut(), SnmpTimeoutError), ("other", SnmpError)],
+)
+async def test_initialize_errindication(
+    errindication: object, error_type: type[SnmpError]
+) -> None:
+    """Test that initialize raises the mapped error for an errindication."""
+    brother = Brother(HOST, printer_type="laser")
+
+    with (
+        patch("brother.async_get_snmp_engine"),
+        patch("brother.UdpTransportTarget.create"),
+        patch("brother.Brother._iterate_oids", return_value=["oid1"]),
+        patch("brother.get_cmd", return_value=(errindication, 0, 0, [])),
+        pytest.raises(error_type) as exc_info,
+    ):
+        await brother.initialize()
+
+    assert type(exc_info.value) is error_type
+
+
+@pytest.mark.asyncio
 async def test_initialize_oid_removal() -> None:
     """Test initialize method removing unsupported OIDs."""
     brother = Brother(HOST, printer_type="laser")
@@ -633,7 +716,7 @@ async def test_initialize_oid_removal() -> None:
         # Second call: success
         mock_get_cmd.side_effect = [
             (None, "noSuchName", 2, None),  # Remove oid2
-            (Mock(), Mock(), Mock(), Mock()),  # Success
+            (None, Mock(), Mock(), Mock()),  # Success
         ]
 
         await brother.initialize()
@@ -752,7 +835,7 @@ async def test_get_data_status_processing() -> None:
 
     # Mock the response objects
     mock_status_response = type("MockResponse", (), {})()
-    mock_status_response._value = b"Ready"  # ty:ignore[unresolved-attribute]
+    mock_status_response._value = b"Ready"  # ty:ignore[missing-attribute]
 
     mock_resrow = [
         [OIDS[ATTR_STATUS], None, mock_status_response],

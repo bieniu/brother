@@ -20,3 +20,7 @@ class UnsupportedModelError(BrotherError):
 
 class MethodNotSupportedError(BrotherError):
     """Raised when a method is not supported by the printer model."""
+
+
+class SnmpTimeoutError(SnmpError, TimeoutError):
+    """Raised when the printer does not respond to an SNMP request in time."""

@@ -2,7 +2,6 @@
 
 import logging
 import re
-from asyncio import timeout
 from collections.abc import Generator, Iterable
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
@@ -20,6 +19,7 @@ from pysnmp.hlapi.v3arch.asyncio import (
     set_cmd,
 )
 from pysnmp.hlapi.v3arch.asyncio.cmdgen import LCD
+from pysnmp.proto.errind import RequestTimedOut
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.smi.rfc1902 import ObjectType
 
@@ -57,7 +57,12 @@ from .const import (
     VALUES_LASER_MAINTENANCE,
     VALUES_LASER_NEXTCARE,
 )
-from .exceptions import MethodNotSupportedError, SnmpError, UnsupportedModelError
+from .exceptions import (
+    MethodNotSupportedError,
+    SnmpError,
+    SnmpTimeoutError,
+    UnsupportedModelError,
+)
 from .model import BrotherSensors
 from .utils import (
     async_get_snmp_engine,
@@ -189,8 +194,11 @@ class Brother:
             raise ConnectionError(err) from err
 
         while True:
-            async with timeout(DEFAULT_TIMEOUT * RETRIES):
-                _, errstatus, errindex, _ = await get_cmd(*self._request_args, *oids)
+            errindication, errstatus, errindex, _ = await get_cmd(
+                *self._request_args, *oids
+            )
+            if errindication:
+                raise self._snmp_error(errindication)
 
             if str(errstatus) == "noSuchName":
                 # 5 and 8 are indexes from OIDS consts, model and serial are obligatory
@@ -315,6 +323,13 @@ class Brother:
         if self._snmp_engine:
             LCD.unconfigure(self._snmp_engine, None)
 
+    @staticmethod
+    def _snmp_error(errindication: object) -> SnmpError:
+        """Return SnmpTimeoutError for a request timeout, SnmpError otherwise."""
+        if isinstance(errindication, RequestTimedOut):
+            return SnmpTimeoutError(str(errindication))
+        return SnmpError(str(errindication))
+
     async def async_get_datetime(self) -> datetime | None:
         """Return the printer's current date and time, or None if not available."""
         oid = ObjectType(ObjectIdentity(OID_DATETIME))
@@ -327,7 +342,7 @@ class Brother:
             raise ConnectionError(err) from err
 
         if errindication:
-            raise SnmpError(str(errindication))
+            raise self._snmp_error(errindication)
         if errstatus:
             if str(errstatus) == "noSuchName":
                 return None
@@ -360,7 +375,7 @@ class Brother:
             raise ConnectionError(err) from err
 
         if errindication:
-            raise SnmpError(str(errindication))
+            raise self._snmp_error(errindication)
         if errstatus:
             msg = f"SNMP SET failed: {errstatus} at index {errindex}"
             raise SnmpError(msg)
@@ -390,7 +405,7 @@ class Brother:
         except PySnmpError as err:
             raise ConnectionError(err) from err
         if errindication:
-            raise SnmpError(str(errindication))
+            raise self._snmp_error(errindication)
         if errstatus:
             msg = f"{errstatus}, {errindex}"
             raise SnmpError(msg)

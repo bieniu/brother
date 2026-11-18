@@ -2,7 +2,12 @@
 
 import pytest
 
-from brother.exceptions import BrotherError, SnmpError, UnsupportedModelError
+from brother.exceptions import (
+    BrotherError,
+    SnmpError,
+    SnmpTimeoutError,
+    UnsupportedModelError,
+)
 
 
 def test_brother_error() -> None:
@@ -24,6 +29,16 @@ def test_snmp_error() -> None:
     assert error.status == error_msg
     assert isinstance(error, BrotherError)
     assert isinstance(error, Exception)
+
+
+def test_snmp_timeout_error() -> None:
+    """Test SnmpTimeoutError is both SnmpError and TimeoutError."""
+    error = SnmpTimeoutError("no response")
+
+    assert str(error) == "no response"
+    assert error.status == "no response"
+    assert isinstance(error, SnmpError)
+    assert isinstance(error, TimeoutError)
 
 
 def test_unsupported_model_error() -> None:
