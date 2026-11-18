@@ -1,5 +1,6 @@
 """Python wrapper for getting data from Brother laser and inkjet printers via SNMP."""
 
+import asyncio
 import logging
 import re
 from collections.abc import Generator, Iterable
@@ -22,6 +23,13 @@ from pysnmp.hlapi.v3arch.asyncio.cmdgen import LCD
 from pysnmp.proto.errind import RequestTimedOut
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.smi.rfc1902 import ObjectType
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_fixed,
+)
 
 from .const import (
     ATTR_CHARSET,
@@ -52,6 +60,8 @@ from .const import (
     PRINTER_TYPES,
     RETRIES,
     UNSUPPORTED_MODELS,
+    UPDATE_ATTEMPTS,
+    UPDATE_RETRY_WAIT,
     VALUES_COUNTERS,
     VALUES_INK_MAINTENANCE,
     VALUES_LASER_MAINTENANCE,
@@ -119,6 +129,7 @@ class Brother:
         self._write_community = write_community
         self._snmp_engine = snmp_engine
         self._oids: list[ObjectType] = []
+        self._lock = asyncio.Lock()
         self._request_args: tuple[
             SnmpEngine, CommunityData, UdpTransportTarget, ContextData
         ]
@@ -216,7 +227,9 @@ class Brother:
 
     async def async_update(self) -> BrotherSensors:
         """Update data from printer."""
-        if not (raw_data := await self._get_data()):
+        async with self._lock:
+            raw_data = await self._get_data()
+        if not raw_data:
             raise SnmpError("The printer did not return data")
 
         _LOGGER.debug("RAW data: %s", raw_data)
@@ -335,9 +348,10 @@ class Brother:
         oid = ObjectType(ObjectIdentity(OID_DATETIME))
 
         try:
-            errindication, errstatus, errindex, restable = await get_cmd(
-                *self._request_args, oid
-            )
+            async with self._lock:
+                errindication, errstatus, errindex, restable = await get_cmd(
+                    *self._request_args, oid
+                )
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
@@ -368,9 +382,10 @@ class Brother:
         )
 
         try:
-            errindication, errstatus, errindex, _ = await set_cmd(
-                *self._write_request_args(), oid
-            )
+            async with self._lock:
+                errindication, errstatus, errindex, _ = await set_cmd(
+                    *self._write_request_args(), oid
+                )
         except PySnmpError as err:
             raise ConnectionError(err) from err
 
@@ -393,6 +408,13 @@ class Brother:
             self._request_args[3],
         )
 
+    @retry(
+        retry=retry_if_exception_type((SnmpTimeoutError, ConnectionError)),
+        stop=stop_after_attempt(UPDATE_ATTEMPTS),
+        wait=wait_fixed(UPDATE_RETRY_WAIT),
+        before_sleep=before_sleep_log(_LOGGER, logging.DEBUG),
+        reraise=True,
+    )
     async def _get_data(self) -> dict[str, Any]:
         """Retrieve data from printer."""
         raw_data: dict[str, str | list[str]] = {}

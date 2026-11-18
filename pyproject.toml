@@ -24,6 +24,7 @@ dependencies = [
   "dacite>=1.7.0",
   "pyasn1>=0.6.4",
   "pysnmp>=7.1.27",
+  "tenacity",
 ]
 
 [dependency-groups]

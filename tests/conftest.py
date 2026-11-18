@@ -1,5 +1,6 @@
 """Set up some common test helper things."""
 
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -8,8 +9,19 @@ from pysnmp.hlapi.v3arch.asyncio import CommunityData, ContextData, SnmpEngine
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.amber import AmberSnapshotExtension
 from syrupy.location import PyTestLocation
+from tenacity import wait_none
 
 from brother import Brother
+
+
+@pytest.fixture(autouse=True)
+def no_retry_wait() -> Iterator[None]:
+    """Remove the sleep between _get_data retries."""
+    retrying = Brother._get_data.retry  # type: ignore[attr-defined]
+    original = retrying.wait
+    retrying.wait = wait_none()
+    yield
+    retrying.wait = original
 
 
 @pytest.fixture
