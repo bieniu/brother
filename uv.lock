@@ -34,7 +34,7 @@ requires-dist = [
     { name = "dacite", specifier = ">=1.7.0" },
     { name = "pyasn1", specifier = ">=0.6.4" },
     { name = "pysnmp", specifier = ">=7.1.27" },
-    { name = "tenacity" },
+    { name = "tenacity", specifier = ">=9.0.0" },
 ]
 
 [package.metadata.requires-dev]
