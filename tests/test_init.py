@@ -1,5 +1,6 @@
 """Tests for brother package."""
 
+import asyncio
 import json
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock, patch
@@ -29,6 +30,7 @@ from brother.const import (
     OIDS,
     OIDS_HEX,
     PERCENT_VALUES,
+    UPDATE_ATTEMPTS,
     VALUES_LASER_MAINTENANCE,
 )
 from brother.utils import build_dateandtime, parse_dateandtime
@@ -1230,3 +1232,112 @@ async def test_dcp_t735dw_model() -> None:
     assert sensors.page_counter == 1310
 
     brother.shutdown()
+
+
+TIMEOUT_RESPONSE = (RequestTimedOut(), 0, 0, [])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", [TIMEOUT_RESPONSE, PySnmpError("boom")])
+@pytest.mark.parametrize("failures", [1, UPDATE_ATTEMPTS - 1])
+async def test_update_retries_then_succeeds(
+    brother_with_request_args: Brother, failure: object, failures: int
+) -> None:
+    """Test _get_data retries transient errors and then succeeds."""
+    good = (None, 0, 0, [])
+    side_effect = [failure] * failures + [good]
+    mock_get = AsyncMock(side_effect=side_effect)
+    with patch("brother.get_cmd", mock_get):
+        assert await brother_with_request_args._get_data() == {}
+
+    assert mock_get.call_count == failures + 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("mock_get", "error"),
+    [
+        (AsyncMock(return_value=TIMEOUT_RESPONSE), SnmpTimeoutError),
+        (AsyncMock(side_effect=PySnmpError("boom")), ConnectionError),
+    ],
+)
+async def test_update_gives_up_after_attempts(
+    brother_with_request_args: Brother, mock_get: AsyncMock, error: type[Exception]
+) -> None:
+    """Test the original error is raised after UPDATE_ATTEMPTS attempts."""
+    with patch("brother.get_cmd", mock_get), pytest.raises(error):
+        await brother_with_request_args.async_update()
+
+    assert mock_get.call_count == UPDATE_ATTEMPTS
+
+
+@pytest.mark.asyncio
+async def test_update_does_not_retry_errstatus(
+    brother_with_request_args: Brother,
+) -> None:
+    """Test SnmpError from errstatus is not retried."""
+    mock_get = AsyncMock(return_value=(None, "genErr", 1, []))
+    with patch("brother.get_cmd", mock_get), pytest.raises(SnmpError):
+        await brother_with_request_args.async_update()
+
+    assert mock_get.call_count == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "other_call",
+    [
+        "async_update",
+        "async_get_datetime",
+        "async_set_datetime",
+    ],
+)
+async def test_requests_never_overlap(
+    brother_with_request_args: Brother, other_call: str
+) -> None:
+    """Test two requests of one instance are never in flight together."""
+    active = 0
+    max_active = 0
+
+    async def fake_cmd(*_args: object) -> tuple[None, str, int, list]:
+        nonlocal active, max_active
+        active += 1
+        max_active = max(max_active, active)
+        await asyncio.sleep(0.01)
+        active -= 1
+        return (None, "noSuchName", 0, [])
+
+    brother = brother_with_request_args
+    with patch("brother.get_cmd", fake_cmd), patch("brother.set_cmd", fake_cmd):
+        await asyncio.gather(
+            brother.async_update(),
+            getattr(brother, other_call)(),
+            return_exceptions=True,
+        )
+
+    assert max_active == 1
+
+
+@pytest.mark.asyncio
+async def test_lock_is_held_between_retries(brother_with_request_args: Brother) -> None:
+    """Test another request does not slip in between update retries."""
+    calls: list[str] = []
+
+    async def fake_get(*_args: object) -> tuple[object, int, int, list]:
+        calls.append("get")
+        await asyncio.sleep(0)
+        return (RequestTimedOut(), 0, 0, [])
+
+    async def fake_set(*_args: object) -> tuple[None, int, int, list]:
+        calls.append("set")
+        return (None, 0, 0, [])
+
+    brother = brother_with_request_args
+    with patch("brother.get_cmd", fake_get), patch("brother.set_cmd", fake_set):
+        await asyncio.gather(
+            brother.async_update(),
+            brother.async_set_datetime(),
+            return_exceptions=True,
+        )
+
+    assert calls == ["get"] * UPDATE_ATTEMPTS + ["set"]

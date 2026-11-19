@@ -62,7 +62,7 @@ uv run pytest --snapshot-update                                                 
 
 **Client lifecycle**: `Brother` is instantiated via the async factory method `Brother.create(host, printer_type, ipv6, model)`, which calls `initialize()` to probe the printer OID support and determine whether it is a laser or ink model.
 
-**SNMP layer**: All printer queries go through `pysnmp`. The SNMP engine is created once in `utils.py` (with MIB caching) and reused across calls. `async_update()` fetches all relevant OIDs, then maps raw values through `const.py` dictionaries into a `BrotherSensors` dataclass via `dacite.from_dict()`.
+**SNMP layer**: All printer queries go through `pysnmp`. The SNMP engine is created once in `utils.py` (with MIB caching) and reused across calls. `async_update()` fetches all relevant OIDs, then maps raw values through `const.py` dictionaries into a `BrotherSensors` dataclass via `dacite.from_dict()`. `_get_data` is retried with `tenacity` on timeouts and connection errors (`UPDATE_ATTEMPTS`, `UPDATE_RETRY_WAIT`, `reraise=True`); an `asyncio.Lock` held outside the retry loop (and around datetime get/set) keeps one SNMP request in flight per instance. `initialize()` is not retried.
 
 **OID and value mapping**: All SNMP OIDs, printer types, supported/unsupported model lists, maintenance-level maps, and character-set maps live in `brother/const.py`. Adding support for a new printer model typically means updating this file and adding a fixture + snapshot in tests.
 
